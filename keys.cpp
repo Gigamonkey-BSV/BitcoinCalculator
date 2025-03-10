@@ -8,15 +8,9 @@
 template <typename X> using maybe = data::maybe<X>;
 template <typename X> using stack = data::stack<X>;
 template <typename K, typename V> using map = data::map<K, V>;
+using exception = data::exception;
 
 namespace Bitcoin = Gigamonkey::Bitcoin;
-
-struct symbol : data::string {};
-
-struct symbols {
-    // register a new symbol or retrieve an existing one.
-    const symbol &operator [] (const char *);
-} Symbols;
 
 struct form {
     virtual ~form () {}
@@ -28,23 +22,38 @@ struct node : form {
 
 struct expression : data::ptr<node> {};
 
-template <typename T> struct leaf : node {
-    T Value;
+struct type : expression {};
+
+using statement = type;
+
+struct symbol : node, data::string {};
+
+using Symbol = const symbol &;
+
+struct symbols {
+    // register a new symbol or retrieve an existing one.
+    Symbol operator [] (const char *);
 };
 
-struct list : node {
-    stack<expression> List;
+struct replacement {
+    Symbol Replace;
+    expression With;
 };
 
-struct call : node {
-    expression Fun;
-    stack<expression> Args;
+using replacements = stack<replacement>;
+
+expression replace (expression, replacements);
+
+struct pattern : data::ptr<form> {};
+
+maybe<replacements> match (pattern, expression, stack<statement> known = {});
+
+struct transformation {
+    stack<pattern> Arguments;
+    expression Value;
 };
 
-struct lambda : node {
-    stack<symbol &> Args;
-    expression Body;
-};
+struct definition : data::either<expression, stack<transformation>> {};
 
 enum class unary_operator {
     tilda,
@@ -53,11 +62,6 @@ enum class unary_operator {
     star,
     ampersand,
     exclamation
-};
-
-struct unary_operation : node {
-    unary_operator Operator;
-    expression Expression;
 };
 
 enum class binary_operator {
@@ -83,45 +87,53 @@ enum class binary_operator {
     is
 };
 
+struct machine {
+    data::map<Symbol, definition> SymbolDefinitions;
+    data::map<unary_operator, definition> UnaryDefinitions;
+    data::map<binary_operator, definition> BinaryDefinitions;
+
+    void define (Symbol, expression);
+    void define (Symbol, const transformation &);
+
+    void define (unary_operator, expression);
+    void define (unary_operator, const transformation &);
+
+    void define (binary_operator, expression);
+    void define (binary_operator, const transformation &);
+
+    expression evaluate (expression);
+};
+
+template <typename T> struct leaf : node {
+    T Value;
+};
+
+struct list : node {
+    stack<expression> List;
+};
+
+struct call : node {
+    expression Fun;
+    stack<expression> Args;
+};
+
+struct lambda : node {
+    stack<symbol &> Args;
+    expression Body;
+};
+
+struct unary_operation : node {
+    unary_operator Operator;
+    expression Expression;
+};
+
 struct binary_operation : node {
     binary_operator Operator;
     expression Left;
     expression Right;
 };
 
-struct type : expression {};
-
-using statement = type;
-
-// fundamental types
-
-struct replacement {
-    symbol &Replace;
-    expression With;
-};
-
-using replacements = stack<replacement>;
-
-expression replace (expression, replacements);
-
-struct pattern : data::ptr<form> {};
-
-struct transformation {
-    stack<expression> Arguments;
-    expression Value;
-};
-
-maybe<replacements> match (pattern, expression, stack<statement> known = {});
-
-struct definition : data::either<expression, stack<transformation>> {};
-
-data::map<symbol &, definition> SymbolDefinitions;
-data::map<unary_operator, definition> UnaryDefinitions;
-data::map<binary_operator, definition> BinaryDefinitions;
-
-void initialize ();
-
-expression evaluate (expression);
+void initialize (symbols &, machine &);
 
 struct parser {
     void read_dec_literal (data::slice<char>);
@@ -138,9 +150,58 @@ struct parser {
     bool valid ();
 
     expression top ();
+
+    parser (symbols &);
 };
 
 parser read_line (parser, const std::string &in);
+
+maybe<std::string> read_user_input () {
+    std::string input;
+    std::cout << "\n input: ";
+    if (!std::getline (std::cin, input)) return {};
+    return {input};
+}
+
+int main (int args, char **arg) {
+
+    // TODO detect whether we are in interactive mode.
+    // right now this is only interactive mode.
+
+    symbols x {};
+
+    machine m {};
+
+    initialize (x, m);
+
+    parser eval {x};
+
+    try {
+        while (true) {
+            maybe<std::string> input = read_user_input ();
+            if (!bool (input)) break;
+            if (input->empty ()) continue;
+
+            // for each input line, attempt to construct an expression
+            // out of it and then evaluate it.
+            try {
+                auto e = read_line (eval, *input);
+                if (e.valid ()) std::cout << "\n result: " << m.evaluate (e.top ()) << std::endl;
+                eval = e;
+            } catch (data::exception &e) {
+                std::cout << "Exception caught: " << e.what () << "!" << std::endl;
+            }
+        }
+    } catch (std::exception &e) {
+        std::cout << "Unknown exception caught: " << e.what () << "!" << std::endl;
+        return 1;
+    } catch (...) {
+        std::cout << "Unknown type caught!" << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
 
 namespace parse {
     using namespace tao::pegtl;
@@ -191,11 +252,6 @@ namespace parse {
 
     struct expression;
 
-    struct let_open : seq<string<'l', 'e', 't'>, not_at<symbol_char>> {};
-    struct let_in : seq<string<'i','n'>, not_at<symbol_char>> {};
-    struct rule : seq<pattern, ws, string<'-', '>'>, ws, expression> {};
-    struct let : seq<let_open, ws, rule, star<seq<ws, one<','>, ws, rule>>, ws, let_in, ws, expression> {};
-
     struct dif : seq<string<'i', 'f'>, not_at<symbol_char>, ws, expression, ws,
         string<'t', 'h', 'e', 'n'>, not_at<symbol_char>, ws, expression, ws,
         string<'e', 'l', 's', 'e'>, not_at<symbol_char>, ws, expression> {};
@@ -216,7 +272,7 @@ namespace parse {
     struct parenthetical : seq<open_paren, ws, expression, ws, star<seq<one<','>>, ws, expression, ws>, close_paren> {};
 
     struct atom : sor<dec_lit, hex_lit, pubkey_lit, hex_string, string_lit, symbol,
-        dif, let, symbol, parenthetical, list, lambda> {};
+        dif, symbol, parenthetical, list, lambda> {};
 
     struct call : seq<plus<white>, atom> {};
     struct call_expr : seq<atom, star<call>> {};
@@ -278,53 +334,34 @@ namespace parse {
     struct bool_and_expr : seq<bool_unequal_expr, opt<bool_and_op>> {};
     struct bool_or_expr : seq<bool_and_expr, opt<bool_or_op>> {};
 
+    struct expression : seq<bool_or_expr> {};
+
 }
 
 namespace rules {
     namespace pegtl = tao::pegtl;
 
     template <typename Rule> struct eval_action : pegtl::nothing<Rule> {};
+
+    template <> struct eval_action<parse::expression> {
+        template <typename Input>
+        static void apply (const Input &in, parser &eval);
+    };
+
+    template <> struct eval_action<parse::bool_or_expr> {
+        template <typename Input>
+        static void apply (const Input &in, parser &eval);
+    };
+
+    template <> struct eval_action<parse::bool_and_expr> {
+        template <typename Input>
+        static void apply (const Input &in, parser &eval);
+    };
+
 }
 
-maybe<std::string> read () {
-    std::string input;
-    std::cout << "\n input: ";
-    if (!std::getline (std::cin, input)) return {};
-    return {input};
-}
-
-int main (int args, char **arg) {
-
-    // TODO detect whether we are in interactive mode.
-    // right now this is only interactive mode.
-
-    parser eval {};
-
-    initialize ();
-
-    try {
-        while (true) {
-            maybe<std::string> input = read ();
-            if (!bool (input)) break;
-            if (input->empty ()) continue;
-
-            // for each input line, attempt to construct an expression
-            // out of it and then evaluate it.
-            try {
-                auto e = read_line (eval, *input);
-                if (e.valid ()) std::cout << "\n result: " << evaluate (e.top ()) << std::endl;
-                eval = e;
-            } catch (data::exception &e) {
-                std::cout << "Exception caught: " << e.what () << "!" << std::endl;
-            }
-        }
-    } catch (std::exception &e) {
-        std::cout << "Unknown exception caught: " << e.what () << "!" << std::endl;
-        return 1;
-    } catch (...) {
-        std::cout << "Unknown type caught!" << std::endl;
-        return 1;
-    }
-
-    return 0;
+parser read_line (parser p, const std::string &in) {
+    if (!tao::pegtl::parse<parse::expression, rules::eval_action> (tao::pegtl::memory_input<> {in, "expression"}, p))
+        throw exception {} << "could not parse line \"" << in << "\"";
+    return p;
 }
