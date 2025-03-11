@@ -28,15 +28,8 @@ using statement = type;
 
 struct symbol : node, data::string {};
 
-using Symbol = const symbol &;
-
-struct symbols {
-    // register a new symbol or retrieve an existing one.
-    Symbol operator [] (const char *);
-};
-
 struct replacement {
-    Symbol Replace;
+    symbol Replace;
     expression With;
 };
 
@@ -88,73 +81,28 @@ enum class binary_operator {
 };
 
 struct machine {
-    data::map<Symbol, definition> SymbolDefinitions;
+    data::map<symbol, definition> SymbolDefinitions;
     data::map<unary_operator, definition> UnaryDefinitions;
     data::map<binary_operator, definition> BinaryDefinitions;
 
-    void define (Symbol, expression);
-    void define (Symbol, const transformation &);
+    machine define (symbol, expression) const;
+    machine define (symbol, const transformation &) const;
 
-    void define (unary_operator, expression);
-    void define (unary_operator, const transformation &);
+    machine define (unary_operator, expression) const;
+    machine define (unary_operator, const transformation &) const;
 
-    void define (binary_operator, expression);
-    void define (binary_operator, const transformation &);
+    machine define (binary_operator, expression);
+    machine define (binary_operator, const transformation &) const;
 
-    expression evaluate (expression);
+    bool valid () const;
+
+    // last result calculated by the machine.
+    expression Last;
 };
 
-template <typename T> struct leaf : node {
-    T Value;
-};
+machine initialize (machine);
 
-struct list : node {
-    stack<expression> List;
-};
-
-struct call : node {
-    expression Fun;
-    stack<expression> Args;
-};
-
-struct lambda : node {
-    stack<symbol &> Args;
-    expression Body;
-};
-
-struct unary_operation : node {
-    unary_operator Operator;
-    expression Expression;
-};
-
-struct binary_operation : node {
-    binary_operator Operator;
-    expression Left;
-    expression Right;
-};
-
-void initialize (symbols &, machine &);
-
-struct parser {
-    void read_dec_literal (data::slice<char>);
-    void read_sats_literal (data::slice<char>);
-    void read_hexidecimal_literal (data::slice<char>);
-    void read_hex_literal (data::slice<char>);
-    void read_pubkey_literal (data::slice<char>);
-
-    void call ();
-
-    void unary (unary_operator op);
-    void binary (binary_operator op);
-
-    bool valid ();
-
-    expression top ();
-
-    parser (symbols &);
-};
-
-parser read_line (parser, const std::string &in);
+machine read_line (machine, const std::string &in);
 
 maybe<std::string> read_user_input () {
     std::string input;
@@ -168,13 +116,7 @@ int main (int args, char **arg) {
     // TODO detect whether we are in interactive mode.
     // right now this is only interactive mode.
 
-    symbols x {};
-
-    machine m {};
-
-    initialize (x, m);
-
-    parser eval {x};
+    machine m = initialize (machine {});
 
     try {
         while (true) {
@@ -185,9 +127,9 @@ int main (int args, char **arg) {
             // for each input line, attempt to construct an expression
             // out of it and then evaluate it.
             try {
-                auto e = read_line (eval, *input);
-                if (e.valid ()) std::cout << "\n result: " << m.evaluate (e.top ()) << std::endl;
-                eval = e;
+                auto mm = read_line (m, *input);
+                if (mm.valid ()) std::cout << "\n result: " << m.Last << std::endl;
+                m = mm;
             } catch (data::exception &e) {
                 std::cout << "Exception caught: " << e.what () << "!" << std::endl;
             }
@@ -338,6 +280,23 @@ namespace parse {
 
 }
 
+struct parser {
+    void read_dec_literal (data::slice<char>);
+    void read_sats_literal (data::slice<char>);
+    void read_hexidecimal_literal (data::slice<char>);
+    void read_hex_literal (data::slice<char>);
+    void read_pubkey_literal (data::slice<char>);
+
+    void call ();
+
+    void unary (unary_operator op);
+    void binary (binary_operator op);
+
+    bool valid ();
+
+    expression top ();
+};
+
 namespace rules {
     namespace pegtl = tao::pegtl;
 
@@ -358,7 +317,51 @@ namespace rules {
         static void apply (const Input &in, parser &eval);
     };
 
+    template <> struct eval_action<parse::bool_unequal_expr> {
+        template <typename Input>
+        static void apply (const Input &in, parser &eval);
+    };
+
+    template <> struct eval_action<parse::bool_equal_expr> {
+        template <typename Input>
+        static void apply (const Input &in, parser &eval);
+    };
+
+    template <> struct eval_action<parse::comp_expr> {
+        template <typename Input>
+        static void apply (const Input &in, parser &eval);
+    };
+
 }
+
+template <typename T> struct leaf : node {
+    T Value;
+};
+
+struct list : node {
+    stack<expression> List;
+};
+
+struct call : node {
+    expression Fun;
+    stack<expression> Args;
+};
+
+struct lambda : node {
+    stack<symbol &> Args;
+    expression Body;
+};
+
+struct unary_operation : node {
+    unary_operator Operator;
+    expression Expression;
+};
+
+struct binary_operation : node {
+    binary_operator Operator;
+    expression Left;
+    expression Right;
+};
 
 parser read_line (parser p, const std::string &in) {
     if (!tao::pegtl::parse<parse::expression, rules::eval_action> (tao::pegtl::memory_input<> {in, "expression"}, p))
