@@ -29,6 +29,8 @@ namespace Diophant {
 
     bool operator == (const expression &, const expression &);
 
+    std::ostream &operator << (std::ostream &, const expression &);
+
 }
 
 #endif
