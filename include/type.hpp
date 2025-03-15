@@ -5,7 +5,9 @@
 
 namespace Diophant {
 
-    struct type : expression {};
+    struct type : expression {
+        type (expression);
+    };
 
     using statement = type;
 

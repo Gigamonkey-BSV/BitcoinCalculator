@@ -215,10 +215,6 @@ namespace Diophant {
 
     }
 
-    template <typename T> struct leaf : node {
-        T Value;
-    };
-
     parser read_line (parser p, const std::string &in) {
         if (!tao::pegtl::parse<parse::expression, rules::eval_action> (tao::pegtl::memory_input<> {in, "expression"}, p))
             throw exception {} << "could not parse line \"" << in << "\"";

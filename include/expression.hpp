@@ -10,6 +10,7 @@ namespace Diophant {
     template <typename X> using stack = data::stack<X>;
     template <typename K, typename V> using map = data::map<K, V>;
     using exception = data::exception;
+    using string = data::string;
 
     namespace Bitcoin = Gigamonkey::Bitcoin;
 

@@ -66,6 +66,7 @@ find_package (gigamonkey CONFIG REQUIRED)
 
 add_executable (BitcoinCalc
     keys.cpp
+    source/initialize.cpp
     source/machine.cpp
     source/replace.cpp
 )
@@ -78,5 +79,3 @@ set_target_properties (BitcoinCalc PROPERTIES CXX_EXTENSIONS OFF)
 
 install (DIRECTORY include/ DESTINATION include)
 install (TARGETS BitcoinCalc)
-
-#add_subdirectory (src bin)

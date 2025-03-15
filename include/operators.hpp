@@ -6,22 +6,22 @@ namespace Diophant {
     enum class unary_operator {
         tilda,
         plus,
-        minus,
+        negate,
         star,
         ampersand,
         exclamation
     };
 
     enum class binary_operator {
-        tilda,
+        join,
         equal,
-        not_equal,
+        unequal,
         greater,
         less,
         greater_equal,
-        greater_less,
-        boolean_and,
-        boolean_or,
+        less_equal,
+        bool_and,
+        bool_or,
         bit_and,
         bit_or,
         plus,

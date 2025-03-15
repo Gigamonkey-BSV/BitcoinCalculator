@@ -5,7 +5,10 @@
 
 namespace Diophant {
 
-    struct symbol : node, data::string {};
+    struct symbol : node, std::string {
+        using std::string::string;
+        static expression make (const std::string &);
+    };
 
 }
 

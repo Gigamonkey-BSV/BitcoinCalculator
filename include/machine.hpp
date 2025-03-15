@@ -3,29 +3,24 @@
 
 #include <pattern.hpp>
 #include <nodes.hpp>
+#include <type.hpp>
 
 namespace Diophant {
 
-    struct transformation {
-        stack<pattern> Arguments;
-        expression Value;
-    };
-
-    struct definition : data::either<expression, stack<transformation>> {};
 
     struct machine {
-        data::map<symbol, definition> SymbolDefinitions;
-        data::map<unary_operator, definition> UnaryDefinitions;
-        data::map<binary_operator, definition> BinaryDefinitions;
 
-        machine define (symbol, expression) const;
-        machine define (symbol, const transformation &) const;
+        machine define (symbol, type, expression) const;
+        machine define (symbol, type, stack<pattern>, expression) const;
 
-        machine define (unary_operator, expression) const;
-        machine define (unary_operator, const transformation &) const;
+        machine define (unary_operator, type, pattern, expression) const;
+        machine define (binary_operator, type, pattern, pattern, expression) const;
 
-        machine define (binary_operator, expression);
-        machine define (binary_operator, const transformation &) const;
+        machine declare (symbol, type) const;
+        machine declare (symbol, type, stack<pattern>) const;
+
+        machine declare (unary_operator, type, pattern) const;
+        machine declare (binary_operator, type, pattern, pattern) const;
 
         bool valid () const;
 
@@ -35,6 +30,18 @@ namespace Diophant {
         expression Last;
 
         bool operator == (const machine &) const;
+
+    private:
+        struct transformation {
+            stack<pattern> Arguments;
+            expression Value;
+        };
+
+        struct definition : data::either<expression, stack<transformation>> {};
+
+        data::map<symbol, definition> SymbolDefinitions;
+        data::map<unary_operator, definition> UnaryDefinitions;
+        data::map<binary_operator, definition> BinaryDefinitions;
     };
 
     machine initialize ();
