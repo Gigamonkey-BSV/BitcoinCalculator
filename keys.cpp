@@ -28,9 +28,8 @@ int main (int args, char **arg) {
             // for each input line, attempt to construct an expression
             // out of it and then evaluate it.
             try {
-                auto mm = read_line (machine, *input);
-                if (mm.valid ()) std::cout << "\n result: " << machine.Last << std::endl;
-                machine = mm;
+                auto ee = Diophant::read_line (*input);
+                std::cout << "\n result: " << machine.evaluate (ee) << std::endl;
             } catch (data::exception &e) {
                 std::cout << "Exception caught: " << e.what () << "!" << std::endl;
             }

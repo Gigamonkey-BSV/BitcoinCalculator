@@ -1,5 +1,6 @@
 #include <parse.hpp>
 #include <leaves.hpp>
+#include <operators.hpp>
 #include <tao/pegtl.hpp>
 
 #include <gigamonkey/secp256k1.hpp>
@@ -54,8 +55,9 @@ namespace parse {
 
     struct symbol : minus<star<symbol_char>, reserved_words> {};
 
-    struct definition;
     struct expression;
+
+    struct definition : seq<symbol, ws, one<'='>, ws, expression> {};
 
     struct let_open : seq<string<'l', 'e', 't'>, not_at<symbol_char>> {};
     struct let_in : seq<string<'i','n'>, not_at<symbol_char>> {};
@@ -245,10 +247,12 @@ namespace Diophant {
 
     }
 
-    parser read_line (parser p, const std::string &in) {
+    expression read_line (const std::string &in) {
+        parser p;
+
         if (!tao::pegtl::parse<parse::expression, rules::eval_action> (tao::pegtl::memory_input<> {in, "expression"}, p))
             throw exception {} << "could not parse line \"" << in << "\"";
-        return p;
+        return p.top ();
     }
 
 }

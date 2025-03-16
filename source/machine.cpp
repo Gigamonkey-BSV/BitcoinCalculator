@@ -69,6 +69,9 @@ namespace Diophant {
                 continue;
             }
 
+            // Note: here we simply find the first possible match. However,
+            // in general we want to look for a unique match or a unique
+            // match with automatic type conversions.
             if (const symbol *x = dynamic_cast<const symbol *> (c); x != nullptr) {
                 const machine::definition *v = m.SymbolDefinitions.contains (*x);
                 if (v == nullptr) goto done;
@@ -90,7 +93,7 @@ namespace Diophant {
 
                     auto match_args = data::take (args, tf.Arguments.size ());
 
-                    maybe<replacements> r = match (tf.Arguments, match_args);
+                    maybe<replacements> r = m.match (tf.Arguments, match_args);
 
                     if (bool (r)) {
                         changed = true;
@@ -135,6 +138,46 @@ namespace Diophant {
             if (next == expression {}) return last;
             last = next;
         }
+    }
+
+    maybe<replacements> machine::match (stack<pattern> p, stack<expression> e, stack<cast> known) const {
+        if (p.size () != e.size ()) return {};
+
+        replacements r;
+        while (!p.empty ()) {
+            auto m = match (p.first (), e.first (), known);
+            if (!bool (m)) return {};
+            for (const auto &[key, value] : *m)
+                if (const auto *v = r.contains (key); v != nullptr) {
+                    if (*v != value) return {};
+                } else r = r.insert (key, value);
+
+                p = p.rest ();
+            e = e.rest ();
+        }
+
+        return r;
+    }
+
+    maybe<replacements> machine::match (const pattern p, const expression e, stack<cast> known) const {
+        const form *z = p.get ();
+        const node *n = e.get ();
+
+        using mr = maybe<replacements>;
+
+        if (const node *q = dynamic_cast<const node *> (z); q != nullptr || z == nullptr)
+            return p == pattern {e} ? mr {{}} : mr {};
+        else if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr)
+            return b->Name != "" ? mr {{{b->Name, e}}} : mr {{}};
+        else if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
+            mr r = match (t->Pattern, e, known);
+            if (!bool (r)) return {};
+            auto tt = derive_type (e);
+            if (!bool (tt)) return {}; // this should really be an error.
+            if (t->Type >= *tt) return r;
+        }
+
+        return {};
     }
 
 }

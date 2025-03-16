@@ -18,6 +18,21 @@ namespace Diophant {
         pattern (const symbol &, const type &);
     };
 
+    bool operator == (const pattern &, const pattern &);
+
+    // matches everything.
+    struct blank : form {
+        symbol Name;
+        static pattern make (const symbol &);
+    };
+
+    // matches things of a given type.
+    struct typed : form {
+        pattern Pattern;
+        type Type;
+        static pattern make (const pattern &, const type &);
+    };
+
 }
 
 #endif

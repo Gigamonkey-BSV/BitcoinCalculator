@@ -2,9 +2,16 @@
 #define BITCOIN_CALCULATOR_MACHINE
 
 #include <nodes.hpp>
-#include <match.hpp>
+#include <pattern.hpp>
+#include <replace.hpp>
 
 namespace Diophant {
+
+    struct cast : node {
+        type Type;
+        expression Expr;
+        static expression make (const type &, Expression);
+    };
 
     template <typename K, typename V> using map = data::map<K, V>;
     template <typename... X> using either = data::either<X...>;
@@ -27,9 +34,6 @@ namespace Diophant {
 
         expression evaluate (Expression) const;
 
-        // last result calculated by the machine.
-        expression Last;
-
         bool operator == (const machine &) const;
 
         struct transformation {
@@ -46,6 +50,11 @@ namespace Diophant {
         map<symbol, definition> SymbolDefinitions;
         map<unary_operator, definition> UnaryDefinitions;
         map<binary_operator, definition> BinaryDefinitions;
+
+        maybe<type> derive_type (Expression) const;
+
+        maybe<replacements> match (pattern, expression, stack<cast> known = {}) const;
+        maybe<replacements> match (stack<pattern>, stack<expression>, stack<cast> known = {}) const;
     };
 
     machine initialize ();
