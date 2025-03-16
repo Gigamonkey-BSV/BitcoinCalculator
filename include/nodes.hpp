@@ -13,8 +13,8 @@ namespace Diophant {
 
     struct call : node {
         expression Fun;
-        stack<expression> Args;
-        static expression make (expression fun, stack<expression> args);
+        data::list<expression> Args;
+        static expression make (expression fun, data::list<expression> args);
     };
 
     struct lambda : node {

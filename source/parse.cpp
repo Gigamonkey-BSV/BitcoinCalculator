@@ -1,4 +1,5 @@
 #include <parse.hpp>
+#include <leaves.hpp>
 #include <tao/pegtl.hpp>
 
 #include <gigamonkey/secp256k1.hpp>
@@ -23,7 +24,7 @@ namespace parse {
     struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>> {};
     struct pubkey_lit : seq<one<'0'>, sor<one<'2'>, one<'3'>, one<'4'>>, star<hex_digit>> {};
 
-    struct hex_string : seq<one<'#'>, star<hex_digit>> {};
+    struct hex_string_lit : seq<one<'\''>, star<hex_digit>, one<'\''>> {};
 
     // strings can have escaped characters with \ .
     struct string_body : star<sor<
@@ -82,10 +83,10 @@ namespace parse {
     struct var : seq<opt<symbol>, one<'.'>> {};
     struct typed_var : seq<opt<symbol>, ws, one<':'>, ws, expression> {};
 
-    struct expression_atom : sor<dec_lit, hex_lit, pubkey_lit, hex_string, string_lit, symbol,
+    struct expression_atom : sor<dec_lit, hex_lit, pubkey_lit, hex_string_lit, string_lit, symbol,
         dif, parenthetical, list, let, lambda> {};
 
-    struct pattern_atom : sor<dec_lit, hex_lit, pubkey_lit, hex_string, string_lit, symbol,
+    struct pattern_atom : sor<dec_lit, hex_lit, pubkey_lit, hex_string_lit, string_lit, symbol,
         var, typed_var, dif, parenthetical, list, let, lambda> {};
 
     template <typename atom> struct call : seq<plus<white>, atom> {};
@@ -187,11 +188,7 @@ namespace parse {
 
 namespace Diophant {
     struct parser {
-        void read_dec_literal (data::slice<char>);
-        void read_sats_literal (data::slice<char>);
-        void read_hexidecimal_literal (data::slice<char>);
-        void read_hex_literal (data::slice<char>);
-        void read_pubkey_literal (data::slice<char>);
+        void push (Expression);
 
         void call ();
 
@@ -200,7 +197,7 @@ namespace Diophant {
 
         bool valid ();
 
-        expression top ();
+        Expression top ();
     };
 
     namespace rules {
@@ -208,9 +205,42 @@ namespace Diophant {
 
         template <typename Rule> struct eval_action : pegtl::nothing<Rule> {};
 
-        template <> struct eval_action<parse::expression> {
+        template <> struct eval_action<parse::dec_lit> {
             template <typename Input>
-            static void apply (const Input &in, parser &eval);
+            static void apply (const Input &in, parser &eval) {
+                eval.push (Dsecret::make (secp256k1::secret {uint256 {in.string_view ()}}));
+            }
+        };
+
+        template <> struct eval_action<parse::hex_lit> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                auto x = in.string_view ();
+                eval.push (Dscriptnum::make (Bitcoin::integer {x.substr (2, x.size () - 2)}));
+            }
+        };
+
+        template <> struct eval_action<parse::pubkey_lit> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.push (Dpubkey::make (Bitcoin::pubkey {in.string_view ()}));
+            }
+        };
+
+        template <> struct eval_action<parse::string_lit> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                auto x = in.string_view ();
+                eval.push (Dstring::make (data::string {x.substr (1, x.size () - 2)}));
+            }
+        };
+
+        template <> struct eval_action<parse::hex_string_lit> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                auto x = in.string_view ();
+                eval.push (Dscriptnum::make (Bitcoin::integer {x.substr (1, x.size () - 2)}));
+            }
         };
 
     }
@@ -218,7 +248,7 @@ namespace Diophant {
     parser read_line (parser p, const std::string &in) {
         if (!tao::pegtl::parse<parse::expression, rules::eval_action> (tao::pegtl::memory_input<> {in, "expression"}, p))
             throw exception {} << "could not parse line \"" << in << "\"";
-            return p;
+        return p;
     }
 
 }

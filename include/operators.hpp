@@ -9,19 +9,20 @@ namespace Diophant {
         negate,
         star,
         ampersand,
-        exclamation
+        bool_not
     };
 
     enum class binary_operator {
-        join,
+        cat,
         equal,
         unequal,
         greater,
         less,
         greater_equal,
         less_equal,
-        bool_and,
-        bool_or,
+        bool_and,         // &&
+        bool_or,          // ||
+        identical,        // ===
         bit_and,
         bit_or,
         plus,

@@ -3,10 +3,17 @@
 
 #include <type.hpp>
 #include <pattern.hpp>
+#include <replace.hpp>
 
 namespace Diophant {
 
-    maybe<replacements> match (pattern, expression, stack<statement> known = {});
+    struct cast : node {
+        type Type;
+        expression Expr;
+        static expression make (const type &, Expression);
+    };
+
+    maybe<replacements> match (stack<pattern>, stack<expression>, stack<cast> known = {});
 
 }
 

@@ -8,7 +8,6 @@ namespace Diophant {
 
     template <typename X> using maybe = data::maybe<X>;
     template <typename X> using stack = data::stack<X>;
-    template <typename K, typename V> using map = data::map<K, V>;
     using exception = data::exception;
     using string = data::string;
 
@@ -28,9 +27,11 @@ namespace Diophant {
         expression () : data::ptr<const node> {} {}
     };
 
-    bool operator == (const expression &, const expression &);
+    using Expression = const expression &;
 
-    std::ostream &operator << (std::ostream &, const expression &);
+    bool operator == (Expression, Expression);
+
+    std::ostream &operator << (std::ostream &, Expression);
 
 }
 
