@@ -13,7 +13,7 @@ namespace Diophant {
             // if the variables in the lambda expression contain
             // any of the replacement symbols, they are removed
             // from the replacements.
-            stack<symbol> removed;
+            data::stack<symbol> removed;
             for (const symbol &x : q->Args) if (data::contains (rr, x)) removed <<= x;
             for (const symbol &x : removed) rr = data::remove (rr, x);
 
@@ -22,7 +22,7 @@ namespace Diophant {
             else return expression {};
         } else if (const list *ls = dynamic_cast<const list *> (p); ls != nullptr) {
             bool replacement_was_made = false;
-            stack<expression> new_list;
+            data::stack<expression> new_list;
 
             for (const expression z : ls->List) {
                 expression replaced = replace_inner (z, rr);
@@ -44,7 +44,7 @@ namespace Diophant {
             return replaced == expression {} ? expression {} : unary_operation::make (u->Operator, replaced);
         } if (const call *c = dynamic_cast<const call *> (c); c != nullptr) {
             bool replacement_was_made = false;
-            stack<expression> new_list;
+            data::stack<expression> new_list;
 
             for (const expression z : c->Args) {
                 expression replaced = replace_inner (z, rr);

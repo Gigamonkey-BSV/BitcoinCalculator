@@ -22,8 +22,18 @@ namespace parse {
     struct dec_lit : sor<one<'0'>, seq<range<'1', '9'>, star<digit>>> {};
 
     struct hex_digit : seq<xdigit, xdigit> {};
+
+    struct two_hex_digits : seq<hex_digit, hex_digit> {};
+    struct four_hex_digits : seq<two_hex_digits, two_hex_digits> {};
+    struct eight_hex_digits : seq<four_hex_digits, four_hex_digits> {};
+    struct sixteen_hex_digits : seq<eight_hex_digits, eight_hex_digits> {};
+    struct thirty_two_hex_digits : seq<sixteen_hex_digits, sixteen_hex_digits> {};
+    struct sixty_four_hex_digits : seq<thirty_two_hex_digits, thirty_two_hex_digits> {};
+
     struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>> {};
-    struct pubkey_lit : seq<one<'0'>, sor<one<'2'>, one<'3'>, one<'4'>>, star<hex_digit>> {};
+    struct pubkey_lit : seq<one<'0'>,
+        sor<seq<sor<one<'2'>, one<'3'>>, thirty_two_hex_digits>,
+        seq<one<'4'>, sixty_four_hex_digits>>> {};
 
     struct hex_string_lit : seq<one<'\''>, star<hex_digit>, one<'\''>> {};
 
@@ -210,7 +220,7 @@ namespace Diophant {
         template <> struct eval_action<parse::dec_lit> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.push (Dsecret::make (secp256k1::secret {uint256 {in.string_view ()}}));
+                eval.push (secret::make (secp256k1::secret {uint256 {in.string_view ()}}));
             }
         };
 
@@ -218,14 +228,14 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();
-                eval.push (Dscriptnum::make (Bitcoin::integer {x.substr (2, x.size () - 2)}));
+                eval.push (scriptnum::make (Bitcoin::integer {x.substr (2, x.size () - 2)}));
             }
         };
 
         template <> struct eval_action<parse::pubkey_lit> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.push (Dpubkey::make (Bitcoin::pubkey {in.string_view ()}));
+                eval.push (pubkey::make (Bitcoin::pubkey {in.string_view ()}));
             }
         };
 
@@ -233,7 +243,7 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();
-                eval.push (Dstring::make (data::string {x.substr (1, x.size () - 2)}));
+                eval.push (string::make (data::string {x.substr (1, x.size () - 2)}));
             }
         };
 
@@ -241,7 +251,7 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();
-                eval.push (Dscriptnum::make (Bitcoin::integer {x.substr (1, x.size () - 2)}));
+                eval.push (scriptnum::make (Bitcoin::integer {x.substr (1, x.size () - 2)}));
             }
         };
 
@@ -259,7 +269,7 @@ namespace Diophant {
         parser p;
 
         if (!tao::pegtl::parse<parse::expression, rules::eval_action> (tao::pegtl::memory_input<> {in, "expression"}, p))
-            throw exception {} << "could not parse line \"" << in << "\"";
+            throw parse_error {in};
         return p.top ();
     }
 

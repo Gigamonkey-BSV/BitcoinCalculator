@@ -7,29 +7,32 @@
 
 namespace Diophant {
 
-    struct casted final : form {
-        type Type;
-        expression Expr;
-        casted (const type &, const expression &);
-        static expression make (const type &, Expression);
-    };
+    struct casted final : node {
+        type Cast;
 
-    template <typename K, typename V> using map = data::map<K, V>;
-    template <typename... X> using either = data::either<X...>;
+        // if there is no expression, this represents an undefined value.
+        data::maybe<expression> Def;
+
+        casted (Type);
+        casted (Type, Expression);
+
+        static expression make (Type);
+        static expression make (Type, Expression);
+    };
 
     struct machine {
 
-        machine define (symbol, type, expression) const;
-        machine define (symbol, type, stack<pattern>, expression) const;
+        machine define (symbol x, type of, expression as) const;
+        machine define (symbol x, type of, data::stack<pattern> arg, expression as) const;
 
-        machine define (unary_operator, type, pattern, expression) const;
-        machine define (binary_operator, type, pattern, pattern, expression) const;
+        machine define (unary_operator op, type of, pattern in, expression as) const;
+        machine define (binary_operator op, type of, pattern left, pattern right, expression as) const;
 
-        machine declare (symbol, type) const;
-        machine declare (symbol, type, stack<pattern>) const;
+        machine declare (symbol x, type of) const;
+        machine declare (symbol x, type of, data::stack<pattern> arg) const;
 
-        machine declare (unary_operator, type, pattern) const;
-        machine declare (binary_operator, type, pattern, pattern) const;
+        machine declare (unary_operator op, type of, pattern in) const;
+        machine declare (binary_operator op, type of, pattern left, pattern right) const;
 
         bool valid () const;
 
@@ -38,7 +41,7 @@ namespace Diophant {
         bool operator == (const machine &) const;
 
         struct transformation {
-            stack<pattern> Arguments;
+            data::stack<pattern> Arguments;
             casted Value;
 
             // throws exception if two transformations
@@ -46,22 +49,34 @@ namespace Diophant {
             std::partial_ordering operator <=> (const transformation) const;
         };
 
-        using definition = either<casted, data::ordered_list<transformation>>;
+        using definition = data::either<expression, casted, data::ordered_list<transformation>>;
 
-        map<symbol, definition> SymbolDefinitions;
-        map<unary_operator, definition> UnaryDefinitions;
-        map<binary_operator, definition> BinaryDefinitions;
+        data::map<symbol, definition> SymbolDefinitions;
+        data::map<unary_operator, definition> UnaryDefinitions;
+        data::map<binary_operator, definition> BinaryDefinitions;
 
-        maybe<type> derive_type (Expression) const;
+        data::maybe<type> derive_type (Expression) const;
 
-        maybe<replacements> match (pattern, expression, stack<casted> known = {}) const;
-        maybe<replacements> match (stack<pattern>, stack<expression>, stack<casted> known = {}) const;
+        data::maybe<replacements> match (pattern, expression, data::stack<casted> known = {}) const;
+        data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>, data::stack<casted> known = {}) const;
 
         // try to cast a value as a type.
-        maybe<casted> cast (const type &, const expression &);
+        data::maybe<casted> cast (const type &, const expression &);
     };
 
     machine initialize ();
+
+    inline casted::casted (Type t): Cast {t}, Def {} {}
+
+    inline casted::casted (Type t, Expression x): Cast {t}, Def {x} {}
+
+    expression inline casted::make (Type t) {
+        return expression {std::static_pointer_cast<const node> (std::make_shared<casted> (t))};
+    }
+
+    expression inline casted::make (Type t, Expression x) {
+        return expression {std::static_pointer_cast<const node> (std::make_shared<casted> (t, x))};
+    }
 
 }
 

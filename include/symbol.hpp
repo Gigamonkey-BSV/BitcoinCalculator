@@ -6,9 +6,16 @@
 namespace Diophant {
 
     struct symbol final : node, std::string {
-        using std::string::string;
+        symbol (): node {}, std::string {} {}
+        symbol (const std::string &x): node {}, std::string {x} {}
         static expression make (const std::string &);
     };
+
+    using Symbol = const symbol &;
+
+    expression inline symbol::make (const std::string &x) {
+        return expression {std::static_pointer_cast<const node> (std::make_shared<symbol> (x))};
+    }
 
 }
 

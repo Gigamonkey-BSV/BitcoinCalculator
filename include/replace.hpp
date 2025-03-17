@@ -5,9 +5,7 @@
 
 namespace Diophant {
 
-    template <typename K, typename V> using map = data::map<K, V>;
-
-    using replacements = map<symbol, expression>;
+    using replacements = data::map<symbol, expression>;
 
     expression replace (expression, replacements);
 

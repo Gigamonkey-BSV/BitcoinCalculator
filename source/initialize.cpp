@@ -21,8 +21,9 @@ namespace Diophant {
         // number operations
 
         // boolean operations
-        m = m.define (symbol {"False"}, bool_type, Dscriptnum::make (Bitcoin::integer {0}));
-        m = m.define (symbol {"True"}, bool_type, Dscriptnum::make (Bitcoin::integer {1}));
+        m = m.define (symbol {"False"}, bool_type, scriptnum::make (Bitcoin::integer {0}));
+        m = m.define (symbol {"True"}, bool_type, scriptnum::make (Bitcoin::integer {1}));
+
         m = m.declare (unary_operator::bool_not, bool_type, bool_type);
         m = m.declare (binary_operator::bool_and, bool_type, bool_type, bool_type);
         m = m.declare (binary_operator::bool_or, bool_type, bool_type, bool_type);
@@ -84,6 +85,9 @@ namespace Diophant {
 
         m = m.declare (symbol {"Power"}, secret_type, {secret_type});
 
+        m = m.declare (symbol {"Sign"}, integer_type, {secret_type, integer_type});
+        m = m.declare (symbol {"Sign"}, integer_type, {secret_type, secret_type});
+
         // pubkey operations
         m = m.declare (symbol {"Valid"}, integer_type, {secret_type});
         m = m.declare (binary_operator::equal, bool_type, pubkey_type, pubkey_type);
@@ -94,6 +98,9 @@ namespace Diophant {
         m = m.declare (binary_operator::times, pubkey_type, pubkey_type, secret_type);
 
         m = m.declare (symbol {"to_public"}, pubkey_type, {secret_type});
+
+        m = m.declare (symbol {"Verify"}, bool_type, {pubkey_type, integer_type, integer_type});
+        m = m.declare (symbol {"Verify"}, bool_type, {pubkey_type, secret_type, integer_type});
 
         // string operations
         m = m.declare (binary_operator::cat, string_type, string_type, string_type);

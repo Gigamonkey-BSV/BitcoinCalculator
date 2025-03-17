@@ -6,11 +6,6 @@
 
 namespace Diophant {
 
-    template <typename X> using maybe = data::maybe<X>;
-    template <typename X> using stack = data::stack<X>;
-    using exception = data::exception;
-    using string = data::string;
-
     namespace Bitcoin = Gigamonkey::Bitcoin;
 
     // includes patterns and symbols as well as concrete expressions.
@@ -24,8 +19,8 @@ namespace Diophant {
 
     struct expression : data::ptr<const node> {
         // a nil expression
-        expression () : data::ptr<const node> {} {}
-        bool valid () const;
+        expression (): data::ptr<const node> {} {}
+        expression (data::ptr<const node> x): data::ptr<const node> {x} {}
     };
 
     using Expression = const expression &;

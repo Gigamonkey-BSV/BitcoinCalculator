@@ -15,6 +15,8 @@ namespace Diophant {
         bool operator >= (const type &) const;
     };
 
+    using Type = const type &;
+
     using statement = type;
 
     enum class impartial_ordering {
@@ -47,6 +49,10 @@ namespace Diophant {
     bool inline type::operator >= (const type &t) const {
         auto x = (*this <=> t);
         return x == impartial_ordering::equal || x == impartial_ordering::superset;
+    }
+
+    inline type::type (expression e) {
+        static_cast<expression &> (*this) = e;
     }
 
 }

@@ -70,6 +70,7 @@ add_executable (BitcoinCalc
     source/machine.cpp
     source/replace.cpp
     source/parse.cpp
+    source/expression.cpp
 )
 
 target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
