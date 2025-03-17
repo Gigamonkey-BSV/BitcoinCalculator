@@ -1,6 +1,43 @@
 #include <machine.hpp>
+#include <value.hpp>
 
 namespace Diophant {
+    expression evaluate_round (const machine &m, const node *p);
+
+    expression machine::evaluate (Expression e) const {
+        expression last = e;
+        while (true) {
+            const node *p = last.get ();
+            expression next = evaluate_round (*this, p);
+            if (next == expression {}) return last;
+            last = next;
+        }
+    }
+
+    struct candidate {
+        replacements Replacements;
+        casted Result;
+        stack<expression> Remaining;
+    };
+
+    maybe<candidate> get_candidate (const machine &m, data::ordered_list<machine::transformation> tfs, stack<expression> args) {
+        while (!tfs.empty ()) {
+
+            auto &tf = tfs.first ();
+
+            if (tf.Arguments.size () > args.size ()) return {};
+
+            auto match_args = data::take (args, tf.Arguments.size ());
+
+            maybe<replacements> r = m.match (tf.Arguments, match_args);
+
+            if (bool (r)) return {{*r, tf.Value, data::drop (args, tf.Arguments.size ())}};
+
+            tfs = tfs.rest ();
+        }
+
+        return {};
+    }
 
     expression evaluate_binary_operation (const machine &m, const binary_operation *b);
     expression evaluate_unary_operation (const machine &m, const unary_operation *u);
@@ -11,9 +48,9 @@ namespace Diophant {
         const machine::definition *v = m.SymbolDefinitions.contains (*x);
         if (v == nullptr) expression {};
 
-        if (!std::holds_alternative<expression> (*v)) return expression {};
+        if (!std::holds_alternative<casted> (*v)) return expression {};
 
-        return std::get<expression> (*v);
+        return std::get<casted> (*v).Expr;
     }
 
     expression evaluate_call (const machine &m, const call *c) {
@@ -74,9 +111,7 @@ namespace Diophant {
             // match with automatic type conversions.
             if (const symbol *x = dynamic_cast<const symbol *> (c); x != nullptr) {
                 const machine::definition *v = m.SymbolDefinitions.contains (*x);
-                if (v == nullptr) goto done;
-
-                if (!std::holds_alternative<data::ordered_list<machine::transformation>> (*v)) goto done;
+                if (v == nullptr || !std::holds_alternative<data::ordered_list<machine::transformation>> (*v)) goto done;
 
                 data::ordered_list<machine::transformation> tfs = std::get<data::ordered_list<machine::transformation>> (*v);
 
@@ -86,26 +121,13 @@ namespace Diophant {
                     tfs = tfs.rest ();
                 }
 
-                while (true) {
-                    auto &tf = tfs.first ();
-
-                    if (tf.Arguments.size () > args.size ()) goto done;
-
-                    auto match_args = data::take (args, tf.Arguments.size ());
-
-                    maybe<replacements> r = m.match (tf.Arguments, match_args);
-
-                    if (bool (r)) {
-                        changed = true;
-                        fun = m.evaluate (replace (tf.Value, *r));
-                        args = data::drop (args, tf.Arguments.size ());
-                        break;
-                    }
-
-                    tfs = tfs.rest ();
+                maybe<candidate> cx = get_candidate (m, tfs, args);
+                if (bool (cx)) {
+                    changed = true;
+                    fun = m.evaluate (replace (cx->Result.Expr, cx->Replacements));
+                    args = cx->Remaining;
+                    continue;
                 }
-
-                continue;
             }
 
             done:
@@ -130,17 +152,7 @@ namespace Diophant {
         return expression {};
     }
 
-    expression machine::evaluate (Expression e) const {
-        expression last = e;
-        while (true) {
-            const node *p = last.get ();
-            expression next = evaluate_round (*this, p);
-            if (next == expression {}) return last;
-            last = next;
-        }
-    }
-
-    maybe<replacements> machine::match (stack<pattern> p, stack<expression> e, stack<cast> known) const {
+    maybe<replacements> machine::match (stack<pattern> p, stack<expression> e, stack<casted> known) const {
         if (p.size () != e.size ()) return {};
 
         replacements r;
@@ -159,7 +171,7 @@ namespace Diophant {
         return r;
     }
 
-    maybe<replacements> machine::match (const pattern p, const expression e, stack<cast> known) const {
+    maybe<replacements> machine::match (const pattern p, const expression e, stack<casted> known) const {
         const form *z = p.get ();
         const node *n = e.get ();
 
@@ -176,6 +188,31 @@ namespace Diophant {
             if (!bool (tt)) return {}; // this should really be an error.
             if (t->Type >= *tt) return r;
         }
+
+        return {};
+    }
+
+    maybe<casted> cast_symbol (const machine &, const type &T, const expression &E);
+    maybe<casted> cast_call (const machine &, const type &T, const expression &E);
+    maybe<casted> cast_binary_operation (const machine &, const type &T, const expression &E);
+    maybe<casted> cast_unary_operation (const machine &, const type &T, const expression &E);
+
+    // try to cast a value as a type.
+    maybe<casted> machine::cast (const type &T, const expression &E) {
+        const node *t = T.get ();
+        const node *e = E.get ();
+
+        if (e == nullptr) return t == nullptr ? maybe<casted> {} : maybe<casted> {{T, E}};
+
+        if (const value *v = dynamic_cast<const value *> (e); v != nullptr) return v->cast (*this, T);
+        if (const symbol *x = dynamic_cast<const symbol *> (e); x != nullptr)
+            return cast_symbol (*this, T, E);
+        if (const binary_operation *b = dynamic_cast<const binary_operation *> (e); b != nullptr)
+            return cast_binary_operation (*this, T, E);
+        if (const unary_operation *u = dynamic_cast<const unary_operation *> (e); u != nullptr)
+            return cast_unary_operation (*this, T, E);
+        if (const call *c = dynamic_cast<const call *> (e); c != nullptr)
+            return cast_call (*this, T, E);
 
         return {};
     }

@@ -13,7 +13,7 @@ namespace Diophant {
 
     namespace Bitcoin = Gigamonkey::Bitcoin;
 
-    // base class of the expression tree in diophant.
+    // includes patterns and symbols as well as concrete expressions.
     struct form {
         virtual ~form () {}
     };
@@ -25,6 +25,7 @@ namespace Diophant {
     struct expression : data::ptr<const node> {
         // a nil expression
         expression () : data::ptr<const node> {} {}
+        bool valid () const;
     };
 
     using Expression = const expression &;

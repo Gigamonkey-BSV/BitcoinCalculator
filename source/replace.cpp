@@ -1,5 +1,5 @@
 #include <replace.hpp>
-#include <nodes.hpp>
+#include <value.hpp>
 
 namespace Diophant {
 

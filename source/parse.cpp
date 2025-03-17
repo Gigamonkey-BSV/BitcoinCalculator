@@ -1,5 +1,5 @@
 #include <parse.hpp>
-#include <leaves.hpp>
+#include <value.hpp>
 #include <operators.hpp>
 #include <tao/pegtl.hpp>
 
@@ -242,6 +242,14 @@ namespace Diophant {
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();
                 eval.push (Dscriptnum::make (Bitcoin::integer {x.substr (1, x.size () - 2)}));
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::unary_operation<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                // NOTE this won't work if we ever have any unary operators that are bigger than one char.
+                eval.unary (unary_operator {*in.begin ()});
             }
         };
 

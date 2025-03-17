@@ -1,10 +1,14 @@
 #include <machine.hpp>
-#include <leaves.hpp>
+#include <value.hpp>
 
 namespace Diophant {
 
     machine initialize () {
         machine m {};
+
+        type nil {expression {}};
+
+        m = m.define (symbol {"Nil"}, nil, nil);
 
         // the fundamental types.
         type secret_type {symbol::make ("private")};
@@ -37,7 +41,6 @@ namespace Diophant {
         m = m.declare (symbol {"MinimalQ"}, bool_type, {integer_type});
         m = m.declare (symbol {"RightShift"}, integer_type, {integer_type});
         m = m.declare (symbol {"LeftShift"}, integer_type, {integer_type});
-        m = m.declare (symbol {"Power"}, integer_type, {integer_type});
 
         // arithmetic
         m = m.declare (binary_operator::equal, bool_type, integer_type, integer_type);
@@ -46,7 +49,9 @@ namespace Diophant {
         m = m.declare (binary_operator::less_equal, bool_type, integer_type, integer_type);
         m = m.declare (binary_operator::greater, bool_type, integer_type, integer_type);
         m = m.declare (binary_operator::less, bool_type, integer_type, integer_type);
+        m = m.declare (symbol {"Power"}, integer_type, {integer_type});
 
+        m = m.declare (unary_operator::negate, integer_type, integer_type);
         m = m.declare (binary_operator::plus, integer_type, integer_type, integer_type);
         m = m.declare (binary_operator::minus, integer_type, integer_type, integer_type);
         m = m.declare (binary_operator::times, integer_type, integer_type, integer_type);
@@ -69,6 +74,7 @@ namespace Diophant {
         m = m.declare (binary_operator::greater, bool_type, secret_type, secret_type);
         m = m.declare (binary_operator::less, bool_type, secret_type, secret_type);
 
+        m = m.declare (unary_operator::negate, secret_type, secret_type);
         m = m.declare (binary_operator::plus, secret_type, secret_type, secret_type);
         m = m.declare (binary_operator::minus, secret_type, secret_type, secret_type);
         m = m.declare (binary_operator::times, secret_type, secret_type, secret_type);
@@ -76,7 +82,7 @@ namespace Diophant {
         m = m.declare (binary_operator::mod, secret_type, secret_type, secret_type);
         m = m.declare (binary_operator::carot, secret_type, secret_type, secret_type);
 
-        m = m.declare (symbol {"Power"}, integer_type, {integer_type});
+        m = m.declare (symbol {"Power"}, secret_type, {secret_type});
 
         // pubkey operations
         m = m.declare (symbol {"Valid"}, integer_type, {secret_type});

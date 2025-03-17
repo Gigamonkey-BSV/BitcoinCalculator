@@ -7,9 +7,10 @@
 
 namespace Diophant {
 
-    struct cast : node {
+    struct casted final : form {
         type Type;
         expression Expr;
+        casted (const type &, const expression &);
         static expression make (const type &, Expression);
     };
 
@@ -38,14 +39,14 @@ namespace Diophant {
 
         struct transformation {
             stack<pattern> Arguments;
-            expression Value;
+            casted Value;
 
             // throws exception if two transformations
             // are not either disjoint or one is a subset of the other.
             std::partial_ordering operator <=> (const transformation) const;
         };
 
-        using definition = either<expression, data::ordered_list<transformation>>;
+        using definition = either<casted, data::ordered_list<transformation>>;
 
         map<symbol, definition> SymbolDefinitions;
         map<unary_operator, definition> UnaryDefinitions;
@@ -53,8 +54,11 @@ namespace Diophant {
 
         maybe<type> derive_type (Expression) const;
 
-        maybe<replacements> match (pattern, expression, stack<cast> known = {}) const;
-        maybe<replacements> match (stack<pattern>, stack<expression>, stack<cast> known = {}) const;
+        maybe<replacements> match (pattern, expression, stack<casted> known = {}) const;
+        maybe<replacements> match (stack<pattern>, stack<expression>, stack<casted> known = {}) const;
+
+        // try to cast a value as a type.
+        maybe<casted> cast (const type &, const expression &);
     };
 
     machine initialize ();

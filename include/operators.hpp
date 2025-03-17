@@ -3,13 +3,13 @@
 
 namespace Diophant {
 
-    enum class unary_operator {
-        tilda,
-        plus,
-        negate,
-        star,
-        ampersand,
-        bool_not
+    enum class unary_operator : char {
+        tilda = '~',
+        plus =  '+',
+        negate = '-',
+        star = '*',
+        ampersand = '&',
+        bool_not = '!'
     };
 
     enum class binary_operator {
