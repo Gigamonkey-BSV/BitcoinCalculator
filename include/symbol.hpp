@@ -8,6 +8,7 @@ namespace Diophant {
     struct symbol final : node, std::string {
         symbol (): node {}, std::string {} {}
         symbol (const std::string &x): node {}, std::string {x} {}
+
         static expression make (const std::string &);
     };
 

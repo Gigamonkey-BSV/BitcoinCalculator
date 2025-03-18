@@ -25,14 +25,14 @@ namespace Diophant {
         machine define (symbol x, type of, expression as) const;
         machine define (symbol x, type of, data::stack<pattern> arg, expression as) const;
 
-        machine define (unary_operator op, type of, pattern in, expression as) const;
-        machine define (binary_operator op, type of, pattern left, pattern right, expression as) const;
+        machine define (unary_operand op, type of, pattern in, expression as) const;
+        machine define (binary_operand op, type of, pattern left, pattern right, expression as) const;
 
         machine declare (symbol x, type of) const;
         machine declare (symbol x, type of, data::stack<pattern> arg) const;
 
-        machine declare (unary_operator op, type of, pattern in) const;
-        machine declare (binary_operator op, type of, pattern left, pattern right) const;
+        machine declare (unary_operand op, type of, pattern in) const;
+        machine declare (binary_operand op, type of, pattern left, pattern right) const;
 
         bool valid () const;
 
@@ -52,8 +52,8 @@ namespace Diophant {
         using definition = data::either<expression, casted, data::ordered_list<transformation>>;
 
         data::map<symbol, definition> SymbolDefinitions;
-        data::map<unary_operator, definition> UnaryDefinitions;
-        data::map<binary_operator, definition> BinaryDefinitions;
+        data::map<unary_operand, definition> UnaryDefinitions;
+        data::map<binary_operand, definition> BinaryDefinitions;
 
         data::maybe<type> derive_type (Expression) const;
 

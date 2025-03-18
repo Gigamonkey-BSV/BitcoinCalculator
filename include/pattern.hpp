@@ -77,7 +77,7 @@ namespace Diophant {
         return pattern {std::static_pointer_cast<const form> (std::make_shared<blank> (x))};
     }
 
-    pattern typed::make (Pattern p, Type t) {
+    pattern inline typed::make (Pattern p, Type t) {
         return pattern {std::static_pointer_cast<const form> (std::make_shared<typed> (p, t))};
     }
 

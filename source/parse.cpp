@@ -104,10 +104,10 @@ namespace parse {
     template <typename atom> struct call : seq<plus<white>, atom> {};
     template <typename atom> struct call_expr : seq<atom, star<call<atom>>> {};
 
-    struct unary_operator : sor<one<'-'>, one<'!'>, one<'~'>, one<'+'>, one<'*'>> {};
+    struct unary_operand : sor<one<'-'>, one<'!'>, one<'~'>, one<'+'>, one<'*'>> {};
 
     template <typename atom> struct unary_expr;
-    template <typename atom> struct unary_operation : seq<unary_operator, unary_expr<atom>> {};
+    template <typename atom> struct unary_operation : seq<unary_operand, unary_expr<atom>> {};
     template <typename atom> struct unary_expr : sor<unary_operation<atom>, call_expr<atom>> {};
 
     template <typename atom> struct pow_expr;
@@ -204,8 +204,8 @@ namespace Diophant {
 
         void call ();
 
-        void unary (unary_operator op);
-        void binary (binary_operator op);
+        void unary (unary_operand op);
+        void binary (binary_operand op);
 
         bool valid ();
 
@@ -259,7 +259,7 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 // NOTE this won't work if we ever have any unary operators that are bigger than one char.
-                eval.unary (unary_operator {*in.begin ()});
+                eval.unary (unary_operand {*in.begin ()});
             }
         };
 

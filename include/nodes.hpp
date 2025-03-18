@@ -13,16 +13,16 @@ namespace Diophant {
     };
 
     struct unary_operation : node {
-        unary_operator Operator;
+        unary_operand Operator;
         expression Body;
-        static expression make (unary_operator op, expression body);
+        static expression make (unary_operand op, expression body);
     };
 
     struct binary_operation : node {
-        binary_operator Operator;
+        binary_operand Operator;
         expression Left;
         expression Right;
-        static expression make (binary_operator op, expression left, expression right);
+        static expression make (binary_operand op, expression left, expression right);
     };
 
 }

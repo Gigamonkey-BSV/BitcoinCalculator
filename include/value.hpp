@@ -20,7 +20,9 @@ namespace Diophant {
 
     struct list final : value {
         data::stack<expression> List;
+
         static expression make (data::stack<expression>);
+
         data::maybe<casted> cast (const machine &, const type &) const final override;
         std::ostream &write (std::ostream &) const final override;
     };
@@ -28,7 +30,9 @@ namespace Diophant {
     struct lambda final : value {
         data::stack<symbol> Args;
         expression Body;
+
         static expression make (data::stack<symbol> args, expression body);
+
         data::maybe<casted> cast (const machine &, const type &) const final override;
         std::ostream &write (std::ostream &) const final override;
     };
@@ -36,7 +40,9 @@ namespace Diophant {
     template <typename T> struct leaf final : value {
         T Value;
         leaf (const T &t) : Value {t} {}
+
         static expression make (const T &);
+
         data::maybe<casted> cast (const machine &, const type &) const final override;
         std::ostream &write (std::ostream &) const final override;
     };

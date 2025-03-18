@@ -8,8 +8,8 @@ namespace Diophant {
         data::maybe<expression> &def (machine &m, symbol x, type of);
         data::maybe<expression> &def (machine &m, symbol x, type of, data::stack<pattern> arg);
 
-        data::maybe<expression> &def (machine &m, unary_operator op, type of, pattern in);
-        data::maybe<expression> &def (machine &m, binary_operator op, type of, pattern left, pattern right);
+        data::maybe<expression> &def (machine &m, unary_operand op, type of, pattern in);
+        data::maybe<expression> &def (machine &m, binary_operand op, type of, pattern left, pattern right);
 
     }
 
@@ -25,13 +25,13 @@ namespace Diophant {
         return m;
     }
 
-    machine machine::declare (unary_operator op, type of, pattern in) const {
+    machine machine::declare (unary_operand op, type of, pattern in) const {
         machine m = *this;
         def (m, op, of, in);
         return m;
     }
 
-    machine machine::declare (binary_operator op, type of, pattern left, pattern right) const {
+    machine machine::declare (binary_operand op, type of, pattern left, pattern right) const {
         machine m = *this;
         def (m, op, of, left, right);
         return m;
@@ -49,13 +49,13 @@ namespace Diophant {
         return m;
     }
 
-    machine machine::define (unary_operator op, type of, pattern in, expression as) const {
+    machine machine::define (unary_operand op, type of, pattern in, expression as) const {
         machine m = *this;
         def (m, op, of, in) = as;
         return m;
     }
 
-    machine machine::define (binary_operator op, type of, pattern left, pattern right, expression as) const {
+    machine machine::define (binary_operand op, type of, pattern left, pattern right, expression as) const {
         machine m = *this;
         def (m, op, of, left, right) = as;
         return m;
