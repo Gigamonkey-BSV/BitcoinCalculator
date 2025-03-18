@@ -1,6 +1,8 @@
 #ifndef BITCOIN_CALCULATOR_OPERATORS
 #define BITCOIN_CALCULATOR_OPERATORS
 
+#include <iostream>
+
 namespace Diophant {
 
     enum class unary_operand : char {
@@ -48,8 +50,15 @@ namespace Diophant {
         intuitionistic_implies
     };
 
-    constexpr const binary_operand max_precedence =
-        binary_operand (data::byte (binary_operand::intuitionistic_implies) + 1);
+    using precedence = binary_operand;
+
+    constexpr const precedence max_precedence =
+        precedence (data::byte (binary_operand::intuitionistic_implies) + 1);
+
+    constexpr const char *binary_operator (binary_operand X);
+
+    std::ostream &operator << (std::ostream &, unary_operand);
+    std::ostream &operator << (std::ostream &, binary_operand);
 
     constexpr const char *binary_operator (binary_operand X) {
         switch (X) {
@@ -65,9 +74,9 @@ namespace Diophant {
             case binary_operand::less_equal : return "<=";
             case binary_operand::greater : return ">";
             case binary_operand::less : return "<";
-            case binary_operand::bit_and : return "&:";
-            case binary_operand::bit_xor : return "^:";
-            case binary_operand::bit_or : return "|:";
+            case binary_operand::bit_and : return "&;";
+            case binary_operand::bit_xor : return "^;";
+            case binary_operand::bit_or : return "|;";
             case binary_operand::bool_equal : return "==";
             case binary_operand::bool_unequal : return "!=";
             case binary_operand::bool_and : return "&&";
@@ -83,6 +92,14 @@ namespace Diophant {
             case binary_operand::intuitionistic_implies : return "=>";
             default : return "";
         }
+    }
+
+    std::ostream inline &operator << (std::ostream &o, unary_operand u) {
+        return o << char (u);
+    }
+
+    std::ostream inline &operator << (std::ostream &o, binary_operand b) {
+        return o << char (b);
     }
 
 }

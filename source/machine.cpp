@@ -7,7 +7,6 @@ namespace Diophant {
 
         data::maybe<expression> &def (machine &m, symbol x, type of);
         data::maybe<expression> &def (machine &m, symbol x, type of, data::stack<pattern> arg);
-
         data::maybe<expression> &def (machine &m, unary_operand op, type of, pattern in);
         data::maybe<expression> &def (machine &m, binary_operand op, type of, pattern left, pattern right);
 
@@ -85,7 +84,9 @@ namespace Diophant {
             data::stack<expression> Remaining;
         };
 
-        data::maybe<candidate> get_candidate (const machine &m, data::ordered_list<machine::transformation> tfs, data::stack<expression> args) {
+        using mtf = machine::transformation;
+
+        data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
             while (!tfs.empty ()) {
 
                 auto &tf = tfs.first ();
@@ -180,9 +181,9 @@ namespace Diophant {
                 // match with automatic type conversions.
                 if (const symbol *x = dynamic_cast<const symbol *> (c); x != nullptr) {
                     const machine::definition *v = m.SymbolDefinitions.contains (*x);
-                    if (v == nullptr || !std::holds_alternative<data::ordered_list<machine::transformation>> (*v)) goto done;
+                    if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) goto done;
 
-                    data::ordered_list<machine::transformation> tfs = std::get<data::ordered_list<machine::transformation>> (*v);
+                    data::stack<mtf> tfs = std::get<data::stack<mtf>> (*v);
 
                     while (true) {
                         if (tfs.empty ()) goto done;
@@ -235,7 +236,7 @@ namespace Diophant {
                     if (*v != value) return {};
                 } else r = r.insert (key, value);
 
-                p = p.rest ();
+            p = p.rest ();
             e = e.rest ();
         }
 
@@ -286,6 +287,74 @@ namespace Diophant {
             return cast_call (*this, T, E);
 
         return {};
+    }
+
+    namespace {
+
+        data::maybe<expression> &def (machine &m, symbol x, type of) {
+            auto *v = m.SymbolDefinitions.contains (x);
+
+            if (v == nullptr) {
+                m.SymbolDefinitions = m.SymbolDefinitions.insert (x, casted {of});
+                v = m.SymbolDefinitions.contains (x);
+                return std::get<casted> (*v).Def;
+            }
+
+            if (!std::holds_alternative<casted> (*v)) throw data::exception {} << "incompatible definitions already provided for " << x;
+
+            casted &z = std::get<casted> (*v);
+
+            if (bool (std::get<casted> (*v).Def)) throw data::exception {} << "symbol " << x << " is already defined";
+
+            return z.Def;
+        }
+
+        // now we need to find a matching definition or add one in if it doesn't exist.
+        // if we find an equal definition we can stop. If we find a subset we can stop.
+        // if we find something incompatible we throw an error.
+        data::maybe<expression> &insert_definition_into_stack (data::stack<mtf> &z, type of, data::stack<pattern> arg);
+
+        data::maybe<expression> &def (machine &m, symbol x, type of, data::stack<pattern> arg) {
+            auto *v = m.SymbolDefinitions.contains (x);
+
+            if (v == nullptr) {
+                m.SymbolDefinitions =
+                    m.SymbolDefinitions.insert (x,
+                        data::stack<mtf> {mtf {arg, casted {of}}});
+                v = m.SymbolDefinitions.contains (x);
+                return std::get<data::stack<mtf>> (*v).first ().Value.Def;
+            }
+
+            if (!std::holds_alternative<data::stack<mtf>> (*v))
+                throw data::exception {} << "symbol " << x << " is already defined";
+
+            return insert_definition_into_stack (std::get<data::stack<mtf>> (*v), of, arg);
+        }
+
+        data::maybe<expression> &def (machine &m, unary_operand op, type of, pattern in) {
+            data::stack<mtf> *v = m.UnaryDefinitions.contains (op);
+
+            if (v == nullptr) {
+                m.UnaryDefinitions = m.UnaryDefinitions.insert (op, {machine::transformation {{in}, casted {of}}});
+                v = m.UnaryDefinitions.contains (op);
+                return v->first ().Value.Def;
+            }
+
+            return insert_definition_into_stack (*v, of, {in});
+        }
+
+        data::maybe<expression> &def (machine &m, binary_operand op, type of, pattern left, pattern right) {
+            data::stack<mtf> *v = m.BinaryDefinitions.contains (op);
+
+            if (v == nullptr) {
+                m.BinaryDefinitions = m.BinaryDefinitions.insert (op, {machine::transformation {{left, right}, casted {of}}});
+                v = m.BinaryDefinitions.contains (op);
+                return v->first ().Value.Def;
+            }
+
+            return insert_definition_into_stack (*v, of, {left, right});
+        }
+
     }
 
 }

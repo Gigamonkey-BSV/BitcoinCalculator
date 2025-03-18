@@ -13,11 +13,11 @@ namespace Diophant {
         throw data::exception {} << "incomplete method: << expression == expressions";
     }
 
-    std::ostream &write_binary (std::ostream &, binary_operation, binary_operand Precedence);
-    std::ostream &write_unary (std::ostream &, unary_operation, binary_operand Precedence);
-    std::ostream &write_call (std::ostream &, call, binary_operand Precedence);
+    std::ostream &write_binary (std::ostream &, binary_operation, precedence Prec);
+    std::ostream &write_unary (std::ostream &, unary_operation, precedence Prec);
+    std::ostream &write_call (std::ostream &, call, precedence Prec);
 
-    std::ostream &write (std::ostream &o, const node *n, binary_operand Precedence) {
+    std::ostream &write (std::ostream &o, const node *n, precedence Prec) {
         if (n == nullptr) return o << "Nil";
 
         if (const value *v = dynamic_cast<const value *> (n); v != nullptr)
@@ -27,21 +27,21 @@ namespace Diophant {
             return o << static_cast<const std::string &> (*x);
 
         if (const call *c = dynamic_cast<const call *> (n); c != nullptr) {
-            binary_operand precedence = binary_operand::call;
-            if (Precedence < precedence) return write_call (o << "(", *c, precedence) << ")";
-            return write_call (o, *c, precedence);
+            precedence prec = precedence::call;
+            if (Prec < prec) return write_call (o << "(", *c, prec) << ")";
+            return write_call (o, *c, prec);
         }
 
         if (const unary_operation *u = dynamic_cast<const unary_operation *> (n); u != nullptr) {
-            binary_operand precedence = binary_operand::unary;
-            if (Precedence < precedence) return write_unary (o << "(", *u, precedence) << ")";
-            return write_unary (o, *u, precedence);
+            precedence prec = precedence::unary;
+            if (Prec < prec) return write_unary (o << "(", *u, prec) << ")";
+            return write_unary (o, *u, prec);
         }
 
         if (const binary_operation *b = dynamic_cast<const binary_operation *> (n); b != nullptr) {
-            binary_operand precedence = b->Operator;
-            if (Precedence < precedence) return write_binary (o << "(", *b, precedence) << ")";
-            return write_binary (o, *b, precedence);
+            precedence prec = b->Operator;
+            if (Prec < prec) return write_binary (o << "(", *b, prec) << ")";
+            return write_binary (o, *b, prec);
         }
 
         throw data::exception {} <<

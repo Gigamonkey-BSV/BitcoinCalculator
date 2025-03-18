@@ -49,11 +49,11 @@ namespace Diophant {
             std::partial_ordering operator <=> (const transformation) const;
         };
 
-        using definition = data::either<expression, casted, data::ordered_list<transformation>>;
+        using definition = data::either<expression, casted, data::stack<transformation>>;
 
         data::map<symbol, definition> SymbolDefinitions;
-        data::map<unary_operand, definition> UnaryDefinitions;
-        data::map<binary_operand, definition> BinaryDefinitions;
+        data::map<unary_operand, data::stack<transformation>> UnaryDefinitions;
+        data::map<binary_operand, data::stack<transformation>> BinaryDefinitions;
 
         data::maybe<type> derive_type (Expression) const;
 
