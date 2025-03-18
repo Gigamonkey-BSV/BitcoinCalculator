@@ -8,17 +8,20 @@ namespace Diophant {
     void test (std::string input, bool expect_success = true);
 
     // test whether the exression will be read as a particular expression.
-    void test (std::string input, expression expect_read, bool expect_equal = true);
+    void test (std::string input, expression expect_read);
 
     // test whether the expression will evaluate to a given expression.
-    void test (std::string input, expression expected_read, expression expect_eval, bool expect_equal = true);
+    void test (std::string input, expression expected_read, expression expect_eval);
+
+    // test whether the expression will error when evaluated.
+    void test (std::string input, expression expected_read, bool expect_error);
 
     expression make_secret (uint256 u) {
         return secret::make (secp256k1::secret {uint256 {u}});
     }
 
     expression unary (char x, expression e) {
-        return unary_operation::make (unary_operator {x}, e);
+        return unary_operation::make (unary_operand {x}, e);
     }
 
     expression True () {
@@ -29,9 +32,17 @@ namespace Diophant {
         return scriptnum::make (0);
     }
 
-    expression And (expression, expression);
-    expression Or (expression, expression);
-    expression Plus (expression, expression);
+    expression And (expression a, expression b) {
+        return binary_operation::make (binary_operand::bool_and, a, b);
+    }
+
+    expression Or (expression a, expression b) {
+        return binary_operation::make (binary_operand::bool_or, a, b);
+    }
+
+    expression Plus (expression a, expression b) {
+        return binary_operation::make (binary_operand::plus, a, b);
+    }
 
     TEST (ParseTest, TestParse) {
 

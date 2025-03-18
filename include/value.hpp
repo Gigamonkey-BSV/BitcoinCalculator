@@ -58,6 +58,38 @@ namespace Diophant {
     template <typename T> expression inline leaf<T>::make (const T &x) {
         return expression {std::static_pointer_cast<const node> (std::make_shared<leaf<T>> (x))};
     }
+
+    template <typename T> data::maybe<casted> inline leaf<T>::cast (const machine &, const type &) const {
+        throw data::exception {} << "leaf::cast needs to be filled in.";
+    }
+
+    template <typename T> std::ostream inline &leaf<T>::write (std::ostream &) const {
+        throw data::exception {} << "leaf::write needs to be filled in.";
+    }
+
+    expression inline list::make (data::stack<expression>) {
+        throw data::exception {} << "we are not using lists right now.";
+    }
+
+    data::maybe<casted> inline list::cast (const machine &, const type &) const {
+        throw data::exception {} << "we are not using lists right now.";
+    }
+
+    std::ostream inline &list::write (std::ostream &) const {
+        throw data::exception {} << "we are not using lists right now.";
+    }
+
+    expression inline lambda::make (data::stack<symbol> args, expression body) {
+        throw data::exception {} << "we are not using lambdas right now.";
+    }
+
+    data::maybe<casted> inline lambda::cast (const machine &, const type &) const {
+        throw data::exception {} << "we are not using lambdas right now.";
+    }
+
+    std::ostream inline &lambda::write (std::ostream &) const {
+        throw data::exception {} << "we are not using lambdas right now.";
+    }
 }
 
 #endif

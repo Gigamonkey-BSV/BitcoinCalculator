@@ -5,10 +5,12 @@ if (${CMAKE_VERSION} VERSION_LESS 3.12)
   cmake_policy (VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif ()
 
+include (GoogleTest)
+
 add_executable (unit_tests
   test_interpreter.cpp
 )
 
 target_link_libraries (unit_tests
-  PRIVATE data gtest_main gmock)
+  PRIVATE gigamonkey calc Gigamonkey::gigamonkey Data::data gtest_main gmock)
 gtest_discover_tests (unit_tests)

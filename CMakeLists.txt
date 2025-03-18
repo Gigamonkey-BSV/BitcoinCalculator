@@ -64,8 +64,7 @@ find_package (data CONFIG REQUIRED)
 
 find_package (gigamonkey CONFIG REQUIRED)
 
-add_executable (BitcoinCalc
-    keys.cpp
+add_library (calc
     source/initialize.cpp
     source/machine.cpp
     source/replace.cpp
@@ -73,7 +72,15 @@ add_executable (BitcoinCalc
     source/expression.cpp
 )
 
-target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
+target_link_libraries (calc PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
+target_include_directories (calc PUBLIC include)
+
+target_compile_features (calc PUBLIC cxx_std_20)
+set_target_properties (calc PROPERTIES CXX_EXTENSIONS OFF)
+
+add_executable (BitcoinCalc keys.cpp)
+
+target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh calc Gigamonkey::gigamonkey Data::data)
 target_include_directories (BitcoinCalc PUBLIC include)
 
 target_compile_features (BitcoinCalc PUBLIC cxx_std_20)
@@ -81,3 +88,22 @@ set_target_properties (BitcoinCalc PROPERTIES CXX_EXTENSIONS OFF)
 
 install (DIRECTORY include/ DESTINATION include)
 install (TARGETS BitcoinCalc)
+
+# Check if GTests is installed. If not, install it
+option (PACKAGE_TESTS "Build the tests" ON)
+include (CTest)
+
+if (PACKAGE_TESTS)
+  include (CTest)
+  FetchContent_Declare (
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.14.0
+  )
+
+  set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable (googletest)
+  enable_testing ()
+  add_subdirectory (test)
+endif ()
+

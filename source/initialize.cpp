@@ -3,6 +3,46 @@
 
 namespace Diophant {
 
+    Bitcoin::integer scriptnum_bool_not (const Bitcoin::integer &x);
+    Bitcoin::integer scriptnum_bool_and (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_bool_or (const Bitcoin::integer &x, const Bitcoin::integer &y);
+
+    Bitcoin::integer scriptnum_bit_not (const Bitcoin::integer &x);
+    Bitcoin::integer scriptnum_bit_and (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_bit_xor (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_bit_or (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_identical (const Bitcoin::integer &x, const Bitcoin::integer &y);
+
+    Bitcoin::integer scriptnum_equal (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_not_equal (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_greater_equal (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_less_equal (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_greater (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_less (const Bitcoin::integer &x, const Bitcoin::integer &y);
+
+    Bitcoin::integer scriptnum_cat (const Bitcoin::integer &x, const Bitcoin::integer &y);
+
+    Bitcoin::integer scriptnum_negate (const Bitcoin::integer &x);
+    Bitcoin::integer scriptnum_plus (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_minus (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_times (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_divide (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_mod (const Bitcoin::integer &x, const Bitcoin::integer &y);
+
+    Bitcoin::secret secret_equal (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_not_equal (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_greater_equal (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_less_equal (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_greater (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_less (const Bitcoin::secret &x, const Bitcoin::secret &y);
+
+    Bitcoin::secret secret_negate (const Bitcoin::secret &x);
+    Bitcoin::secret secret_plus (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_minus (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_times (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_divide (const Bitcoin::secret &x, const Bitcoin::secret &y);
+    Bitcoin::secret secret_mod (const Bitcoin::secret &x, const Bitcoin::secret &y);
+
     machine initialize () {
         machine m {};
 
@@ -24,17 +64,16 @@ namespace Diophant {
         m = m.define (symbol {"False"}, bool_type, scriptnum::make (Bitcoin::integer {0}));
         m = m.define (symbol {"True"}, bool_type, scriptnum::make (Bitcoin::integer {1}));
 
-        m = m.declare (unary_operand::bool_not, bool_type, bool_type);
-        m = m.declare (binary_operand::bool_and, bool_type, bool_type, bool_type);
-        m = m.declare (binary_operand::bool_or, bool_type, bool_type, bool_type);
+        m = m.define (unary_operand::bool_not, bool_type, bool_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &>::make (&scriptnum_bool_not));
 
-        // bit operations
-        m = m.declare (unary_operand::tilda, integer_type, integer_type);
-        m = m.declare (binary_operand::bit_and, integer_type, integer_type, integer_type);
-        m = m.declare (binary_operand::bit_or, integer_type, integer_type, integer_type);
-        m = m.declare (binary_operand::bit_xor, integer_type, integer_type, integer_type);
-        m = m.declare (binary_operand::identical, integer_type, integer_type, integer_type);
+        m = m.define (binary_operand::bool_and, bool_type, bool_type, bool_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_and));
 
+        m = m.define (binary_operand::bool_or, bool_type, bool_type, bool_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_or));
+
+        // size operations
         m = m.declare (symbol {"Size"}, integer_type, {integer_type});
         m = m.declare (symbol {"MinimalSize"}, integer_type, {integer_type});
         m = m.declare (symbol {"Resize"}, integer_type, {integer_type});
@@ -43,45 +82,110 @@ namespace Diophant {
         m = m.declare (symbol {"RightShift"}, integer_type, {integer_type});
         m = m.declare (symbol {"LeftShift"}, integer_type, {integer_type});
 
-        // arithmetic
-        m = m.declare (binary_operand::equal, bool_type, integer_type, integer_type);
-        m = m.declare (binary_operand::unequal, bool_type, integer_type, integer_type);
-        m = m.declare (binary_operand::greater_equal, bool_type, integer_type, integer_type);
-        m = m.declare (binary_operand::less_equal, bool_type, integer_type, integer_type);
-        m = m.declare (binary_operand::greater, bool_type, integer_type, integer_type);
-        m = m.declare (binary_operand::less, bool_type, integer_type, integer_type);
+        // bit operations
+        m = m.define (unary_operand::tilda, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &>::make (&scriptnum_bit_not));
 
-        m = m.declare (unary_operand::negate, integer_type, integer_type);
-        m = m.declare (binary_operand::plus, integer_type, integer_type, integer_type);
-        m = m.declare (binary_operand::minus, integer_type, integer_type, integer_type);
-        m = m.declare (binary_operand::times, integer_type, integer_type, integer_type);
-        m = m.declare (binary_operand::divide, integer_type, integer_type, integer_type);
-        m = m.declare (binary_operand::mod, integer_type, integer_type, integer_type);
+        m = m.define (binary_operand::bit_and, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bit_and));
+
+        m = m.define (binary_operand::bit_or, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bit_or));
+
+        m = m.define (binary_operand::bit_xor, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bit_xor));
+
+        m = m.define (binary_operand::identical, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_identical));
+
+        // arithmetic
+        m = m.define (binary_operand::equal, bool_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_equal));
+
+        m = m.define (binary_operand::unequal, bool_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_not_equal));
+
+        m = m.define (binary_operand::greater_equal, bool_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_greater_equal));
+
+        m = m.define (binary_operand::less_equal, bool_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less_equal));
+
+        m = m.define (binary_operand::greater, bool_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_greater));
+
+        m = m.define (binary_operand::less, bool_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less));
+
+        m = m.define (binary_operand::identical, bool_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less));
+
+        m = m.define (unary_operand::negate, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &>::make (&scriptnum_negate));
+
+        m = m.define (binary_operand::plus, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_plus));
+
+        m = m.define (binary_operand::minus, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_minus));
+
+        m = m.define (binary_operand::times, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_times));
+
+        m = m.define (binary_operand::divide, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_divide));
+
+        m = m.define (binary_operand::mod, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_mod));
+
         m = m.declare (binary_operand::power, integer_type, integer_type, integer_type);
         m = m.declare (symbol {"Power"}, integer_type, {integer_type});
 
         // string operations
-        m = m.declare (binary_operand::cat, integer_type, integer_type, integer_type);
+        m = m.define (binary_operand::cat, integer_type, integer_type, integer_type,
+            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_cat));
 
         // secret operations
         m = m.declare (symbol {"Valid"}, integer_type, {secret_type});
 
-        m = m.declare (unary_operand::negate, secret_type, secret_type);
+        // comparisons
+        m = m.define (binary_operand::equal, bool_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_equal));
 
-        // plus, minus, times, divide, mod, pow
-        m = m.declare (binary_operand::equal, bool_type, secret_type, secret_type);
-        m = m.declare (binary_operand::unequal, bool_type, secret_type, secret_type);
-        m = m.declare (binary_operand::greater_equal, bool_type, secret_type, secret_type);
-        m = m.declare (binary_operand::less_equal, bool_type, secret_type, secret_type);
-        m = m.declare (binary_operand::greater, bool_type, secret_type, secret_type);
-        m = m.declare (binary_operand::less, bool_type, secret_type, secret_type);
+        m = m.define (binary_operand::unequal, bool_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_not_equal));
 
-        m = m.declare (unary_operand::negate, secret_type, secret_type);
-        m = m.declare (binary_operand::plus, secret_type, secret_type, secret_type);
-        m = m.declare (binary_operand::minus, secret_type, secret_type, secret_type);
-        m = m.declare (binary_operand::times, secret_type, secret_type, secret_type);
-        m = m.declare (binary_operand::divide, secret_type, secret_type, secret_type);
-        m = m.declare (binary_operand::mod, secret_type, secret_type, secret_type);
+        m = m.define (binary_operand::greater_equal, bool_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_greater_equal));
+
+        m = m.define (binary_operand::less_equal, bool_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_less_equal));
+
+        m = m.define (binary_operand::greater, bool_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_greater));
+
+        m = m.define (binary_operand::less, bool_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_less));
+
+        // arithmetic
+        m = m.define (unary_operand::negate, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &>::make (&secret_negate));
+
+        m = m.define (binary_operand::plus, secret_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_plus));
+
+        m = m.define (binary_operand::minus, secret_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_plus));
+
+        m = m.define (binary_operand::times, secret_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_plus));
+
+        m = m.define (binary_operand::divide, secret_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_plus));
+
+        m = m.define (binary_operand::mod, secret_type, secret_type, secret_type,
+            built_in_function<Bitcoin::secret, const Bitcoin::secret &, const Bitcoin::secret &>::make (&secret_plus));
+
         m = m.declare (binary_operand::power, secret_type, secret_type, secret_type);
 
         m = m.declare (symbol {"Power"}, secret_type, {secret_type});

@@ -42,8 +42,8 @@ namespace Diophant {
         unequal,
         identical,        // ===
         colon,
-        is,
-        condition,
+        element,
+        such_that,
         double_implication,
         intuitionistic_and,
         intuitionistic_or,
@@ -84,8 +84,8 @@ namespace Diophant {
             case binary_operand::equal : return "=";
             case binary_operand::unequal : return "/=";
             case binary_operand::identical : return "===";
-            case binary_operand::is : return ":-";
-            case binary_operand::condition : return "/;";
+            case binary_operand::element : return ":-";
+            case binary_operand::such_that : return "/;";
             case binary_operand::double_implication : return "<==>";
             case binary_operand::intuitionistic_and : return "&";
             case binary_operand::intuitionistic_or : return "|";

@@ -77,6 +77,33 @@ namespace Diophant {
     }
 
     namespace {
+        data::maybe<casted> cast_symbol (const machine &, const type &T, const expression &E);
+        data::maybe<casted> cast_call (const machine &, const type &T, const expression &E);
+        data::maybe<casted> cast_binary_operation (const machine &, const type &T, const expression &E);
+        data::maybe<casted> cast_unary_operation (const machine &, const type &T, const expression &E);
+    }
+
+    // try to cast a value as a type.
+    data::maybe<casted> machine::cast (const type &T, const expression &E) {
+        const node *t = T.get ();
+        const node *e = E.get ();
+
+        if (e == nullptr) return t == nullptr ? data::maybe<casted> {} : data::maybe<casted> {{T, E}};
+
+        if (const value *v = dynamic_cast<const value *> (e); v != nullptr) return v->cast (*this, T);
+        if (const symbol *x = dynamic_cast<const symbol *> (e); x != nullptr)
+            return cast_symbol (*this, T, E);
+        if (const binary_operation *b = dynamic_cast<const binary_operation *> (e); b != nullptr)
+            return cast_binary_operation (*this, T, E);
+        if (const unary_operation *u = dynamic_cast<const unary_operation *> (e); u != nullptr)
+            return cast_unary_operation (*this, T, E);
+        if (const call *c = dynamic_cast<const call *> (e); c != nullptr)
+            return cast_call (*this, T, E);
+
+        return {};
+    }
+
+    namespace {
 
         struct candidate {
             replacements Replacements;
@@ -264,31 +291,6 @@ namespace Diophant {
         return {};
     }
 
-    data::maybe<casted> cast_symbol (const machine &, const type &T, const expression &E);
-    data::maybe<casted> cast_call (const machine &, const type &T, const expression &E);
-    data::maybe<casted> cast_binary_operation (const machine &, const type &T, const expression &E);
-    data::maybe<casted> cast_unary_operation (const machine &, const type &T, const expression &E);
-
-    // try to cast a value as a type.
-    data::maybe<casted> machine::cast (const type &T, const expression &E) {
-        const node *t = T.get ();
-        const node *e = E.get ();
-
-        if (e == nullptr) return t == nullptr ? data::maybe<casted> {} : data::maybe<casted> {{T, E}};
-
-        if (const value *v = dynamic_cast<const value *> (e); v != nullptr) return v->cast (*this, T);
-        if (const symbol *x = dynamic_cast<const symbol *> (e); x != nullptr)
-            return cast_symbol (*this, T, E);
-        if (const binary_operation *b = dynamic_cast<const binary_operation *> (e); b != nullptr)
-            return cast_binary_operation (*this, T, E);
-        if (const unary_operation *u = dynamic_cast<const unary_operation *> (e); u != nullptr)
-            return cast_unary_operation (*this, T, E);
-        if (const call *c = dynamic_cast<const call *> (e); c != nullptr)
-            return cast_call (*this, T, E);
-
-        return {};
-    }
-
     namespace {
 
         data::maybe<expression> &def (machine &m, symbol x, type of) {
@@ -353,6 +355,38 @@ namespace Diophant {
             }
 
             return insert_definition_into_stack (*v, of, {left, right});
+        }
+
+        expression evaluate_binary_operation (const machine &m, const binary_operation *b) {
+            throw data::exception {} << "evaluate_binary_operation needs to be filled in.";
+        }
+
+        expression evaluate_unary_operation (const machine &m, const unary_operation *u) {
+            throw data::exception {} << "evaluate_unary_operation needs to be filled in.";
+        }
+
+        expression evaluate_list (const machine &m, const list *ls) {
+            throw data::exception {} << "evaluate_list needs to be filled in.";
+        }
+
+        data::maybe<casted> cast_symbol (const machine &, const type &T, const expression &E) {
+            throw data::exception {} << "cast_symbol";
+        }
+
+        data::maybe<casted> cast_call (const machine &, const type &T, const expression &E) {
+            throw data::exception {} << "cast_call";
+        }
+
+        data::maybe<casted> cast_binary_operation (const machine &, const type &T, const expression &E) {
+            throw data::exception {} << "cast_binary_operation";
+        }
+
+        data::maybe<casted> cast_unary_operation (const machine &, const type &T, const expression &E) {
+            throw data::exception {} << "cast_unary_operation";
+        }
+
+        data::maybe<expression> &insert_definition_into_stack (data::stack<mtf> &z, type of, data::stack<pattern> arg) {
+            throw data::exception {} << "insert definition into stack";
         }
 
     }

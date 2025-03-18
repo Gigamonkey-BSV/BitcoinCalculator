@@ -209,7 +209,10 @@ namespace Diophant {
 
         bool valid ();
 
-        Expression top ();
+        expression top ();
+
+        data::stack<expression> Exp;
+
     };
 
     namespace rules {
@@ -255,11 +258,165 @@ namespace Diophant {
             }
         };
 
+        template <typename atom> struct eval_action<parse::call<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.call ();
+            }
+        };
+
         template <typename atom> struct eval_action<parse::unary_operation<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 // NOTE this won't work if we ever have any unary operators that are bigger than one char.
                 eval.unary (unary_operand {*in.begin ()});
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::mul_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::times);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::pow_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::power);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::div_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::divide);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::div_mod_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::divmod);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::add_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::plus);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::sub_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::minus);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::greater_equal_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::greater_equal);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::less_equal_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::less_equal);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::less_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::less);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::greater_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::greater);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::bool_equal_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::bool_equal);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::bool_unequal_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::bool_unequal);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::bool_and_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::bool_and);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::bool_or_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::bool_or);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::equal_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::equal);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::unequal_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::unequal);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::intuitionistic_and_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::intuitionistic_and);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::intuitionistic_or_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::intuitionistic_or);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::intuitionistic_implies_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::intuitionistic_implies);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::element_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::element);
+            }
+        };
+
+        template <typename atom> struct eval_action<parse::such_that_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::such_that);
             }
         };
 
@@ -271,6 +428,31 @@ namespace Diophant {
         if (!tao::pegtl::parse<parse::expression, rules::eval_action> (tao::pegtl::memory_input<> {in, "expression"}, p))
             throw parse_error {in};
         return p.top ();
+    }
+
+    void inline parser::call () {
+        Exp = prepend (
+            rest (rest (Exp)),
+            call::make (
+                first (rest (Exp)),
+                take (Exp, 1)));
+    }
+
+    void inline parser::push (Expression x) {
+        Exp <<= x;
+    }
+
+    expression inline parser::top () {
+        if (Exp.size () == 0) return expression {};
+        return Exp.first ();
+    }
+
+    void parser::unary (unary_operand op) {
+        throw data::exception {} << "parser::unary incomplete";
+    }
+
+    void parser::binary (binary_operand op) {
+        throw data::exception {} << "parser::binary incomplete";
     }
 
 }

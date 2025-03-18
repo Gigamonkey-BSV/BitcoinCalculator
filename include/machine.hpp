@@ -55,7 +55,9 @@ namespace Diophant {
         data::map<unary_operand, data::stack<transformation>> UnaryDefinitions;
         data::map<binary_operand, data::stack<transformation>> BinaryDefinitions;
 
-        data::maybe<type> derive_type (Expression) const;
+        data::maybe<type> derive_type (Expression) const {
+            throw data::exception {} << "derive_type";
+        }
 
         data::maybe<replacements> match (pattern, expression, data::stack<casted> known = {}) const;
         data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>, data::stack<casted> known = {}) const;

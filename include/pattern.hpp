@@ -8,7 +8,7 @@ namespace Diophant {
 
     struct pattern : data::ptr<const form> {
 
-        pattern (const expression);
+        pattern (expression);
         // a blank pattern.
         pattern ();
         // a pattern that matches a given type.
@@ -79,6 +79,12 @@ namespace Diophant {
 
     pattern inline typed::make (Pattern p, Type t) {
         return pattern {std::static_pointer_cast<const form> (std::make_shared<typed> (p, t))};
+    }
+
+    inline pattern::pattern (expression e): pattern {std::static_pointer_cast<const form> (e)} {}
+
+    bool inline operator == (Pattern a, Pattern b) {
+        throw data::exception {} << "we cannot check patterns equal yet; pattern.hpp line 87";
     }
 
 }

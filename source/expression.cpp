@@ -52,4 +52,16 @@ namespace Diophant {
         return write (o, E.get (), max_precedence);
     }
 
+    std::ostream &write_binary (std::ostream &, binary_operation, precedence Prec) {
+        throw data::exception {} << "incomplete method: write_binary";
+    }
+
+    std::ostream &write_unary (std::ostream &, unary_operation, precedence Prec) {
+        throw data::exception {} << "incomplete method: write_unary";
+    }
+
+    std::ostream &write_call (std::ostream &, call, precedence Prec) {
+        throw data::exception {} << "incomplete method: write_call";
+    }
+
 }
