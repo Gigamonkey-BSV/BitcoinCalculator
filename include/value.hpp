@@ -55,6 +55,35 @@ namespace Diophant {
     using sat = leaf<Bitcoin::satoshi>;
     template <typename Y, typename ... X> using built_in_function = leaf<std::function<Y (X...)>>;
 
+    template <typename T> struct write_leaf {
+        std::ostream &operator () (std::ostream &o, const T &t) {
+            return o << t;
+        }
+    };
+
+    template <> struct write_leaf<secp256k1::secret> {
+        std::ostream &operator () (std::ostream &o, const secp256k1::secret &t) {
+            return o << t.Value;
+        }
+    };
+
+    template <> struct write_leaf<Bitcoin::integer> {
+        std::ostream &operator () (std::ostream &o, const Bitcoin::integer &t) {
+            data::encoding::hexidecimal::write (o, t);
+            return o;
+        }
+    };
+
+    template <typename Y, typename ... X> struct write_leaf<std::function<Y (X...)>> {
+        std::ostream &operator () (std::ostream &o, const std::function<Y (X...)> &) {
+            return o << "(*)";
+        }
+    };
+
+    template <typename T> std::ostream inline &leaf<T>::write (std::ostream &o) const {
+        return write_leaf<T> {} (o, Value);
+    }
+
     template <typename T> expression inline leaf<T>::make (const T &x) {
         return expression {std::static_pointer_cast<const node> (std::make_shared<leaf<T>> (x))};
     }
@@ -63,32 +92,28 @@ namespace Diophant {
         throw data::exception {} << "leaf::cast needs to be filled in.";
     }
 
-    template <typename T> std::ostream inline &leaf<T>::write (std::ostream &) const {
-        throw data::exception {} << "leaf::write needs to be filled in.";
-    }
-
     expression inline list::make (data::stack<expression>) {
-        throw data::exception {} << "we are not using lists right now.";
+        throw data::exception {} << "we are not using lists right now";
     }
 
     data::maybe<casted> inline list::cast (const machine &, const type &) const {
-        throw data::exception {} << "we are not using lists right now.";
+        throw data::exception {} << "we are not using lists right now";
     }
 
     std::ostream inline &list::write (std::ostream &) const {
-        throw data::exception {} << "we are not using lists right now.";
+        throw data::exception {} << "we are not using lists right now";
     }
 
     expression inline lambda::make (data::stack<symbol> args, expression body) {
-        throw data::exception {} << "we are not using lambdas right now.";
+        throw data::exception {} << "we are not using lambdas right now";
     }
 
     data::maybe<casted> inline lambda::cast (const machine &, const type &) const {
-        throw data::exception {} << "we are not using lambdas right now.";
+        throw data::exception {} << "we are not using lambdas right now";
     }
 
     std::ostream inline &lambda::write (std::ostream &) const {
-        throw data::exception {} << "we are not using lambdas right now.";
+        throw data::exception {} << "we are not using lambdas right now";
     }
 }
 

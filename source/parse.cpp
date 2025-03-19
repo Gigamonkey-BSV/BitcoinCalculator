@@ -95,10 +95,10 @@ namespace parse {
     struct var : seq<opt<symbol>, one<'.'>> {};
     struct typed_var : seq<opt<symbol>, ws, one<':'>, ws, expression> {};
 
-    struct expression_atom : sor<dec_lit, hex_lit, pubkey_lit, hex_string_lit, string_lit, symbol,
+    struct expression_atom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol,
         dif, parenthetical, list, let, lambda> {};
 
-    struct pattern_atom : sor<dec_lit, hex_lit, pubkey_lit, hex_string_lit, string_lit, symbol,
+    struct pattern_atom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol,
         var, typed_var, dif, parenthetical, list, let, lambda> {};
 
     template <typename atom> struct call : seq<plus<white>, atom> {};
@@ -231,7 +231,7 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();
-                eval.push (scriptnum::make (Bitcoin::integer {x.substr (2, x.size () - 2)}));
+                eval.push (scriptnum::make (Bitcoin::integer {x}));
             }
         };
 

@@ -5,58 +5,66 @@ namespace Diophant {
 
     namespace {
 
-        data::maybe<expression> &def (machine &m, symbol x, type of);
-        data::maybe<expression> &def (machine &m, symbol x, type of, data::stack<pattern> arg);
-        data::maybe<expression> &def (machine &m, unary_operand op, type of, pattern in);
-        data::maybe<expression> &def (machine &m, binary_operand op, type of, pattern left, pattern right);
+        data::maybe<expression> &decl (machine &m, symbol x, type of);
+        data::maybe<expression> &decl (machine &m, symbol x, type of, data::stack<pattern> arg);
+        data::maybe<expression> &decl (machine &m, unary_operand op, type of, pattern in);
+        data::maybe<expression> &decl (machine &m, binary_operand op, type of, pattern left, pattern right);
 
     }
 
     machine machine::declare (symbol x, type of) const {
         machine m = *this;
-        def (m, x, of);
+        decl (m, x, of);
         return m;
     }
 
     machine machine::declare (symbol x, type of, data::stack<pattern> arg) const {
         machine m = *this;
-        def (m, x, of, arg);
+        decl (m, x, of, arg);
         return m;
     }
 
     machine machine::declare (unary_operand op, type of, pattern in) const {
         machine m = *this;
-        def (m, op, of, in);
+        decl (m, op, of, in);
         return m;
     }
 
     machine machine::declare (binary_operand op, type of, pattern left, pattern right) const {
         machine m = *this;
-        def (m, op, of, left, right);
+        decl (m, op, of, left, right);
         return m;
     }
 
     machine machine::define (symbol x, type of, expression as) const {
         machine m = *this;
-        def (m, x, of) = as;
+        data::maybe<expression> &def = decl (m, x, of);
+        if (!bool (def)) def = as;
+        else if (*def != as) throw data::exception {} << "definition already exists";
         return m;
     }
 
     machine machine::define (symbol x, type of, data::stack<pattern> arg, expression as) const {
         machine m = *this;
-        def (m, x, of, arg) = as;
+        data::maybe<expression> &def = decl (m, x, of, arg);
+        if (!bool (def)) def = as;
+        else if (*def != as) throw data::exception {} << "definition already exists";
         return m;
     }
 
     machine machine::define (unary_operand op, type of, pattern in, expression as) const {
         machine m = *this;
-        def (m, op, of, in) = as;
+        data::maybe<expression> &def = decl (m, op, of, in);
+        if (!bool (def)) def = as;
+        else if (*def != as) throw data::exception {} << "definition already exists";
         return m;
     }
 
     machine machine::define (binary_operand op, type of, pattern left, pattern right, expression as) const {
         machine m = *this;
-        def (m, op, of, left, right) = as;
+        data::maybe<expression> &def = decl (m, op, of, left, right);
+        if (!bool (def)) def = as;
+        else if (*def != as) throw data::exception {} << "definition already exists";
         return m;
     }
 
@@ -114,19 +122,19 @@ namespace Diophant {
         using mtf = machine::transformation;
 
         data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
-            while (!tfs.empty ()) {
+            while (!data::empty (tfs)) {
 
-                auto &tf = tfs.first ();
+                auto &tf = data::first (tfs);
 
-                if (tf.Arguments.size () > args.size ()) return {};
+                if (data::size (tf.Arguments) > data::size (args)) return {};
 
-                auto match_args = data::take (args, tf.Arguments.size ());
+                auto match_args = data::take (args, data::size (tf.Arguments));
 
                 data::maybe<replacements> r = m.match (tf.Arguments, match_args);
 
-                if (bool (r)) return {{*r, tf.Value, data::drop (args, tf.Arguments.size ())}};
+                if (bool (r)) return {{*r, tf.Value, data::drop (args, data::size (tf.Arguments))}};
 
-                tfs = tfs.rest ();
+                tfs = data::rest (tfs);
             }
 
             return {};
@@ -178,20 +186,20 @@ namespace Diophant {
                     // in the inner call or fewer, since these would
                     // have already been checked.
 
-                    min_args += cc->Args.size ();
+                    min_args += data::size (cc->Args);
                     args = cc->Args + args;
                     fun = cc->Fun;
                     p = fun.get ();
                 }
 
                 if (const lambda *n = dynamic_cast<const lambda *> (c); n != nullptr) {
-                    if (n->Args.size () > args.size ()) goto done;
+                    if (data::size (n->Args) > data::size (args)) goto done;
 
                     changed = true;
                     data::stack<symbol> in = n->Args;
                     replacements r;
 
-                    while (!in.empty ()) {
+                    while (!data::empty (in)) {
                         r = r.insert (data::first (in), data::first (args));
                         in = data::rest (in);
                         args = data::rest (args);
@@ -199,7 +207,7 @@ namespace Diophant {
 
                     fun = m.evaluate (replace (n->Body, r));
 
-                    if (args.empty ()) return fun;
+                    if (data::empty (args)) return fun;
                     continue;
                 }
 
@@ -213,9 +221,9 @@ namespace Diophant {
                     data::stack<mtf> tfs = std::get<data::stack<mtf>> (*v);
 
                     while (true) {
-                        if (tfs.empty ()) goto done;
-                        if (tfs.first ().Arguments.size () >= min_args) break;
-                        tfs = tfs.rest ();
+                        if (data::empty (tfs)) goto done;
+                        if (data::size (data::first (tfs).Arguments) >= min_args) break;
+                        tfs = data::rest (tfs);
                     }
 
                     data::maybe<candidate> cx = get_candidate (m, tfs, args);
@@ -252,11 +260,11 @@ namespace Diophant {
     }
 
     data::maybe<replacements> machine::match (data::stack<pattern> p, data::stack<expression> e, data::stack<casted> known) const {
-        if (p.size () != e.size ()) return {};
+        if (data::size (p) != data::size (e)) return {};
 
         replacements r;
-        while (!p.empty ()) {
-            auto m = match (p.first (), e.first (), known);
+        while (!data::empty (p)) {
+            auto m = match (data::first (p), data::first (e), known);
             if (!bool (m)) return {};
             for (const auto &[key, value] : *m)
                 if (const auto *v = r.contains (key); v != nullptr) {
@@ -293,7 +301,7 @@ namespace Diophant {
 
     namespace {
 
-        data::maybe<expression> &def (machine &m, symbol x, type of) {
+        data::maybe<expression> &decl (machine &m, symbol x, type of) {
             auto *v = m.SymbolDefinitions.contains (x);
 
             if (v == nullptr) {
@@ -314,9 +322,9 @@ namespace Diophant {
         // now we need to find a matching definition or add one in if it doesn't exist.
         // if we find an equal definition we can stop. If we find a subset we can stop.
         // if we find something incompatible we throw an error.
-        data::maybe<expression> &insert_definition_into_stack (data::stack<mtf> &z, type of, data::stack<pattern> arg);
+        data::maybe<expression> &insert_declaration_into_stack (data::stack<mtf> &z, type of, data::stack<pattern> arg);
 
-        data::maybe<expression> &def (machine &m, symbol x, type of, data::stack<pattern> arg) {
+        data::maybe<expression> &decl (machine &m, symbol x, type of, data::stack<pattern> arg) {
             auto *v = m.SymbolDefinitions.contains (x);
 
             if (v == nullptr) {
@@ -330,10 +338,10 @@ namespace Diophant {
             if (!std::holds_alternative<data::stack<mtf>> (*v))
                 throw data::exception {} << "symbol " << x << " is already defined";
 
-            return insert_definition_into_stack (std::get<data::stack<mtf>> (*v), of, arg);
+            return insert_declaration_into_stack (std::get<data::stack<mtf>> (*v), of, arg);
         }
 
-        data::maybe<expression> &def (machine &m, unary_operand op, type of, pattern in) {
+        data::maybe<expression> &decl (machine &m, unary_operand op, type of, pattern in) {
             data::stack<mtf> *v = m.UnaryDefinitions.contains (op);
 
             if (v == nullptr) {
@@ -342,10 +350,10 @@ namespace Diophant {
                 return v->first ().Value.Def;
             }
 
-            return insert_definition_into_stack (*v, of, {in});
+            return insert_declaration_into_stack (*v, of, {in});
         }
 
-        data::maybe<expression> &def (machine &m, binary_operand op, type of, pattern left, pattern right) {
+        data::maybe<expression> &decl (machine &m, binary_operand op, type of, pattern left, pattern right) {
             data::stack<mtf> *v = m.BinaryDefinitions.contains (op);
 
             if (v == nullptr) {
@@ -354,7 +362,7 @@ namespace Diophant {
                 return v->first ().Value.Def;
             }
 
-            return insert_definition_into_stack (*v, of, {left, right});
+            return insert_declaration_into_stack (*v, of, {left, right});
         }
 
         expression evaluate_binary_operation (const machine &m, const binary_operation *b) {
@@ -385,8 +393,32 @@ namespace Diophant {
             throw data::exception {} << "cast_unary_operation";
         }
 
-        data::maybe<expression> &insert_definition_into_stack (data::stack<mtf> &z, type of, data::stack<pattern> arg) {
-            throw data::exception {} << "insert definition into stack";
+        // we need to find a matching definition or add one in if it doesn't exist.
+        // if we find an equal definition we can stop. If we find a subset we can stop.
+        // if we find something incompatible we throw an error.
+        data::maybe<expression> &insert_declaration_into_stack (data::stack<mtf> &z, type of, data::stack<pattern> arg) {
+            data::stack<mtf> back;
+
+            while (true) {
+                if (data::empty (z)) {
+                    z <<= mtf {arg, casted {of}};
+                    break;
+                }
+
+                // TODO: we have to do more to handle overloads here.
+
+                back <<= data::first (z);
+                z = data::rest (z);
+            }
+
+            data::maybe<expression> &val = z.first ().Value.Def;
+
+            while (!data::empty (back)) {
+                z <<= data::first (back);
+                back = data::rest (back);
+            }
+
+            return val;
         }
 
     }

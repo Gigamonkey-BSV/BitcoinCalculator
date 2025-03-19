@@ -4,6 +4,8 @@
 
 namespace Diophant {
 
+    machine m;
+
     // test whether the parser will accept the given string.
     void test (std::string input, bool expect_success = true);
 
@@ -45,6 +47,8 @@ namespace Diophant {
     }
 
     TEST (ParseTest, TestParse) {
+
+        m = initialize ();
 
         // nil
         test ("", expression {}, expression {});
@@ -116,8 +120,6 @@ namespace Diophant {
         test ("045678", false);
 
     }
-
-    machine m = initialize ();
 
     // test whether the parser will accept the given string.
     void test (std::string input, bool expect_success) {
