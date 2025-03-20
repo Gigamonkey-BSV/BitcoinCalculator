@@ -40,6 +40,12 @@ namespace Diophant {
 
         bool operator == (const machine &) const;
 
+        data::maybe<replacements> match (pattern, expression, data::stack<casted> known = {}) const;
+        data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>, data::stack<casted> known = {}) const;
+
+        // try to cast a value as a type.
+        data::maybe<casted> cast (const type &, const expression &) const;
+
         struct transformation {
             data::stack<pattern> Arguments;
             casted Value;
@@ -54,16 +60,6 @@ namespace Diophant {
         data::map<symbol, definition> SymbolDefinitions;
         data::map<unary_operand, data::stack<transformation>> UnaryDefinitions;
         data::map<binary_operand, data::stack<transformation>> BinaryDefinitions;
-
-        data::maybe<type> derive_type (Expression) const {
-            throw data::exception {} << "derive_type";
-        }
-
-        data::maybe<replacements> match (pattern, expression, data::stack<casted> known = {}) const;
-        data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>, data::stack<casted> known = {}) const;
-
-        // try to cast a value as a type.
-        data::maybe<casted> cast (const type &, const expression &);
     };
 
     machine initialize ();

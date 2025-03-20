@@ -12,11 +12,11 @@ namespace Diophant {
         // a blank pattern.
         pattern ();
         // a pattern that matches a given type.
-        pattern (const type &);
+        pattern (Type);
         // a symbol that matches anything.
         pattern (Symbol);
         // a symbol of a particular type.
-        pattern (Symbol, const type &);
+        pattern (Type, Symbol);
 
         pattern (data::ptr<const form> x): data::ptr<const form> {x} {}
     };
@@ -41,9 +41,9 @@ namespace Diophant {
         pattern Match;
         type Required;
 
-        typed (Pattern m, Type r): Match {m}, Required {r} {}
+        typed (Type r, Pattern m): Match {m}, Required {r} {}
 
-        static pattern make (Pattern, Type);
+        static pattern make (Type, Pattern);
     };
 
     // a blank pattern.
@@ -53,7 +53,7 @@ namespace Diophant {
 
     // a pattern that matches a given type.
     inline pattern::pattern (Type t): data::ptr<const form> {} {
-        *this = typed::make (blank::make (), t);
+        *this = typed::make (t, blank::make ());
     }
 
     // a symbol that matches anything.
@@ -62,8 +62,8 @@ namespace Diophant {
     }
 
     // a symbol of a particular type.
-    inline pattern::pattern (Symbol x, Type t): data::ptr<const form> {} {
-        *this = typed::make (blank::make (x), t);
+    inline pattern::pattern (Type t, Symbol x): data::ptr<const form> {} {
+        *this = typed::make (t, blank::make (x));
     }
 
     inline blank::blank (): form {}, Name {} {}
@@ -77,8 +77,8 @@ namespace Diophant {
         return pattern {std::static_pointer_cast<const form> (std::make_shared<blank> (x))};
     }
 
-    pattern inline typed::make (Pattern p, Type t) {
-        return pattern {std::static_pointer_cast<const form> (std::make_shared<typed> (p, t))};
+    pattern inline typed::make (Type t, Pattern p) {
+        return pattern {std::static_pointer_cast<const form> (std::make_shared<typed> (t, p))};
     }
 
     inline pattern::pattern (expression e): pattern {std::static_pointer_cast<const form> (e)} {}

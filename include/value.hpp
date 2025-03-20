@@ -95,7 +95,7 @@ namespace Diophant {
     }
 
     template <typename T> data::maybe<casted> inline leaf<T>::cast (const machine &, const type &) const {
-        throw data::exception {} << "leaf::cast needs to be filled in.";
+        throw data::exception {} << "leaf::cast needs to be filled in";
     }
 }
 

@@ -85,6 +85,49 @@ namespace Diophant {
         }
     }
 
+    data::maybe<replacements> machine::match (data::stack<pattern> p, data::stack<expression> e, data::stack<casted> known) const {
+        if (data::size (p) != data::size (e)) return {};
+
+        replacements r;
+        while (!data::empty (p)) {
+            auto m = match (data::first (p), data::first (e), known);
+            if (!bool (m)) return {};
+            try {
+                r = r + *m;
+            // will be thrown if these maps have any of the same keys.
+            } catch (data::exception r) {
+                return {};
+            }
+
+            p = data::rest (p);
+            e = data::rest (e);
+        }
+
+        return r;
+    }
+
+    data::maybe<replacements> machine::match (const pattern p, const expression e, data::stack<casted> known) const {
+        const form *z = p.get ();
+        const node *n = e.get ();
+
+        using mr = data::maybe<replacements>;
+
+        if (z == n) return mr {{}};
+        if (z == nullptr || n == nullptr) return {};
+
+        if (const node *q = dynamic_cast<const node *> (z); q != nullptr || z == nullptr)
+            return p == pattern {e} ? mr {{}} : mr {};
+        else if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr)
+            return b->Name != "" ? mr {{{b->Name, e}}} : mr {{}};
+        else if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
+            mr r = match (t->Match, e, known);
+            if (!bool (r)) return {};
+            if (cast (t->Required, e)) return r;
+        }
+
+        return {};
+    }
+
     namespace {
         data::maybe<casted> cast_symbol (const machine &, const type &T, const expression &E);
         data::maybe<casted> cast_call (const machine &, const type &T, const expression &E);
@@ -93,7 +136,7 @@ namespace Diophant {
     }
 
     // try to cast a value as a type.
-    data::maybe<casted> machine::cast (const type &T, const expression &E) {
+    data::maybe<casted> machine::cast (const type &T, const expression &E) const {
         const node *t = T.get ();
         const node *e = E.get ();
 
@@ -114,84 +157,44 @@ namespace Diophant {
 
     namespace {
 
+        expression evaluate_list (const machine &m, const list &ls);
+
+        expression evaluate_symbol (const machine &m, const symbol &x);
+
+        expression evaluate_binary_operation (const machine &m, const binary_operation &b);
+
+        expression evaluate_unary_operation (const machine &m, const unary_operation &u);
+
+        expression evaluate_call (const machine &m, const call &c);
+
+        expression evaluate_round (const machine &m, const node *p) {
+            if (p == nullptr) return expression {};
+
+            if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr)
+                return evaluate_symbol (m, *x);
+            if (const list *ls = dynamic_cast<const list *> (p); ls != nullptr)
+                return evaluate_list (m, *ls);
+            if (const binary_operation *b = dynamic_cast<const binary_operation *> (p); b != nullptr)
+                return evaluate_binary_operation (m, *b);
+            if (const unary_operation *u = dynamic_cast<const unary_operation *> (p); u != nullptr)
+                return evaluate_unary_operation (m, *u);
+            if (const call *c = dynamic_cast<const call *> (p); c != nullptr)
+                return evaluate_call (m, *c);
+
+            return expression {};
+        }
+
+        using mtf = machine::transformation;
+
         struct candidate {
             replacements Replacements;
             casted Result;
             data::stack<expression> Remaining;
         };
 
-        expression evaluate_list (const machine &m, const list *ls);
-
-        expression evaluate_symbol (const machine &m, const symbol *x);
-
-        expression evaluate_binary_operation (const machine &m, const binary_operation *b);
-
-        expression evaluate_unary_operation (const machine &m, const unary_operation *u);
-
-        expression evaluate_call (const machine &m, const call *c);
-
-        expression evaluate_round (const machine &m, const node *p) {
-            if (p == nullptr) return expression {};
-
-            if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr)
-                return evaluate_symbol (m, x);
-            if (const list *ls = dynamic_cast<const list *> (p); ls != nullptr)
-                return evaluate_list (m, ls);
-            if (const binary_operation *b = dynamic_cast<const binary_operation *> (p); b != nullptr)
-                return evaluate_binary_operation (m, b);
-            if (const unary_operation *u = dynamic_cast<const unary_operation *> (p); u != nullptr)
-                return evaluate_unary_operation (m, u);
-            if (const call *c = dynamic_cast<const call *> (p); c != nullptr)
-                return evaluate_call (m, c);
-
-            return expression {};
-        }
-    }
-
-    data::maybe<replacements> machine::match (data::stack<pattern> p, data::stack<expression> e, data::stack<casted> known) const {
-        if (data::size (p) != data::size (e)) return {};
-
-        replacements r;
-        while (!data::empty (p)) {
-            auto m = match (data::first (p), data::first (e), known);
-            if (!bool (m)) return {};
-            for (const auto &[key, value] : *m)
-                if (const auto *v = r.contains (key); v != nullptr) {
-                    if (*v != value) return {};
-                } else r = r.insert (key, value);
-
-            p = p.rest ();
-            e = e.rest ();
-        }
-
-        return r;
-    }
-
-    data::maybe<replacements> machine::match (const pattern p, const expression e, data::stack<casted> known) const {
-        const form *z = p.get ();
-        const node *n = e.get ();
-
-        using mr = data::maybe<replacements>;
-
-        if (const node *q = dynamic_cast<const node *> (z); q != nullptr || z == nullptr)
-            return p == pattern {e} ? mr {{}} : mr {};
-        else if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr)
-            return b->Name != "" ? mr {{{b->Name, e}}} : mr {{}};
-        else if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
-            mr r = match (t->Required, e, known);
-            if (!bool (r)) return {};
-            auto tt = derive_type (e);
-            if (!bool (tt)) return {}; // this should really be an error.
-            if (t->Match >= *tt) return r;
-        }
-
-        return {};
-    }
-
-    namespace {
-
-        using mtf = machine::transformation;
-
+        // TODO here we simply return the first candidate we find that matches.
+        // what we want to do in the future is ensure that only one candidate
+        // is valid.
         data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
             while (!data::empty (tfs)) {
 
@@ -200,7 +203,6 @@ namespace Diophant {
                 if (data::size (tf.Arguments) > data::size (args)) return {};
 
                 auto match_args = data::take (args, data::size (tf.Arguments));
-
                 data::maybe<replacements> r = m.match (tf.Arguments, match_args);
 
                 if (bool (r)) return {{*r, tf.Value, data::drop (args, data::size (tf.Arguments))}};
@@ -211,11 +213,11 @@ namespace Diophant {
             return {};
         }
 
-        expression evaluate_list (const machine &m, const list *ls) {
+        expression evaluate_list (const machine &m, const list &ls) {
             bool changed = false;
 
             data::list<expression> new_ls;
-            for (Expression old_arg : data::stack<expression> (ls->List)) {
+            for (Expression old_arg : data::stack<expression> (ls.List)) {
                 expression new_arg = m.evaluate (old_arg);
                 if (new_arg != expression {}) {
                     changed = true;
@@ -226,9 +228,9 @@ namespace Diophant {
             return changed ? list::make (new_ls) : expression {};
         }
 
-        expression evaluate_symbol (const machine &m, const symbol *x) {
-
-            const machine::definition *v = m.SymbolDefinitions.contains (*x);
+        expression evaluate_symbol (const machine &m, const symbol &x) {
+            std::cout << "evaluating symbol " << x << std::endl;
+            const machine::definition *v = m.SymbolDefinitions.contains (x);
             if (v == nullptr) return expression {};
 
             if (!std::holds_alternative<casted> (*v)) return expression {};
@@ -240,21 +242,21 @@ namespace Diophant {
             return *z.Def;
         }
 
-        expression evaluate_binary_operation (const machine &m, const binary_operation *b) {
+        expression evaluate_binary_operation (const machine &m, const binary_operation &b) {
             // first we evaluate function and args individually.
             bool changed = false;
 
-            expression left = m.evaluate (b->Left);
-            expression right = m.evaluate (b->Right);
+            expression left = m.evaluate (b.Left);
+            expression right = m.evaluate (b.Right);
 
             if (left != expression {}) changed = true;
-            else left = b->Left;
+            else left = b.Left;
 
             if (right != expression {}) changed = true;
-            else right = b->Right;
+            else right = b.Right;
 
             {
-                const data::stack<mtf> *v = m.BinaryDefinitions.contains (b->Operator);
+                const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operator);
                 if (v == nullptr) goto done;
 
                 data::stack<mtf> tfs = *v;
@@ -262,49 +264,52 @@ namespace Diophant {
                 data::maybe<candidate> cx = get_candidate (m, tfs, {left, right});
                 if (bool (cx)) {
                     changed = true;
-                    if (!bool (cx->Result.Def)) throw data::exception {} << "Error: attempt to evaluate undefined pattern";
+                    if (!bool (cx->Result.Def))
+                        throw data::exception {} << "Error: attempt to evaluate undefined pattern";
                     return m.evaluate (replace (*cx->Result.Def, cx->Replacements));
                 }
             }
 
             done:
-            return changed ? binary_operation::make (b->Operator, left, right) : expression {};
+            return changed ? binary_operation::make (b.Operator, left, right) : expression {};
         }
 
-        expression evaluate_unary_operation (const machine &m, const unary_operation *u) {
+        expression evaluate_unary_operation (const machine &m, const unary_operation &u) {
             // first we evaluate function and args individually.
             bool changed = false;
-            expression body = m.evaluate (u->Body);
+            expression body = m.evaluate (u.Body);
             if (body != expression {}) changed = true;
-            else body = u->Body;
+            else body = u.Body;
 
             {
-                const data::stack<mtf> *v = m.UnaryDefinitions.contains (u->Operator);
+                const data::stack<mtf> *v = m.UnaryDefinitions.contains (u.Operator);
                 if (v == nullptr) goto done;
 
                 data::stack<mtf> tfs = *v;
 
                 data::maybe<candidate> cx = get_candidate (m, tfs, {body});
+
                 if (bool (cx)) {
                     changed = true;
-                    if (!bool (cx->Result.Def)) throw data::exception {} << "Error: attempt to evaluate undefined pattern";
+                    if (!bool (cx->Result.Def))
+                        throw data::exception {} << "Error: attempt to evaluate undefined pattern";
                     return m.evaluate (replace (*cx->Result.Def, cx->Replacements));
                 }
             }
 
             done:
-            return changed ? unary_operation::make (u->Operator, body) : expression {};
+            return changed ? unary_operation::make (u.Operator, body) : expression {};
         }
 
-        expression evaluate_call (const machine &m, const call *c) {
+        expression evaluate_call (const machine &m, const call &c) {
             // first we evaluate function and args individually.
             bool changed = false;
-            expression fun = m.evaluate (c->Fun);
+            expression fun = m.evaluate (c.Fun);
             if (fun != expression {}) changed = true;
-            else fun = c->Fun;
+            else fun = c.Fun;
 
             data::list<expression> args;
-            for (Expression old_arg : data::stack<expression> (c->Args)) {
+            for (Expression old_arg : data::stack<expression> (c.Args)) {
                 expression new_arg = m.evaluate (old_arg);
                 if (new_arg != expression {}) {
                     changed = true;
@@ -316,11 +321,13 @@ namespace Diophant {
             while (true) {
                 const node *p = fun.get ();
 
+                if (p == nullptr) break;
+
                 int min_args = 1;
 
                 // this only happens once because any further nested calls would
                 // have been flattened when the function was evaluated above.
-                if (const call *cc = dynamic_cast<const call *> (c); cc != nullptr) {
+                if (const call *cc = dynamic_cast<const call *> (p); cc != nullptr) {
                     // we will skip the definitions that have as many args as
                     // in the inner call or fewer, since these would
                     // have already been checked.
@@ -331,8 +338,8 @@ namespace Diophant {
                     p = fun.get ();
                 }
 
-                if (const lambda *n = dynamic_cast<const lambda *> (c); n != nullptr) {
-                    if (data::size (n->Args) > data::size (args)) goto done;
+                if (const lambda *n = dynamic_cast<const lambda *> (p); n != nullptr) {
+                    if (data::size (n->Args) > data::size (args)) break;
 
                     changed = true;
                     data::stack<symbol> in = n->Args;
@@ -353,7 +360,7 @@ namespace Diophant {
                 // Note: here we simply find the first possible match. However,
                 // in general we want to look for a unique match or a unique
                 // match with automatic type conversions.
-                if (const symbol *x = dynamic_cast<const symbol *> (c); x != nullptr) {
+                if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
                     const machine::definition *v = m.SymbolDefinitions.contains (*x);
                     if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) goto done;
 
@@ -368,16 +375,20 @@ namespace Diophant {
                     data::maybe<candidate> cx = get_candidate (m, tfs, args);
                     if (bool (cx)) {
                         changed = true;
-                        if (!bool (cx->Result.Def)) throw data::exception {} << "Error: attempt to evaluate undefined pattern";
+                        if (!bool (cx->Result.Def))
+                            throw data::exception {} << "Error: attempt to evaluate undefined pattern";
                         fun = m.evaluate (replace (*cx->Result.Def, cx->Replacements));
                         args = cx->Remaining;
                         continue;
                     }
                 }
 
-                done:
-                return changed ? call::make (fun, args) : expression {};
+                if (const value *v = dynamic_cast<const value *> (p); v != nullptr)
+                    throw data::exception {} << "This is a piece of shit!!!!";
             }
+
+            done:
+            return changed ? call::make (fun, args) : expression {};
         }
 
         data::maybe<expression> &decl (machine &m, symbol x, type of) {
@@ -389,11 +400,13 @@ namespace Diophant {
                 return std::get<casted> (*v).Def;
             }
 
-            if (!std::holds_alternative<casted> (*v)) throw data::exception {} << "incompatible definitions already provided for " << x;
+            if (!std::holds_alternative<casted> (*v))
+                throw data::exception {} << "incompatible definitions already provided for " << x;
 
             casted &z = std::get<casted> (*v);
 
-            if (bool (std::get<casted> (*v).Def)) throw data::exception {} << "symbol " << x << " is already defined";
+            if (bool (std::get<casted> (*v).Def))
+                throw data::exception {} << "symbol " << x << " is already defined";
 
             return z.Def;
         }

@@ -104,130 +104,179 @@ namespace Diophant {
         type sats_type {symbol::make ("satoshi")};
         type &bool_type = integer_type;
 
+        expression X = symbol::make ("x");
+        expression Y = symbol::make ("y");
+        expression Z = symbol::make ("z");
+
+        Symbol x = dynamic_cast<Symbol> (*X.get ());
+        Symbol y = dynamic_cast<Symbol> (*Y.get ());
+        Symbol z = dynamic_cast<Symbol> (*Y.get ());
+
         // number operations
 
         // boolean operations
         m = m.define (symbol {"False"}, bool_type, scriptnum::make (Bitcoin::integer {0}));
         m = m.define (symbol {"True"}, bool_type, scriptnum::make (Bitcoin::integer {1}));
 
-        m = m.define (unary_operand::bool_not, bool_type, bool_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &>::make (&scriptnum_bool_not));
+        m = m.define (unary_operand::bool_not, bool_type, {bool_type, x},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &>::make (&scriptnum_bool_not), {X}));
 
-        m = m.define (binary_operand::bool_and, bool_type, bool_type, bool_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_and));
+        m = m.define (symbol {"Not"}, bool_type, {{bool_type, x}},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &>::make (&scriptnum_bool_not), {X}));
 
-        m = m.define (binary_operand::bool_or, bool_type, bool_type, bool_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_or));
+        m = m.define (binary_operand::bool_and, bool_type, {bool_type, x}, {bool_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_and), {X, Y}));
+
+        m = m.define (symbol {"And"}, bool_type, {{bool_type, x}, {bool_type, y}},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_and), {X, Y}));
+
+        m = m.define (binary_operand::bool_or, bool_type, {bool_type, x}, {bool_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_or), {X, Y}));
+
+        m = m.define (symbol {"Or"}, bool_type, {{bool_type, x}, {bool_type, y}},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bool_or), {X, Y}));
 
         // bit operations
-        m = m.declare (unary_operand::tilda, integer_type, integer_type);
+        m = m.declare (unary_operand::tilda, integer_type, {integer_type, x});
+        m = m.declare (symbol {"BitNot"}, integer_type, {{integer_type, x}});
 
-        m = m.define (binary_operand::bit_and, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bit_and));
+        m = m.define (binary_operand::bit_and, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bit_and), {X, Y}));
 
-        m = m.define (binary_operand::bit_or, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bit_or));
+        m = m.define (binary_operand::bit_or, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_bit_or), {X, Y}));
 
-        m = m.declare (binary_operand::bit_xor, integer_type, integer_type, integer_type);
+        m = m.declare (binary_operand::bit_xor, integer_type, {integer_type, x}, {integer_type, y});
 
-        m = m.define (binary_operand::identical, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_identical));
-
-        // comparisons
-        m = m.define (binary_operand::equal, bool_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_equal));
-
-        m = m.define (binary_operand::unequal, bool_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_not_equal));
-
-        m = m.define (binary_operand::greater_equal, bool_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_greater_equal));
-
-        m = m.define (binary_operand::less_equal, bool_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less_equal));
-
-        m = m.define (binary_operand::greater, bool_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_greater));
-
-        m = m.define (binary_operand::less, bool_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less));
+        m = m.define (binary_operand::identical, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_identical), {X, Y}));
 
         // comparisons
-        m = m.define (binary_operand::equal, bool_type, secret_type, secret_type,
-            built_in_function<Bitcoin::integer, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_equal));
+        m = m.define (binary_operand::equal, bool_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_equal), {X, Y}));
 
-        m = m.define (binary_operand::unequal, bool_type, secret_type, secret_type,
-            built_in_function<Bitcoin::integer, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_not_equal));
+        m = m.define (binary_operand::unequal, bool_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_not_equal), {X, Y}));
 
-        m = m.define (binary_operand::greater_equal, bool_type, secret_type, secret_type,
-            built_in_function<Bitcoin::integer, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_greater_equal));
+        m = m.define (binary_operand::greater_equal, bool_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_greater_equal), {X, Y}));
 
-        m = m.define (binary_operand::less_equal, bool_type, secret_type, secret_type,
-            built_in_function<Bitcoin::integer, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_less_equal));
+        m = m.define (binary_operand::less_equal, bool_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less_equal), {X, Y}));
 
-        m = m.define (binary_operand::greater, bool_type, secret_type, secret_type,
-            built_in_function<Bitcoin::integer, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_greater));
+        m = m.define (binary_operand::greater, bool_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_greater), {X, Y}));
 
-        m = m.define (binary_operand::less, bool_type, secret_type, secret_type,
-            built_in_function<Bitcoin::integer, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_less));
+        m = m.define (binary_operand::less, bool_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less), {X, Y}));
+
+        // comparisons
+        m = m.define (binary_operand::equal, bool_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_equal), {X, Y}));
+
+        m = m.define (binary_operand::unequal, bool_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_not_equal), {X, Y}));
+
+        m = m.define (binary_operand::greater_equal, bool_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_greater_equal), {X, Y}));
+
+        m = m.define (binary_operand::less_equal, bool_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_less_equal), {X, Y}));
+
+        m = m.define (binary_operand::greater, bool_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_greater), {X, Y}));
+
+        m = m.define (binary_operand::less, bool_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_less), {X, Y}));
 
         // arithmetic
-        m = m.define (unary_operand::negate, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &>::make (&scriptnum_negate));
+        m = m.define (unary_operand::negate, integer_type, {integer_type, x},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &>::make (&scriptnum_negate), {X, Y}));
 
-        m = m.define (binary_operand::plus, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_plus));
+        m = m.define (binary_operand::plus, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_plus), {X, Y}));
 
-        m = m.define (binary_operand::minus, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_minus));
+        m = m.define (binary_operand::minus, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_minus), {X, Y}));
 
-        m = m.define (binary_operand::times, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_times));
+        m = m.define (binary_operand::times, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_times), {X, Y}));
 
-        m = m.define (binary_operand::divide, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_divide));
+        m = m.define (binary_operand::divide, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_divide), {X, Y}));
 
-        m = m.define (binary_operand::mod, integer_type, integer_type, integer_type,
-            built_in_function<Bitcoin::integer, const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_mod));
+        m = m.define (binary_operand::mod, integer_type, {integer_type, x}, {integer_type, y},
+            call::make (built_in_function<Bitcoin::integer,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_mod), {X, Y}));
 
         // arithmetic
-        m = m.define (unary_operand::negate, secret_type, secret_type,
-            built_in_function<secp256k1::secret, const secp256k1::secret &>::make (&secret_negate));
+        m = m.define (unary_operand::negate, secret_type, {secret_type, x},
+            call::make (built_in_function<secp256k1::secret,
+                const secp256k1::secret &>::make (&secret_negate), {X, Y}));
 
-        m = m.define (binary_operand::plus, secret_type, secret_type, secret_type,
-            built_in_function<secp256k1::secret, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_plus));
+        m = m.define (binary_operand::plus, secret_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<secp256k1::secret,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_plus), {X, Y}));
 
-        m = m.define (binary_operand::minus, secret_type, secret_type, secret_type,
-            built_in_function<secp256k1::secret, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_plus));
+        m = m.define (binary_operand::minus, secret_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<secp256k1::secret,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_plus), {X, Y}));
 
-        m = m.define (binary_operand::times, secret_type, secret_type, secret_type,
-            built_in_function<secp256k1::secret, const secp256k1::secret &, const secp256k1::secret &>::make (&secret_plus));
+        m = m.define (binary_operand::times, secret_type, {secret_type, x}, {secret_type, y},
+            call::make (built_in_function<secp256k1::secret,
+                const secp256k1::secret &, const secp256k1::secret &>::make (&secret_plus), {X, Y}));
 
-        m = m.declare (symbol {"Inverse"}, secret_type, {secret_type});
+        m = m.declare (symbol {"Inverse"}, secret_type, {secret_type, x});
 
-        m = m.declare (binary_operand::divide, secret_type, secret_type, secret_type);
+        m = m.declare (binary_operand::divide, secret_type, {secret_type, x}, {secret_type, y});
 
         // power
-        m = m.declare (binary_operand::power, secret_type, secret_type, secret_type);
+        m = m.declare (binary_operand::power, secret_type, {secret_type, x}, {secret_type, y});
 
-        m = m.declare (symbol {"Power"}, secret_type, {secret_type, secret_type});
+        m = m.declare (symbol {"Power"}, secret_type, {{secret_type, x}, {secret_type, y}});
 
         m = m.declare (binary_operand::power, integer_type, integer_type, secret_type);
 
-        m = m.declare (symbol {"Power"}, integer_type, {secret_type, secret_type});
+        m = m.declare (symbol {"Power"}, integer_type, {{secret_type, x}, {secret_type, y}});
 
         // pubkey and secret operations
-        m = m.declare (binary_operand::equal, bool_type, pubkey_type, pubkey_type);
-        m = m.declare (binary_operand::unequal, bool_type, pubkey_type, pubkey_type);
+        m = m.declare (binary_operand::equal, bool_type, {pubkey_type, x}, {pubkey_type, y});
+        m = m.declare (binary_operand::unequal, bool_type, {pubkey_type, x}, {pubkey_type, y});
 
-        m = m.declare (binary_operand::plus, pubkey_type, pubkey_type, pubkey_type);
-        m = m.declare (binary_operand::times, pubkey_type, secret_type, pubkey_type);
-        m = m.declare (binary_operand::times, pubkey_type, pubkey_type, secret_type);
+        m = m.declare (binary_operand::plus, pubkey_type, {pubkey_type, x}, {pubkey_type, y});
+        m = m.declare (binary_operand::times, pubkey_type, {pubkey_type, x}, {pubkey_type, y});
+        m = m.declare (binary_operand::times, pubkey_type, {pubkey_type, x}, {pubkey_type, y});
 
-        m = m.declare (symbol {"Valid"}, integer_type, {secret_type});
-        m = m.declare (symbol {"Valid"}, integer_type, {pubkey_type});
+        m = m.declare (symbol {"Valid"}, integer_type, {{secret_type, x}});
+        m = m.declare (symbol {"Valid"}, integer_type, {{pubkey_type, x}});
 
-        m = m.declare (symbol {"to_public"}, pubkey_type, {secret_type});
+        m = m.declare (symbol {"to_public"}, pubkey_type, {{secret_type, x}});
 
         m = m.declare (symbol {"Sign"}, integer_type, {secret_type, integer_type});
         m = m.declare (symbol {"Sign"}, integer_type, {secret_type, secret_type});
@@ -236,58 +285,61 @@ namespace Diophant {
         m = m.declare (symbol {"Verify"}, bool_type, {pubkey_type, secret_type, integer_type});
 
         // push operations
-        m = m.declare (symbol {"Push"}, integer_type, {secret_type});
-        m = m.declare (symbol {"Push"}, integer_type, {pubkey_type});
-        m = m.declare (symbol {"Push"}, integer_type, {integer_type});
-        m = m.declare (symbol {"Push"}, integer_type, {string_type});
+        m = m.declare (symbol {"Push"}, integer_type, {{secret_type, x}});
+        m = m.declare (symbol {"Push"}, integer_type, {{pubkey_type, x}});
+        m = m.declare (symbol {"Push"}, integer_type, {{integer_type, x}});
+        m = m.declare (symbol {"Push"}, integer_type, {{string_type, x}});
 
         // string operations
-        m = m.define (binary_operand::equal, bool_type, string_type, string_type,
-            built_in_function<Bitcoin::integer, const data::string &, const data::string &>::make (&string_equal));
+        m = m.define (binary_operand::equal, bool_type, {string_type, x}, {string_type, x},
+            call::make (built_in_function<Bitcoin::integer,
+                const data::string &, const data::string &>::make (&string_equal), {X, Y}));
 
-        m = m.define (binary_operand::unequal, bool_type, string_type, string_type,
-            built_in_function<Bitcoin::integer, const data::string &, const data::string &>::make (&string_unequal));
+        m = m.define (binary_operand::unequal, bool_type, {string_type, x}, {string_type, x},
+            call::make (built_in_function<Bitcoin::integer,
+                const data::string &, const data::string &>::make (&string_unequal), {X, Y}));
 
-        m = m.define (binary_operand::identical, bool_type, string_type, string_type,
-            built_in_function<Bitcoin::integer, const data::string &, const data::string &>::make (&string_identical));
+        m = m.define (binary_operand::identical, bool_type, {string_type, x}, {string_type, x},
+            call::make (built_in_function<Bitcoin::integer,
+                const data::string &, const data::string &>::make (&string_identical), {X, Y}));
 
         m = m.declare (binary_operand::cat, integer_type, integer_type, integer_type);
 
-        m = m.declare (binary_operand::cat, string_type, string_type, string_type);
+        m = m.declare (binary_operand::cat, string_type, {string_type, x}, {string_type, x});
 
         // bit shifts
-        m = m.declare (symbol {"RightShift"}, integer_type, {integer_type});
-        m = m.declare (symbol {"LeftShift"}, integer_type, {integer_type});
+        m = m.declare (symbol {"RightShift"}, integer_type, {{integer_type, x}});
+        m = m.declare (symbol {"LeftShift"}, integer_type, {{integer_type, x}});
 
-        m = m.declare (symbol {"RightShift"}, string_type, {integer_type});
-        m = m.declare (symbol {"LeftShift"}, string_type, {integer_type});
+        m = m.declare (symbol {"RightShift"}, string_type, {{integer_type, x}});
+        m = m.declare (symbol {"LeftShift"}, string_type, {{integer_type, x}});
 
-        m = m.declare (symbol {"RightShift"}, integer_type, {secret_type});
-        m = m.declare (symbol {"LeftShift"}, integer_type, {secret_type});
+        m = m.declare (symbol {"RightShift"}, integer_type, {{secret_type, x}});
+        m = m.declare (symbol {"LeftShift"}, integer_type, {{secret_type, x}});
 
-        m = m.declare (symbol {"RightShift"}, string_type, {secret_type});
-        m = m.declare (symbol {"LeftShift"}, string_type, {secret_type});
+        m = m.declare (symbol {"RightShift"}, string_type, {{secret_type, x}});
+        m = m.declare (symbol {"LeftShift"}, string_type, {{secret_type, x}});
 
         // size operations
-        m = m.declare (symbol {"Size"}, integer_type, {integer_type});
-        m = m.declare (symbol {"MinimalSize"}, integer_type, {integer_type});
-        m = m.declare (symbol {"Resize"}, integer_type, {integer_type});
-        m = m.declare (symbol {"Minimal"}, integer_type, {integer_type});
-        m = m.declare (symbol {"MinimalQ"}, bool_type, {integer_type});
+        m = m.declare (symbol {"Size"}, integer_type, {{integer_type, x}});
+        m = m.declare (symbol {"MinimalSize"}, integer_type, {{integer_type, x}});
+        m = m.declare (symbol {"Resize"}, integer_type, {{integer_type, x}});
+        m = m.declare (symbol {"Minimal"}, integer_type, {{integer_type, x}});
+        m = m.declare (symbol {"MinimalQ"}, bool_type, {{integer_type, x}});
 
         // base 58
-        m = m.declare (symbol {"ReadBase58"}, secret_type, {string_type});
-        m = m.declare (symbol {"WriteBase58"}, string_type, {secret_type});
+        m = m.declare (symbol {"ReadBase58"}, secret_type, {{string_type, x}});
+        m = m.declare (symbol {"WriteBase58"}, string_type, {{secret_type, x}});
 
         // base 58 check
-        m = m.declare (symbol {"ReadBase58Check"}, integer_type, {string_type});
-        m = m.declare (symbol {"WriteBase58Check"}, string_type, {integer_type});
+        m = m.declare (symbol {"ReadBase58Check"}, integer_type, {{string_type, x}});
+        m = m.declare (symbol {"WriteBase58Check"}, string_type, {{integer_type, x}});
 
         // hash operations
-        m = m.declare (symbol {"SHA"}, integer_type, {secret_type, secret_type, integer_type});
-        m = m.declare (symbol {"RIPEMD"}, integer_type, {secret_type, integer_type});
-        m = m.declare (symbol {"Hash160"}, integer_type, {integer_type});
-        m = m.declare (symbol {"Hash256"}, integer_type, {integer_type});
+        m = m.declare (symbol {"SHA"}, integer_type, {{secret_type, x}, {secret_type, y}, {integer_type, z}});
+        m = m.declare (symbol {"RIPEMD"}, integer_type, {{secret_type, x}, {integer_type, y}});
+        m = m.declare (symbol {"Hash160"}, integer_type, {{integer_type, x}});
+        m = m.declare (symbol {"Hash256"}, integer_type, {{integer_type, x}});
 
         return m;
     }
