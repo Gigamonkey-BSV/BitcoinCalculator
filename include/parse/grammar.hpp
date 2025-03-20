@@ -12,7 +12,7 @@ namespace tao_pegtl_grammar {
         seq<string<'/','/'>, star<seq<not_at<one<'\n'>>, ascii::print>>, one<'\n'>>> {};
 
     struct white : sor<one<' '>, one<'\t'>, one<'\n'>, comment> {};
-    struct ws : star<white> {};
+    struct ws : star<sor<white, comment>> {};
 
     // a decimal lit is 0 by itself or the digits 1 through 9 followed by digits.
     struct dec_lit : sor<one<'0'>, seq<range<'1', '9'>, star<digit>>> {};
@@ -59,7 +59,9 @@ namespace tao_pegtl_grammar {
 
     struct symbol_char : sor<alnum, one<'_'>> {};
 
-    struct symbol : minus<seq<alnum, star<symbol_char>>, reserved_words> {};
+//    struct symbol : minus<seq<alnum, star<symbol_char>>, reserved_words> {};
+
+    struct symbol : seq<alnum, star<symbol_char>> {};
 
     struct expression;
 
@@ -86,7 +88,7 @@ namespace tao_pegtl_grammar {
     struct open_paren : one<'('> {};
     struct close_paren : one<')'> {};
 
-    struct parenthetical : seq<open_paren, ws, expression, ws, star<seq<one<','>>, ws, expression, ws>, close_paren> {};
+    struct parenthetical : seq<open_paren, ws, opt<expression, ws, star<seq<one<','>>, ws, expression, ws>>, close_paren> {};
 
     struct var : seq<opt<symbol>, one<'.'>> {};
     struct typed_var : seq<opt<symbol>, ws, one<':'>, ws, expression> {};
@@ -100,7 +102,7 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct call : seq<plus<white>, atom> {};
     template <typename atom> struct call_expr : seq<atom, star<call<atom>>> {};
 
-    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'+'>, one<'*'>> {};
+    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>> {};
 
     template <typename atom> struct unary_expr;
     template <typename atom> struct unary_operation : seq<left_unary_operand, unary_expr<atom>> {};

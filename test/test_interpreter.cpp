@@ -46,7 +46,7 @@ namespace Diophant {
         return binary_operation::make (binary_operand::plus, a, b);
     }
 
-    TEST (ParseTest, TestParse) {
+    TEST (InterpreterTest, TestInterpreter) {
 
         m = initialize ();
 
@@ -67,6 +67,20 @@ namespace Diophant {
         test (")()", false);
         test ("())", false);
         test ("()(", false);
+        test ("[", false);
+        test ("]", false);
+        test ("[(])", false);
+
+        // empty string
+        test (R"("")");
+        test (R"("abcd")");
+        test (R"("_x2")");
+        test (R"("202")");
+        test (R"("xyz\")", false);
+
+        // symbols
+        test ("x", symbol::make ("x"), symbol::make ("x"));
+        test ("x123");
 
         // boolean
         test ("True", symbol::make ("True"), True ());
@@ -107,9 +121,6 @@ namespace Diophant {
         // invalid hex number.
         test ("0x0", false);
 
-        test ("x");
-        test ("x123");
-
         // hex strings
         test ("'abcdef000001'");
         test ("'abcdef00001'", false);
@@ -124,9 +135,9 @@ namespace Diophant {
     // test whether the parser will accept the given string.
     void test (std::string input, bool expect_success) {
         if (expect_success) {
-            EXPECT_THROW (read_line (input), parse_error);
-        } else {
             EXPECT_NO_THROW (read_line (input));
+        } else {
+            EXPECT_THROW (read_line (input), parse_error);
         }
     }
 

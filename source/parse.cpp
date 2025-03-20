@@ -7,7 +7,7 @@
 #include <gigamonkey/numbers.hpp>
 
 namespace tao_pegtl_grammar {
-    struct expression_grammar : must<seq<ws, expression, ws, eof>> {};
+    struct expression_grammar : seq<ws, opt<seq<expression, ws>>, eof> {};
 }
 
 namespace Diophant {
@@ -31,13 +31,6 @@ namespace Diophant {
         namespace pegtl = tao::pegtl;
 
         template <typename Rule> struct read_expression : pegtl::nothing<Rule> {};
-
-        template <> struct read_expression<tao_pegtl_grammar::expression_atom> {
-            template <typename Input>
-            static void apply (const Input &in, parser &eval) {
-                std::cout << "reading expression atom " << data::string {in.string ()} << std::endl;
-            }
-        };
 
         template <> struct read_expression<tao_pegtl_grammar::dec_lit> {
             template <typename Input>
@@ -93,7 +86,6 @@ namespace Diophant {
         template <typename atom> struct read_expression<tao_pegtl_grammar::unary_operation<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                std::cout << "::: reading unary operation: " << data::string {in.string ()} << std::endl;
                 // NOTE this won't work if we ever have any unary operators that are bigger than one char.
                 eval.unary (unary_operand {*in.begin ()});
             }
@@ -246,24 +238,22 @@ namespace Diophant {
             }
         };
 
-        template <> struct read_expression<tao_pegtl_grammar::expression_grammar> {
-            template <typename Input>
-            static void apply (const Input &in, parser &eval);
-        };
-
     }
 
-    expression read_line (const std::string &input) {
+    expression read_line (const data::string &input) {
         parser p;
         tao::pegtl::memory_input<> in {input, "expression"};
 
         try {
-            if (!tao::pegtl::parse<tao_pegtl_grammar::expression, rules::read_expression> (in, p));
-            throw parse_error {std::string {"could not parse line "} + input};
+            if (!tao::pegtl::parse<tao_pegtl_grammar::expression_grammar, rules::read_expression> (in, p)) {
+                std::stringstream ss;
+                ss << input;
+                throw parse_error {ss.str ()};
+            }
         } catch (tao::pegtl::parse_error &err) {
-            const auto &pos = err.positions ().front ();
+            const tao::pegtl::position &pos = err.positions ().front ();
             std::stringstream ss;
-            ss << "could not parse line: \"" << input << "\"; failure at column " << pos.column;
+            ss << input << "; failure at column " << pos.column;
             throw parse_error {ss.str ()};
         }
 

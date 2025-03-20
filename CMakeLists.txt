@@ -78,7 +78,7 @@ target_include_directories (calc PUBLIC include)
 target_compile_features (calc PUBLIC cxx_std_20)
 set_target_properties (calc PROPERTIES CXX_EXTENSIONS OFF)
 
-add_executable (BitcoinCalc keys.cpp)
+add_executable (BitcoinCalc calculator.cpp)
 
 target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh calc Gigamonkey::gigamonkey Data::data)
 target_include_directories (BitcoinCalc PUBLIC include)

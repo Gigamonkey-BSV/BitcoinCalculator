@@ -7,11 +7,11 @@ namespace Diophant {
 
     struct parse_error : std::logic_error {
         parse_error (): std::logic_error {"could not parse input"} {};
-        parse_error (const std::string &line):
-            std::logic_error {std::string {} + "could not parse input: \"" + line + "\""} {};
+        parse_error (const data::string &line):
+            std::logic_error {std::string {} + "could not parse input: " + line} {};
     };
 
-    expression read_line (const std::string &in);
+    expression read_line (const data::string &in);
 
 }
 

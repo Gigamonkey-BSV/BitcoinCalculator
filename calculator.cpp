@@ -30,15 +30,17 @@ int main (int args, char **arg) {
             try {
                 auto ee = Diophant::read_line (*input);
                 std::cout << "\n result: " << machine.evaluate (ee) << std::endl;
+            } catch (Diophant::parse_error &e) {
+                std::cout << "Parse error: " << e.what () << "!" << std::endl;
             } catch (data::exception &e) {
-                std::cout << "Exception caught: " << e.what () << "!" << std::endl;
+                std::cout << "Exception: " << e.what () << "!" << std::endl;
             }
         }
     } catch (std::exception &e) {
-        std::cout << "Unknown exception caught: " << e.what () << "!" << std::endl;
+        std::cout << "Unknown exception: " << e.what () << "!" << std::endl;
         return 1;
     } catch (...) {
-        std::cout << "Unknown type caught!" << std::endl;
+        std::cout << "Unknown error!" << std::endl;
         return 1;
     }
 
