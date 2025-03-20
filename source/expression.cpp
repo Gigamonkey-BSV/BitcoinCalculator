@@ -8,7 +8,19 @@ namespace Diophant {
         const node *b = B.get ();
 
         if (a == b) return true;
+        if (a == nullptr || b == nullptr) return false;
 
+        if (const value *v = dynamic_cast<const value *> (a); v != nullptr) {
+            const value *w = dynamic_cast<const value *> (b);
+            if (w != nullptr) return *v == *w;
+            return false;
+        }
+
+        if (const symbol *x = dynamic_cast<const symbol *> (a); x != nullptr) {
+            const symbol *y = dynamic_cast<const symbol *> (b);
+            if (y != nullptr) return *x == *y;
+            return false;
+        }
 
         throw data::exception {} << "incomplete method: << expression == expressions";
     }

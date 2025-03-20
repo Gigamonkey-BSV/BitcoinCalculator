@@ -89,7 +89,7 @@ namespace Diophant {
     Bitcoin::integer push (const secp256k1::pubkey &x);
 
     machine initialize () {
-        std::cout << "INITIALIZING MACHINE" << std::endl;
+
         machine m {};
 
         type nil {expression {}};

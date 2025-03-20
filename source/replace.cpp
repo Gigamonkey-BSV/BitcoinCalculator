@@ -1,5 +1,6 @@
 #include <replace.hpp>
-#include <value.hpp>
+#include <values/list.hpp>
+#include <values/lambda.hpp>
 
 namespace Diophant {
 
