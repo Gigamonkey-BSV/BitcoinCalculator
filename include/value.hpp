@@ -11,9 +11,10 @@ namespace Diophant {
 
     struct value : node {
         virtual ~value () {}
-        virtual data::maybe<casted> cast (const machine &, const type &) const = 0;
+        virtual bool cast (const machine &, Type) const = 0;
         virtual std::ostream &write (std::ostream &) const = 0;
         virtual bool operator == (const value &) const = 0;
+        virtual expression operator () (data::stack<expression>) const = 0;
     };
 
     namespace secp256k1 = Gigamonkey::secp256k1;
@@ -25,9 +26,10 @@ namespace Diophant {
 
         static expression make (const T &);
 
-        data::maybe<casted> cast (const machine &, const type &) const final override;
+        bool cast (const machine &, Type) const final override;
         std::ostream &write (std::ostream &) const final override;
         bool operator == (const value &) const final override;
+        expression operator () (data::stack<expression>) const final override;
     };
 
     using byte = leaf<data::byte>;
@@ -94,9 +96,70 @@ namespace Diophant {
         return expression {std::static_pointer_cast<const node> (std::make_shared<leaf<T>> (x))};
     }
 
-    template <typename T> data::maybe<casted> inline leaf<T>::cast (const machine &, const type &) const {
-        throw data::exception {} << "leaf::cast needs to be filled in";
+    namespace {
+        template <typename T> struct leaf_cast {
+            bool operator () (Type t);
+        };
+
+        template <typename T> struct base_type;
+
+        template <> struct base_type<data::byte> {
+            type operator () () {
+                return symbol::make ("byte");
+            }
+        };
+
+        template <> struct base_type<data::string> {
+            type operator () () {
+                return symbol::make ("string");
+            }
+        };
+
+        template <> struct base_type<Bitcoin::integer> {
+            type operator () () {
+                return symbol::make ("scriptnum");
+            }
+        };
+
+        template <> struct base_type<secp256k1::pubkey> {
+            type operator () () {
+                return symbol::make ("pubkey");
+            }
+        };
+
+        template <> struct base_type<secp256k1::secret> {
+            type operator () () {
+                return symbol::make ("secret");
+            }
+        };
+
+        template <typename Y, typename X> struct base_type<std::function<Y (const X &)>> {
+            type operator () () {
+                return binary_operation::make (binary_operand::intuitionistic_implies,
+                    base_type<X> {} (), base_type<Y> {} ());
+            }
+        };
+
+        template <typename Z, typename X, typename ... Y> struct base_type<std::function<Z (const X &, Y...)>> {
+            type operator () () {
+                return binary_operation::make (binary_operand::intuitionistic_implies,
+                    base_type<X> {} (), base_type<std::function<Z (Y...)>> {} ());
+            }
+        };
+
+        template <typename T> bool inline leaf_cast<T>::operator () (Type t) {
+            return t >= base_type<T> {} ();
+        }
+
     }
+
+    template <typename T> bool inline leaf<T>::cast (const machine &, Type t) const {
+        return leaf_cast<T> {} (t);
+    }
+
+    template <typename T> expression leaf<T>::operator () (data::stack<expression>) const {
+        throw data::exception {} << "trying to call something... this function is not implemented.";
+    };
 }
 
 #endif

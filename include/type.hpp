@@ -5,17 +5,19 @@
 
 namespace Diophant {
 
+    struct type;
+
+    using Type = const type &;
+
     struct type : expression {
         type (expression);
 
-        bool operator == (const type &) const;
-        bool operator < (const type &) const;
-        bool operator > (const type &) const;
-        bool operator <= (const type &) const;
-        bool operator >= (const type &) const;
+        bool operator == (Type) const;
+        bool operator < (Type) const;
+        bool operator > (Type) const;
+        bool operator <= (Type) const;
+        bool operator >= (Type) const;
     };
-
-    using Type = const type &;
 
     using statement = type;
 
@@ -27,26 +29,26 @@ namespace Diophant {
         nonempty_complements
     };
 
-    impartial_ordering operator <=> (const type &, const type &);
+    impartial_ordering operator <=> (Type, Type);
 
-    bool inline type::operator == (const type &t) const {
+    bool inline type::operator == (Type t) const {
         return (*this <=> t) == impartial_ordering::equal;
     }
 
-    bool inline type::operator < (const type &t) const {
+    bool inline type::operator < (Type t) const {
         return (*this <=> t) == impartial_ordering::subset;
     }
 
-    bool inline type::operator > (const type &t) const {
+    bool inline type::operator > (Type t) const {
         return (*this <=> t) == impartial_ordering::superset;
     }
 
-    bool inline type::operator <= (const type &t) const {
+    bool inline type::operator <= (Type t) const {
         auto x = (*this <=> t);
         return x == impartial_ordering::equal || x == impartial_ordering::subset;
     }
 
-    bool inline type::operator >= (const type &t) const {
+    bool inline type::operator >= (Type t) const {
         auto x = (*this <=> t);
         return x == impartial_ordering::equal || x == impartial_ordering::superset;
     }

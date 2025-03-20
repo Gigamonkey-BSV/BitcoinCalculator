@@ -136,13 +136,14 @@ namespace Diophant {
     }
 
     // try to cast a value as a type.
-    data::maybe<casted> machine::cast (const type &T, const expression &E) const {
+    data::maybe<casted> machine::cast (Type T, Expression E) const {
         const node *t = T.get ();
         const node *e = E.get ();
 
         if (e == nullptr) return t == nullptr ? data::maybe<casted> {} : data::maybe<casted> {{T, E}};
 
-        if (const value *v = dynamic_cast<const value *> (e); v != nullptr) return v->cast (*this, T);
+        if (const value *v = dynamic_cast<const value *> (e); v != nullptr)
+            return v->cast (*this, T) ? data::maybe<casted> {{T, E}}: data::maybe<casted> {};
         if (const symbol *x = dynamic_cast<const symbol *> (e); x != nullptr)
             return cast_symbol (*this, T, E);
         if (const binary_operation *b = dynamic_cast<const binary_operation *> (e); b != nullptr)
@@ -229,7 +230,7 @@ namespace Diophant {
         }
 
         expression evaluate_symbol (const machine &m, const symbol &x) {
-            std::cout << "evaluating symbol " << x << std::endl;
+
             const machine::definition *v = m.SymbolDefinitions.contains (x);
             if (v == nullptr) return expression {};
 

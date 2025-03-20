@@ -46,7 +46,7 @@ namespace Diophant {
     std::ostream &write_call (std::ostream &, const call &);
 
     std::ostream &write (std::ostream &o, const node *n, precedence Prec) {
-        if (n == nullptr) return o << "Nil";
+        if (n == nullptr) return o << "nil";
 
         if (const value *v = dynamic_cast<const value *> (n); v != nullptr)
             return v->write (o);

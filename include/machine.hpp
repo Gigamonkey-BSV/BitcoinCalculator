@@ -44,7 +44,7 @@ namespace Diophant {
         data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>, data::stack<casted> known = {}) const;
 
         // try to cast a value as a type.
-        data::maybe<casted> cast (const type &, const expression &) const;
+        data::maybe<casted> cast (Type, Expression) const;
 
         struct transformation {
             data::stack<pattern> Arguments;

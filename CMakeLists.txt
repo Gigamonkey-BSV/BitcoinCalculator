@@ -70,6 +70,7 @@ add_library (calc
     source/replace.cpp
     source/parse.cpp
     source/expression.cpp
+    source/type.cpp
 )
 
 target_link_libraries (calc PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)

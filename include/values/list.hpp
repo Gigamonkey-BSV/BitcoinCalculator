@@ -10,7 +10,7 @@ namespace Diophant {
 
         static expression make (data::stack<expression>);
 
-        data::maybe<casted> cast (const machine &, const type &) const final override;
+        bool cast (const machine &, const type &) const final override;
         std::ostream &write (std::ostream &) const final override;
         bool operator == (const value &) const final override;
     };
@@ -19,7 +19,7 @@ namespace Diophant {
         throw data::exception {} << "we are not using lists right now";
     }
 
-    data::maybe<casted> inline list::cast (const machine &, const type &) const {
+    bool inline list::cast (const machine &, const type &) const {
         throw data::exception {} << "we are not using lists right now";
     }
 

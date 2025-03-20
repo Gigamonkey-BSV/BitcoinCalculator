@@ -94,7 +94,7 @@ namespace Diophant {
 
         type nil {expression {}};
 
-        m = m.define (symbol {"Nil"}, nil, nil);
+        m = m.define (symbol {"nil"}, nil, nil);
 
         // the fundamental types.
         type secret_type {symbol::make ("private")};
