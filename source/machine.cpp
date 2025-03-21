@@ -76,11 +76,15 @@ namespace Diophant {
 
     }
 
+    // note: this algorithm results in attempts to evaluate
+    // sub expressions over again that have not changed.
+    // We might want to mark expressions as already having been
+    // evaluated.
     expression machine::evaluate (Expression e) const {
         expression last = e;
         while (true) {
-            expression next = evaluate_round (*this, e);
-            if (next.get () == last.get ()) return last;
+            expression next = evaluate_round (*this, last);
+            if (next == expression {} || next.get () == last.get ()) return last;
             last = next;
         }
     }
@@ -171,24 +175,22 @@ namespace Diophant {
         expression evaluate_call (const machine &m, const call &c);
 
         expression evaluate_round (const machine &m, Expression e) {
-
             const node *p = e.get ();
             if (p == nullptr) return e;
 
-            expression next {};
-
             if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr)
-                next = evaluate_symbol (m, *x);
+                return evaluate_symbol (m, *x);
             if (const list *ls = dynamic_cast<const list *> (p); ls != nullptr)
-                next = evaluate_list (m, *ls);
+                return evaluate_list (m, *ls);
             if (const binary_operation *b = dynamic_cast<const binary_operation *> (p); b != nullptr)
-                next = evaluate_binary_operation (m, *b);
+                return evaluate_binary_operation (m, *b);
             if (const unary_operation *u = dynamic_cast<const unary_operation *> (p); u != nullptr)
-                next = evaluate_unary_operation (m, *u);
+                return evaluate_unary_operation (m, *u);
             if (const call *c = dynamic_cast<const call *> (p); c != nullptr)
-                next = evaluate_call (m, *c);
+                return evaluate_call (m, *c);
+            if (const value *v = dynamic_cast<const value *> (p); v != nullptr) return e;
 
-            return next == expression {} ? e : next;
+            throw data::exception {} << "Unknown expression";
         }
 
         using mtf = machine::transformation;
@@ -380,8 +382,9 @@ namespace Diophant {
                     }
                 }
 
-                if (const value *v = dynamic_cast<const value *> (p); v != nullptr)
+                if (const value *v = dynamic_cast<const value *> (p); v != nullptr) {
                     return (*v) (args);
+                }
             }
 
             done:

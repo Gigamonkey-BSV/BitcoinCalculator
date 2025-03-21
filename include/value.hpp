@@ -35,6 +35,21 @@ namespace Diophant {
 		expression operator () (data::stack<expression>) const final override;
 	};
 
+	template <typename Y, typename ...X> struct leaf<Y (*)(X...)> final : value {
+		Y (*Value)(X...);
+		leaf (Y (*v)(X...)) : Value {v} {}
+
+		static expression make (Y (*)(X...));
+
+		bool cast (const machine &, Type) const final override;
+		std::ostream &write (std::ostream &) const final override;
+		bool operator == (const value &) const final override;
+
+		// return nil if the args don't fit.
+		// if there are too many args, return a call expression with the rest on the call.
+		expression operator () (data::stack<expression>) const final override;
+	};
+
 	using byte = leaf<data::byte>;
 	using string = leaf<data::string>;
 	using scriptnum = leaf<Bitcoin::integer>;
@@ -62,41 +77,36 @@ namespace Diophant {
 				return o;
 			}
 		};
-
-		template <typename Y, typename ... X> struct write_leaf<Y (*)(X...)> {
-			std::ostream &operator () (std::ostream &o, Y (*)(X...)) {
-				return o << "(*)";
-			}
-		};
 	}
 
 	template <typename T> std::ostream inline &leaf<T>::write (std::ostream &o) const {
 		return write_leaf<T> {} (o, Value);
 	}
 
-	namespace {
-		template <typename T> struct equal_leaf {
-			bool operator () (const T &a, const T &b) {
-				return a == b;
-			}
-		};
-
-		template <typename Y, typename ... X> struct equal_leaf<Y (*)(X...)> {
-			bool operator () (Y (*a)(X...), Y (*b)(X...)) {
-				return a == b;
-			}
-		};
+	template <typename Y, typename ...X> std::ostream inline &leaf<Y (*)(X...)>::write (std::ostream &o) const {
+		return o << "(*)";
 	}
 
 	template <typename T> bool inline leaf<T>::operator == (const value &x) const {
 		if (const leaf<T> *c = dynamic_cast<const leaf<T> *> (&x); c != nullptr)
-			return equal_leaf<T> {} (this->Value, c->Value);
+			return this->Value == c->Value;
+
+		return false;
+	}
+
+	template <typename Y, typename ...X> bool inline leaf<Y (*)(X...)>::operator == (const value &x) const {
+		if (const leaf<Y (*)(X...)> *c = dynamic_cast<const leaf<Y (*)(X...)> *> (&x); c != nullptr)
+			return this->Value == c->Value;
 
 		return false;
 	}
 
 	template <typename T> expression inline leaf<T>::make (const T &x) {
 		return expression {std::static_pointer_cast<const node> (std::make_shared<leaf<T>> (x))};
+	}
+
+	template <typename Y, typename ...X> expression inline leaf<Y (*)(X...)>::make (Y (*x)(X...)) {
+		return expression {std::static_pointer_cast<const node> (std::make_shared<leaf<Y (*)(X...)>> (x))};
 	}
 
 	namespace {
@@ -160,47 +170,48 @@ namespace Diophant {
 		return leaf_cast<T> {} (t);
 	}
 
+	template <typename Y, typename ...X> bool inline leaf<Y (*)(X...)>::cast (const machine &, Type t) const {
+		return leaf_cast<Y (*)(X...)> {} (t);
+	}
+
+	template <typename T> expression inline leaf<T>::operator () (data::stack<expression> x) const {
+		return {};
+	};
+
 	namespace {
-		template <typename T> struct leaf_call {
-			expression operator () (const leaf<T> &, data::stack<expression>) {
-				return {};
-			}
-		};
 
 		template <typename ...X> struct expand_stack;
 
 		template <> struct expand_stack<> {
 			template <typename Y, typename... Z>
-			auto expand (Y f, data::stack<expression> stack, Z&&... z) {
+			auto expand (Y f, data::stack<expression> stack, Z... z) {
 				return f (z...);
 			}
 		};
 
 		template <typename A, typename ...B> struct expand_stack<A, B...> {
 			template <typename Y, typename... Z>
-			auto expand (Y f, data::stack<expression> stack, Z&&... z) {
+			auto expand (Y f, data::stack<expression> stack, Z... z) {
 				// this should not happen because we check earlier.
 				if (data::empty (stack)) throw data::exception {} << "try to expand empty argument list";
 				expression first = data::first (stack);
-				const leaf<A> *v = static_cast<const leaf<A> *> (first.get ());
+
+				using type = std::remove_const_t<std::remove_reference_t<A>>;
+
+				const leaf<type> *v = dynamic_cast<const leaf<type> *> (first.get ());
 				// this should also not happen because we check earlier.
 				if (v == nullptr) throw data::exception {} << "built-in function called with invalid type.";
-				return expand_stack<B...> {}.template expand<Y, Z..., A> (f, data::rest (stack), z..., v->Value);
-			}
-		};
 
-		template <typename Y, typename ... X> struct leaf_call<Y (*)(X...)> {
-			expression operator () (const leaf<Y (*)(X...)> &f, data::stack<expression> x) {
-				if (data::size (x) < sizeof...(X)) return expression {};
-				expression result = leaf<Y>::make (expand_stack<X...> {}.template expand<Y (*)(X...)> (f.Value, x));
-				if (data::size (x) == sizeof...(X)) return result;
-				return call::make (result, data::drop (x, sizeof...(X)));
+				return expand_stack<B...> {}.template expand<Y, Z..., A> (f, data::rest (stack), z..., v->Value);
 			}
 		};
 	}
 
-	template <typename T> expression leaf<T>::operator () (data::stack<expression> x) const {
-		return leaf_call<T> {} (*this, x);
+	template <typename Y, typename ...X> expression leaf<Y (*)(X...)>::operator () (data::stack<expression> x) const {
+		if (data::size (x) < sizeof...(X)) return expression {};
+		expression result = leaf<Y>::make (expand_stack<X...> {}.template expand<Y (*)(X...)> (Value, x));
+		if (data::size (x) == sizeof...(X)) return result;
+		return call::make (result, data::drop (x, sizeof...(X)));
 	};
 }
 

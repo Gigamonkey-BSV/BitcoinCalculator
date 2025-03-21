@@ -58,7 +58,7 @@ namespace Diophant {
         test (" ( ) ", expression {});
         test (" ( () ) ", expression {});
         test (" ( (()) ) ", expression {});
-        test ("Nil", symbol::make ("Nil"), expression {});
+        test ("nil", symbol::make ("nil"), expression {});
 
         // unmatched parentheses
         test ("(", false);
@@ -120,6 +120,10 @@ namespace Diophant {
 
         // invalid hex number.
         test ("0x0", false);
+
+        // negative zero
+        test ("-0x");
+        test ("0x80");
 
         // hex strings
         test ("'abcdef000001'");

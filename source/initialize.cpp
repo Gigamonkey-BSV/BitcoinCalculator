@@ -4,6 +4,7 @@
 namespace Diophant {
 
     Bitcoin::integer scriptnum_bool_not (const Bitcoin::integer &x);
+
     Bitcoin::integer scriptnum_bool_and (const Bitcoin::integer &x, const Bitcoin::integer &y);
     Bitcoin::integer scriptnum_bool_or (const Bitcoin::integer &x, const Bitcoin::integer &y);
 
@@ -340,6 +341,9 @@ namespace Diophant {
         m = m.declare (symbol {"RIPEMD"}, integer_type, {{secret_type, x}, {integer_type, y}});
         m = m.declare (symbol {"Hash160"}, integer_type, {{integer_type, x}});
         m = m.declare (symbol {"Hash256"}, integer_type, {{integer_type, x}});
+
+        m = m.declare (symbol {"RandomKey"}, secret_type, {{integer_type, x}});
+        m = m.declare (symbol {"RandomKey"}, secret_type, {{string_type, x}});
 
         return m;
     }
