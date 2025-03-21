@@ -72,36 +72,21 @@ namespace Diophant {
 
     namespace {
 
-        expression evaluate_round (const machine &m, const node *p);
-
-        // note: having two similar functions here should not be necessary.
-        // We will make an improved vesion later that checks for no change
-        // by just checking if the pointers are equal.
-        expression evaluate_repeated (const machine &m, Expression e) {
-            const node *p = e.get ();
-            expression last = evaluate_round (m, p);
-            if (last == expression {}) return expression {};
-            while (true) {
-                p = e.get ();
-                expression next = evaluate_round (m, p);
-                if (next == expression {}) return last;
-                last = next;
-            }
-        }
+        expression evaluate_round (const machine &m, Expression e);
 
     }
 
     expression machine::evaluate (Expression e) const {
         expression last = e;
         while (true) {
-            const node *p = last.get ();
-            expression next = evaluate_round (*this, p);
-            if (next == expression {}) return last;
+            expression next = evaluate_round (*this, e);
+            if (next.get () == last.get ()) return last;
             last = next;
         }
     }
 
     data::maybe<replacements> machine::match (data::stack<pattern> p, data::stack<expression> e, data::stack<casted> known) const {
+
         if (data::size (p) != data::size (e)) return {};
 
         replacements r;
@@ -123,6 +108,7 @@ namespace Diophant {
     }
 
     data::maybe<replacements> machine::match (const pattern p, const expression e, data::stack<casted> known) const {
+
         const form *z = p.get ();
         const node *n = e.get ();
 
@@ -133,9 +119,9 @@ namespace Diophant {
 
         if (const node *q = dynamic_cast<const node *> (z); q != nullptr || z == nullptr)
             return p == pattern {e} ? mr {{}} : mr {};
-        else if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr)
+        else if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr) {
             return b->Name != "" ? mr {{{b->Name, e}}} : mr {{}};
-        else if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
+        } else if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
             mr r = match (t->Match, e, known);
             if (!bool (r)) return {};
             if (cast (t->Required, e)) return r;
@@ -184,22 +170,25 @@ namespace Diophant {
 
         expression evaluate_call (const machine &m, const call &c);
 
-        expression evaluate_round (const machine &m, const node *p) {
+        expression evaluate_round (const machine &m, Expression e) {
 
-            if (p == nullptr) return expression {};
+            const node *p = e.get ();
+            if (p == nullptr) return e;
+
+            expression next {};
 
             if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr)
-                return evaluate_symbol (m, *x);
+                next = evaluate_symbol (m, *x);
             if (const list *ls = dynamic_cast<const list *> (p); ls != nullptr)
-                return evaluate_list (m, *ls);
+                next = evaluate_list (m, *ls);
             if (const binary_operation *b = dynamic_cast<const binary_operation *> (p); b != nullptr)
-                return evaluate_binary_operation (m, *b);
+                next = evaluate_binary_operation (m, *b);
             if (const unary_operation *u = dynamic_cast<const unary_operation *> (p); u != nullptr)
-                return evaluate_unary_operation (m, *u);
+                next = evaluate_unary_operation (m, *u);
             if (const call *c = dynamic_cast<const call *> (p); c != nullptr)
-                return evaluate_call (m, *c);
+                next = evaluate_call (m, *c);
 
-            return expression {};
+            return next == expression {} ? e : next;
         }
 
         using mtf = machine::transformation;
@@ -236,11 +225,8 @@ namespace Diophant {
 
             data::list<expression> new_ls;
             for (Expression old_arg : data::stack<expression> (ls.List)) {
-                expression new_arg = evaluate_repeated (m, old_arg);
-                if (new_arg != expression {}) {
-                    changed = true;
-                    new_ls <<= new_arg;
-                } else new_ls <<= old_arg;
+                expression new_arg = m.evaluate (old_arg);
+                if (new_arg != old_arg) changed = true;
             }
 
             return changed ? list::make (new_ls) : expression {};
@@ -264,14 +250,10 @@ namespace Diophant {
             // first we evaluate function and args individually.
             bool changed = false;
 
-            expression left = evaluate_repeated (m, b.Left);
-            expression right = evaluate_repeated (m, b.Right);
+            expression left = m.evaluate (b.Left);
+            expression right = m.evaluate (b.Right);
 
-            if (left != expression {}) changed = true;
-            else left = b.Left;
-
-            if (right != expression {}) changed = true;
-            else right = b.Right;
+            if (left != right || right != right) changed = true;
 
             {
                 const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operator);
@@ -284,7 +266,7 @@ namespace Diophant {
                     changed = true;
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                    return evaluate_repeated (m, replace (*cx->Result.Def, cx->Replacements));
+                    return m.evaluate (replace (*cx->Result.Def, cx->Replacements));
                 }
             }
 
@@ -295,23 +277,22 @@ namespace Diophant {
         expression evaluate_unary_operation (const machine &m, const unary_operation &u) {
             // first we evaluate function and args individually.
             bool changed = false;
-            expression body = evaluate_repeated (m, u.Body);
-            if (body != expression {}) changed = true;
-            else body = u.Body;
+            expression body = m.evaluate (u.Body);
+            if (body != u.Body) changed = true;
 
             {
                 const data::stack<mtf> *v = m.UnaryDefinitions.contains (u.Operator);
                 if (v == nullptr) goto done;
 
                 data::stack<mtf> tfs = *v;
-
                 data::maybe<candidate> cx = get_candidate (m, tfs, {body});
 
                 if (bool (cx)) {
                     changed = true;
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                    return evaluate_repeated (m, replace (*cx->Result.Def, cx->Replacements));
+
+                    return m.evaluate (replace (*cx->Result.Def, cx->Replacements));
                 }
             }
 
@@ -323,17 +304,14 @@ namespace Diophant {
 
             // first we evaluate function and args individually.
             bool changed = false;
-            expression fun = evaluate_repeated (m, c.Fun);
-            if (fun != expression {}) changed = true;
-            else fun = c.Fun;
+            expression fun = m.evaluate (c.Fun);
+            if (fun != c.Fun) changed = true;
 
             data::list<expression> args;
             for (Expression old_arg : data::stack<expression> (c.Args)) {
-                expression new_arg = evaluate_repeated (m, old_arg);
-                if (new_arg != expression {}) {
-                    changed = true;
-                    args <<= new_arg;
-                } else args <<= old_arg;
+                expression new_arg = m.evaluate (old_arg);
+                if (new_arg != old_arg) changed = true;
+                args <<= new_arg;
             }
 
             // next we try to match the function and args against our definitions.
@@ -370,7 +348,7 @@ namespace Diophant {
                         args = data::rest (args);
                     }
 
-                    fun = evaluate_repeated (m, replace (n->Body, r));
+                    fun = m.evaluate (replace (n->Body, r));
 
                     if (data::empty (args)) return fun;
                     continue;
@@ -396,14 +374,14 @@ namespace Diophant {
                         changed = true;
                         if (!bool (cx->Result.Def))
                             throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                        fun = evaluate_repeated (m, replace (*cx->Result.Def, cx->Replacements));
+                        fun = m.evaluate (replace (*cx->Result.Def, cx->Replacements));
                         args = cx->Remaining;
                         continue;
                     }
                 }
 
                 if (const value *v = dynamic_cast<const value *> (p); v != nullptr)
-                    throw data::exception {} << "This is a piece of shit!!!!";
+                    return (*v) (args);
             }
 
             done:

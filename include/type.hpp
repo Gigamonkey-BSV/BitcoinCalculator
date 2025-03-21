@@ -23,7 +23,7 @@ namespace Diophant {
 
     enum class impartial_ordering {
         equal,
-        unequal,
+        disjoint,
         subset,
         superset,
         nonempty_complements

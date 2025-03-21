@@ -41,8 +41,8 @@ namespace Diophant {
         equal,
         unequal,
         identical,        // ===
-        colon,
         element,
+        colon,
         such_that,
         double_implication,
         intuitionistic_and,

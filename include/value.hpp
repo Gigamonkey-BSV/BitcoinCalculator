@@ -29,6 +29,9 @@ namespace Diophant {
         bool cast (const machine &, Type) const final override;
         std::ostream &write (std::ostream &) const final override;
         bool operator == (const value &) const final override;
+
+        // return nil if the args don't fit.
+        // if there are too many args, return a call expression with the rest on the call.
         expression operator () (data::stack<expression>) const final override;
     };
 
@@ -157,8 +160,22 @@ namespace Diophant {
         return leaf_cast<T> {} (t);
     }
 
-    template <typename T> expression leaf<T>::operator () (data::stack<expression>) const {
-        throw data::exception {} << "trying to call something... this function is not implemented.";
+    namespace {
+        template <typename T> struct leaf_call {
+            expression operator () (data::stack<expression>) {
+                return {};
+            }
+        };
+
+        template <typename Y, typename ... X> struct leaf_call<std::function<Y (X...)>> {
+            expression operator () (data::stack<expression>) {
+                throw data::exception {} << "we don't know how to do this yet";
+            }
+        };
+    }
+
+    template <typename T> expression leaf<T>::operator () (data::stack<expression> x) const {
+        return leaf_call<T> {} (x);
     };
 }
 

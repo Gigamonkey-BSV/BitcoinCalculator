@@ -102,7 +102,7 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct call : seq<plus<white>, atom> {};
     template <typename atom> struct call_expr : seq<atom, star<call<atom>>> {};
 
-    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>> {};
+    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
 
     template <typename atom> struct unary_expr;
     template <typename atom> struct unary_operation : seq<left_unary_operand, unary_expr<atom>> {};
@@ -159,8 +159,16 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct bool_and_expr : seq<bool_unequal_expr<atom>, opt<bool_and_op<atom>>> {};
     template <typename atom> struct bool_or_expr : seq<bool_and_expr<atom>, opt<bool_or_op<atom>>> {};
 
-    template <typename atom> struct element_op : seq<ws, string<':','-'>, ws, bool_or_expr<atom>> {};
-    template <typename atom> struct element_expr : seq<bool_or_expr<atom>, opt<element_op<atom>>> {};
+    template <typename atom> struct identical_expr;
+    template <typename atom> struct identical_op : seq<ws, string<'=','=','='>, ws, identical_expr<atom>> {};
+    template <typename atom> struct identical_expr : seq<bool_or_expr<atom>, opt<identical_op<atom>>> {};
+
+    template <typename atom> struct element_expr;
+    template <typename atom> struct element_op :
+        seq<ws, sor<string<'-',':'>,
+            seq<string<'i', 's'>, not_at<symbol_char>>>, ws, element_expr<atom>> {};
+
+    template <typename atom> struct element_expr : seq<identical_expr<atom>, opt<element_op<atom>>> {};
 
     template <typename atom> struct equal_expr;
     template <typename atom> struct unequal_expr;
@@ -188,11 +196,22 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct intuitionistic_implies_expr :
         seq<intuitionistic_or_expr<atom>, opt<intuitionistic_implies_op<atom>>> {};
 
+    template <typename atom> struct cast_op : seq<ws, one<':'>, not_at<sor<one<':'>, one<'='>>>, ws, identical_expr<atom>> {};
+    template <typename atom> struct cast_expr : seq<intuitionistic_implies_expr<atom>, opt<cast_op<atom>>> {};
+
+    template <typename atom> struct condition_op : seq<ws, string<'/',';'>, ws, cast_expr<atom>> {};
+    template <typename atom> struct condition_expr : seq<cast_expr<atom>, opt<cast_op<atom>>> {};
+
     template <typename atom> struct such_that_expr;
     template <typename atom> struct such_that_op : seq<ws, string<'/',';'>, ws, intuitionistic_implies_expr<atom>> {};
     template <typename atom> struct such_that_expr : seq<intuitionistic_implies_expr<atom>, opt<such_that_op<atom>>> {};
 
-    struct expression : seq<bool_or_expr<expression_atom>> {};
+    struct expression : cast_expr<expression_atom> {};
+    struct type : intuitionistic_implies_expr<expression_atom> {};
+    struct rule : seq<condition_expr<pattern_atom>, ws, string<'-', '>'>, ws, expression> {};
+
+    struct statement : seq<rule, ws, one<';'>> {};
+    struct program : seq<star<seq<statement, ws>>, expression> {};
 
 }
 

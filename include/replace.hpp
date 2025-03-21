@@ -7,7 +7,7 @@ namespace Diophant {
 
     using replacements = data::map<symbol, expression>;
 
-    expression replace (expression, replacements);
+    expression replace (Expression, replacements);
 
 }
 

@@ -5,7 +5,7 @@
 namespace Diophant {
 
     // return null if no replacement is made.
-    expression replace_inner (expression e, replacements rr) {
+    expression replace_inner (Expression e, replacements rr) {
         const node *p = e.get ();
         if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
             const auto *r = rr.contains (*x);
@@ -43,28 +43,31 @@ namespace Diophant {
         } if (const unary_operation *u = dynamic_cast<const unary_operation *> (p); u != nullptr) {
             expression replaced = replace_inner (u->Body, rr);
             return replaced == expression {} ? expression {} : unary_operation::make (u->Operator, replaced);
-        } if (const call *c = dynamic_cast<const call *> (c); c != nullptr) {
+        } if (const call *c = dynamic_cast<const call *> (p); c != nullptr) {
             bool replacement_was_made = false;
             data::stack<expression> new_list;
 
-            for (const expression z : c->Args) {
+            for (Expression z : c->Args) {
                 expression replaced = replace_inner (z, rr);
                 if (replaced != expression {}) {
+                    replacement_was_made = true;
                     new_list <<= replaced;
                 } else new_list <<= z;
             }
 
-            expression replaced = replace_inner (c->Fun, rr);
-            if (replaced == expression {} && !replacement_was_made) return expression {};
+            expression replaced = replace (c->Fun, rr);
+            if (replaced == expression {}) {
+                if (!replacement_was_made) return expression {};
+                replaced = c->Fun;
+            }
 
-            replaced = replaced == expression {} ? c->Fun : replaced;
             return call::make (replaced, data::reverse (new_list));
         }
 
         return expression {};
     }
 
-    expression replace (expression e, replacements rr) {
+    expression replace (Expression e, replacements rr) {
         if (e == expression {}) return e;
         expression replaced = replace_inner (e, rr);
         if (replaced == expression {}) return e;
