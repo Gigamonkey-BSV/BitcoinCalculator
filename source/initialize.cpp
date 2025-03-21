@@ -291,21 +291,21 @@ namespace Diophant {
         m = m.declare (symbol {"Push"}, integer_type, {{string_type, x}});
 
         // string operations
-        m = m.define (binary_operand::equal, bool_type, {string_type, x}, {string_type, x},
+        m = m.define (binary_operand::equal, bool_type, {string_type, x}, {string_type, y},
             call::make (built_in_function<Bitcoin::integer,
-                const data::string &, const data::string &>::make (&string_equal), {X, Y}));
+                const data::string &, const data::string &>::make (string_equal), {X, Y}));
 
-        m = m.define (binary_operand::unequal, bool_type, {string_type, x}, {string_type, x},
+        m = m.define (binary_operand::unequal, bool_type, {string_type, x}, {string_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const data::string &, const data::string &>::make (&string_unequal), {X, Y}));
 
-        m = m.define (binary_operand::identical, bool_type, {string_type, x}, {string_type, x},
+        m = m.define (binary_operand::identical, bool_type, {string_type, x}, {string_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const data::string &, const data::string &>::make (&string_identical), {X, Y}));
 
         m = m.declare (binary_operand::cat, integer_type, integer_type, integer_type);
 
-        m = m.declare (binary_operand::cat, string_type, {string_type, x}, {string_type, x});
+        m = m.declare (binary_operand::cat, string_type, {string_type, x}, {string_type, y});
 
         // bit shifts
         m = m.declare (symbol {"RightShift"}, integer_type, {{integer_type, x}});
