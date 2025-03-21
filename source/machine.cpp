@@ -1,6 +1,7 @@
 #include <machine.hpp>
 #include <values/list.hpp>
 #include <values/lambda.hpp>
+#include <data/io/wait_for_enter.hpp>
 
 namespace Diophant {
 
@@ -72,6 +73,21 @@ namespace Diophant {
     namespace {
 
         expression evaluate_round (const machine &m, const node *p);
+
+        // note: having two similar functions here should not be necessary.
+        // We will make an improved vesion later that checks for no change
+        // by just checking if the pointers are equal.
+        expression evaluate_repeated (const machine &m, Expression e) {
+            const node *p = e.get ();
+            expression last = evaluate_round (m, p);
+            if (last == expression {}) return expression {};
+            while (true) {
+                p = e.get ();
+                expression next = evaluate_round (m, p);
+                if (next == expression {}) return last;
+                last = next;
+            }
+        }
 
     }
 
@@ -169,6 +185,7 @@ namespace Diophant {
         expression evaluate_call (const machine &m, const call &c);
 
         expression evaluate_round (const machine &m, const node *p) {
+
             if (p == nullptr) return expression {};
 
             if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr)
@@ -219,7 +236,7 @@ namespace Diophant {
 
             data::list<expression> new_ls;
             for (Expression old_arg : data::stack<expression> (ls.List)) {
-                expression new_arg = m.evaluate (old_arg);
+                expression new_arg = evaluate_repeated (m, old_arg);
                 if (new_arg != expression {}) {
                     changed = true;
                     new_ls <<= new_arg;
@@ -247,8 +264,8 @@ namespace Diophant {
             // first we evaluate function and args individually.
             bool changed = false;
 
-            expression left = m.evaluate (b.Left);
-            expression right = m.evaluate (b.Right);
+            expression left = evaluate_repeated (m, b.Left);
+            expression right = evaluate_repeated (m, b.Right);
 
             if (left != expression {}) changed = true;
             else left = b.Left;
@@ -267,7 +284,7 @@ namespace Diophant {
                     changed = true;
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                    return m.evaluate (replace (*cx->Result.Def, cx->Replacements));
+                    return evaluate_repeated (m, replace (*cx->Result.Def, cx->Replacements));
                 }
             }
 
@@ -278,7 +295,7 @@ namespace Diophant {
         expression evaluate_unary_operation (const machine &m, const unary_operation &u) {
             // first we evaluate function and args individually.
             bool changed = false;
-            expression body = m.evaluate (u.Body);
+            expression body = evaluate_repeated (m, u.Body);
             if (body != expression {}) changed = true;
             else body = u.Body;
 
@@ -294,7 +311,7 @@ namespace Diophant {
                     changed = true;
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                    return m.evaluate (replace (*cx->Result.Def, cx->Replacements));
+                    return evaluate_repeated (m, replace (*cx->Result.Def, cx->Replacements));
                 }
             }
 
@@ -303,15 +320,16 @@ namespace Diophant {
         }
 
         expression evaluate_call (const machine &m, const call &c) {
+
             // first we evaluate function and args individually.
             bool changed = false;
-            expression fun = m.evaluate (c.Fun);
+            expression fun = evaluate_repeated (m, c.Fun);
             if (fun != expression {}) changed = true;
             else fun = c.Fun;
 
             data::list<expression> args;
             for (Expression old_arg : data::stack<expression> (c.Args)) {
-                expression new_arg = m.evaluate (old_arg);
+                expression new_arg = evaluate_repeated (m, old_arg);
                 if (new_arg != expression {}) {
                     changed = true;
                     args <<= new_arg;
@@ -352,7 +370,7 @@ namespace Diophant {
                         args = data::rest (args);
                     }
 
-                    fun = m.evaluate (replace (n->Body, r));
+                    fun = evaluate_repeated (m, replace (n->Body, r));
 
                     if (data::empty (args)) return fun;
                     continue;
@@ -378,7 +396,7 @@ namespace Diophant {
                         changed = true;
                         if (!bool (cx->Result.Def))
                             throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                        fun = m.evaluate (replace (*cx->Result.Def, cx->Replacements));
+                        fun = evaluate_repeated (m, replace (*cx->Result.Def, cx->Replacements));
                         args = cx->Remaining;
                         continue;
                     }
