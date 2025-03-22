@@ -76,6 +76,14 @@ namespace Diophant {
             }
         };
 
+        template <typename atom> struct read_expression<tao_pegtl_grammar::left_unary_operation<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                // NOTE this won't work if we ever have any unary operators that are bigger than one char.
+                eval.unary (unary_operand {*in.begin ()});
+            }
+        };
+
         template <typename atom> struct read_expression<tao_pegtl_grammar::call<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
@@ -83,11 +91,10 @@ namespace Diophant {
             }
         };
 
-        template <typename atom> struct read_expression<tao_pegtl_grammar::unary_operation<atom>> {
+        template <typename atom> struct read_expression<tao_pegtl_grammar::cat_op<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                // NOTE this won't work if we ever have any unary operators that are bigger than one char.
-                eval.unary (unary_operand {*in.begin ()});
+                eval.binary (binary_operand::cat);
             }
         };
 
@@ -231,7 +238,7 @@ namespace Diophant {
             }
         };
 
-        template <typename atom> struct read_expression<tao_pegtl_grammar::such_that_op<atom>> {
+        template <> struct read_expression<tao_pegtl_grammar::such_that_op> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 eval.binary (binary_operand::such_that);
@@ -282,7 +289,7 @@ namespace Diophant {
     }
 
     void parser::binary (binary_operand op) {
-        throw data::exception {} << "parser::binary incomplete";
+        Exp = prepend (rest (rest (Exp)), binary_operation::make (op, first (rest (Exp)), first (Exp)));
     }
 
 }

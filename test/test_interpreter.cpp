@@ -16,10 +16,14 @@ namespace Diophant {
     void test (std::string input, expression expected_read, expression expect_eval);
 
     // test whether the expression will error when evaluated.
-    void test (std::string input, expression expected_read, bool expect_error);
+    void test (std::string input, expression expected_read, bool expect_eval);
 
     expression make_secret (uint256 u) {
         return secret::make (secp256k1::secret {uint256 {u}});
+    }
+
+    expression make_scriptnum (const Bitcoin::integer &x) {
+        return scriptnum::make (x);
     }
 
     expression unary (char x, expression e) {
@@ -95,9 +99,40 @@ namespace Diophant {
         test ("True || False", Or (symbol::make ("True"), symbol::make ("False")), True ());
         test ("False || True", Or (symbol::make ("False"), symbol::make ("True")), True ());
 
+        // number formats.
         test ("0", make_secret (0), make_secret (0));
+        test ("9876543", make_secret (9876543), make_secret (9876543));
+
+        // invalid dec number
+        test ("0923", false);
+
+        // hex numbers
+        test ("0x", make_scriptnum ("0x"));
+        test ("0x00", make_scriptnum ("0x00"));
+        test ("0x80", make_scriptnum ("0x80"));
+        test ("0x01", make_scriptnum ("0x01"));
+
+        // invalid hex number.
+        test ("0x0", false);
+
+        // invalid pubkeys
+        test ("023456", false);
+        test ("034567", false);
+        test ("045678", false);
+
+        // hex strings
+        test ("'abcdef000001'");
+        test ("'abcdef00001'", false);
+
+        // unary operators
         test ("-0", make_secret (0), make_secret (0));
         test ("- 0", make_secret (0), make_secret (0));
+
+        test ("-0x00", make_scriptnum ("0x00"), make_scriptnum ("0x80"));
+        test ("-0x", make_scriptnum ("0x"), make_scriptnum ("0x80"));
+
+        // cat
+        test (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
 
         test ("0 + 0");
         test ("1 + 0");
@@ -109,30 +144,12 @@ namespace Diophant {
         test ("1 / 0");
         test ("1 % 0");
 
-        test ("+8", unary ('!', make_secret (8)));
+        test ("!8", unary ('!', make_secret (8)));
         test ("8+", false);
         test ("8-", false);
 
-        // invalid dec number
-        test ("0923", false);
-
-        test ("0x");
-
-        // invalid hex number.
-        test ("0x0", false);
-
         // negative zero
         test ("-0x");
-        test ("0x80");
-
-        // hex strings
-        test ("'abcdef000001'");
-        test ("'abcdef00001'", false);
-
-        // invalid pubkeys
-        test ("023456", false);
-        test ("034567", false);
-        test ("045678", false);
 
     }
 
@@ -146,7 +163,8 @@ namespace Diophant {
     }
 
     expression test_parse (std::string input, expression expect_read) {
-        expression ex = read_line (input);
+        expression ex;
+        EXPECT_NO_THROW (ex = read_line (input));
         EXPECT_EQ (ex, expect_read);
         return ex;
     }

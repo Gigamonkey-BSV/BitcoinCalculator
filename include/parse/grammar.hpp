@@ -35,9 +35,8 @@ namespace tao_pegtl_grammar {
 
     // strings can have escaped characters with \ .
     struct string_body : star<sor<
-            seq<not_at<sor<one<'\\'>, one<'"'>>>, ascii::print>,  // any ascii character other than \ and "
-            seq<one<'\\'>, ascii::print>                          // \ followed by any printable character.
-        >> {};
+        seq<not_at<sor<one<'\\'>, one<'"'>>>, ascii::print>,  // any ascii character other than \ and "
+        seq<one<'\\'>, ascii::print>>> {};                    // \ followed by any printable character.
 
     // strings are written with ""
     struct string_lit : seq<
@@ -51,6 +50,8 @@ namespace tao_pegtl_grammar {
         string<'i', 'n'>,
         string<'a', 's'>,
         string<'i', 's'>,
+        string<'o', 'r'>,
+        string<'a', 'n', 'd'>,
         string<'l', 'e', 't'>,
         string<'t', 'h', 'e', 'n'>,
         string<'e', 'l', 's', 'e'>,
@@ -59,9 +60,7 @@ namespace tao_pegtl_grammar {
 
     struct symbol_char : sor<alnum, one<'_'>> {};
 
-//    struct symbol : minus<seq<alnum, star<symbol_char>>, reserved_words> {};
-
-    struct symbol : seq<alnum, star<symbol_char>> {};
+    struct symbol : minus<seq<alnum, star<symbol_char>>, reserved_words> {};
 
     struct expression;
 
@@ -90,7 +89,7 @@ namespace tao_pegtl_grammar {
 
     struct parenthetical : seq<open_paren, ws, opt<expression, ws, star<seq<one<','>>, ws, expression, ws>>, close_paren> {};
 
-    struct var : seq<opt<symbol>, one<'.'>> {};
+    struct var : seq<one<'_'>, opt<symbol>> {};
     struct typed_var : seq<opt<symbol>, ws, one<':'>, ws, expression> {};
 
     struct expression_atom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol,
@@ -99,14 +98,19 @@ namespace tao_pegtl_grammar {
     struct pattern_atom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol,
         var, typed_var, dif, parenthetical, list, let, lambda> {};
 
+    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
+    struct right_unary_operand : sor<one<'!'>, one<'$'>> {};
+
     template <typename atom> struct call : seq<plus<white>, atom> {};
     template <typename atom> struct call_expr : seq<atom, star<call<atom>>> {};
 
-    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
+    template <typename atom> struct left_unary_expr;
+    template <typename atom> struct left_unary_operation : seq<left_unary_operand, ws, left_unary_expr<atom>> {};
+    template <typename atom> struct left_unary_expr : sor<left_unary_operation<atom>, call_expr<atom>> {};
 
-    template <typename atom> struct unary_expr;
-    template <typename atom> struct unary_operation : seq<left_unary_operand, unary_expr<atom>> {};
-    template <typename atom> struct unary_expr : sor<unary_operation<atom>, call_expr<atom>> {};
+    template <typename atom> struct cat_expr;
+    template <typename atom> struct cat_op : seq<ws, string<'<','>'>, ws, cat_expr<atom>> {};
+    template <typename atom> struct cat_expr : seq<left_unary_expr<atom>, opt<cat_op<atom>>> {};
 
     template <typename atom> struct pow_expr;
     template <typename atom> struct mul_expr;
@@ -124,7 +128,7 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct sub_op : seq<ws, one<'-'>, ws, sub_expr<atom>> {};
     template <typename atom> struct add_op : seq<ws, one<'+'>, ws, add_expr<atom>> {};
 
-    template <typename atom> struct pow_expr : seq<unary_expr<atom>, opt<pow_op<atom>>> {};
+    template <typename atom> struct pow_expr : seq<cat_expr<atom>, opt<pow_op<atom>>> {};
     template <typename atom> struct mul_expr : seq<pow_expr<atom>, opt<mul_op<atom>>> {};
     template <typename atom> struct mod_expr : seq<mul_expr<atom>, opt<mod_op<atom>>> {};
     template <typename atom> struct div_mod_expr : seq<mod_expr<atom>, opt<div_mod_op<atom>>> {};
@@ -163,6 +167,8 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct identical_op : seq<ws, string<'=','=','='>, ws, identical_expr<atom>> {};
     template <typename atom> struct identical_expr : seq<bool_or_expr<atom>, opt<identical_op<atom>>> {};
 
+    struct value : identical_expr<expression_atom> {};
+
     template <typename atom> struct element_expr;
     template <typename atom> struct element_op :
         seq<ws, sor<string<'-',':'>,
@@ -196,19 +202,20 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct intuitionistic_implies_expr :
         seq<intuitionistic_or_expr<atom>, opt<intuitionistic_implies_op<atom>>> {};
 
-    template <typename atom> struct cast_op : seq<ws, one<':'>, not_at<sor<one<':'>, one<'='>>>, ws, identical_expr<atom>> {};
-    template <typename atom> struct cast_expr : seq<intuitionistic_implies_expr<atom>, opt<cast_op<atom>>> {};
+    struct type : intuitionistic_implies_expr<expression_atom> {};
 
-    template <typename atom> struct condition_op : seq<ws, string<'/',';'>, ws, cast_expr<atom>> {};
-    template <typename atom> struct condition_expr : seq<cast_expr<atom>, opt<cast_op<atom>>> {};
-
-    template <typename atom> struct such_that_expr;
-    template <typename atom> struct such_that_op : seq<ws, string<'/',';'>, ws, intuitionistic_implies_expr<atom>> {};
-    template <typename atom> struct such_that_expr : seq<intuitionistic_implies_expr<atom>, opt<such_that_op<atom>>> {};
+    struct cast_op : seq<ws, one<':'>, not_at<sor<one<':'>, one<'='>>>, ws, type> {};
+    template <typename atom> struct cast_expr : seq<identical_expr<atom>, opt<cast_op>> {};
 
     struct expression : cast_expr<expression_atom> {};
-    struct type : intuitionistic_implies_expr<expression_atom> {};
-    struct rule : seq<condition_expr<pattern_atom>, ws, string<'-', '>'>, ws, expression> {};
+
+    struct pattern : cast_expr<pattern_atom> {};
+
+    struct such_that_expr;
+    struct such_that_op : seq<ws, string<'/',';'>, ws, such_that_expr> {};
+    struct such_that_expr : seq<pattern, opt<such_that_op>> {};
+
+    struct rule : seq<such_that_expr, ws, string<'-', '>'>, ws, expression> {};
 
     struct statement : seq<rule, ws, one<';'>> {};
     struct program : seq<star<seq<statement, ws>>, expression> {};

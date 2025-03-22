@@ -15,8 +15,8 @@ namespace Diophant {
     };
 
     enum class binary_operand : data::byte {
-        call,
         unary,
+        call,
         cat,
         power,
         times,
