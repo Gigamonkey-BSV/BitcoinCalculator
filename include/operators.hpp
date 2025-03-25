@@ -99,7 +99,7 @@ namespace Diophant {
     }
 
     std::ostream inline &operator << (std::ostream &o, binary_operand b) {
-        return o << char (b);
+        return o << binary_operator (b);
     }
 
 }

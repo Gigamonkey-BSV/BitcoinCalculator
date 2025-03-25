@@ -205,6 +205,7 @@ namespace Diophant {
         // what we want to do in the future is ensure that only one candidate
         // is valid.
         data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
+
             while (!data::empty (tfs)) {
 
                 auto &tf = data::first (tfs);
@@ -249,13 +250,14 @@ namespace Diophant {
         }
 
         expression evaluate_binary_operation (const machine &m, const binary_operation &b) {
+
             // first we evaluate function and args individually.
             bool changed = false;
 
             expression left = m.evaluate (b.Left);
             expression right = m.evaluate (b.Right);
 
-            if (left != right || right != right) changed = true;
+            if (left != left || right != right) changed = true;
 
             {
                 const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operator);
@@ -360,6 +362,7 @@ namespace Diophant {
                 // in general we want to look for a unique match or a unique
                 // match with automatic type conversions.
                 if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
+
                     const machine::definition *v = m.SymbolDefinitions.contains (*x);
                     if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) goto done;
 
@@ -382,9 +385,8 @@ namespace Diophant {
                     }
                 }
 
-                if (const value *v = dynamic_cast<const value *> (p); v != nullptr) {
+                if (const value *v = dynamic_cast<const value *> (p); v != nullptr)
                     return (*v) (args);
-                }
             }
 
             done:

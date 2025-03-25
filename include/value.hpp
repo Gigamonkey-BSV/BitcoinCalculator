@@ -19,6 +19,7 @@ namespace Diophant {
 
 	namespace secp256k1 = Gigamonkey::secp256k1;
 	using uint256 = data::uint256;
+	using uint512 = data::uint512;
 
 	template <typename T> struct leaf final : value {
 		T Value;
@@ -54,7 +55,7 @@ namespace Diophant {
 	using string = leaf<data::string>;
 	using scriptnum = leaf<Bitcoin::integer>;
 	using pubkey = leaf<secp256k1::pubkey>;
-	using secret = leaf<secp256k1::secret>;
+	using secret = leaf<uint256>;
 	using sat = leaf<Bitcoin::satoshi>;
 	template <typename Y, typename ... X> using built_in_function = leaf<Y (*)(X...)>;
 
@@ -65,16 +66,15 @@ namespace Diophant {
 			}
 		};
 
-		template <> struct write_leaf<secp256k1::secret> {
-			std::ostream &operator () (std::ostream &o, const secp256k1::secret &t) {
-				return o << t.Value;
+		template <> struct write_leaf<uint256> {
+			std::ostream &operator () (std::ostream &o, const uint256 &t) {
+				return o << t;
 			}
 		};
 
 		template <> struct write_leaf<Bitcoin::integer> {
 			std::ostream &operator () (std::ostream &o, const Bitcoin::integer &t) {
-				data::encoding::hexidecimal::write (o, t);
-				return o;
+				return data::encoding::hexidecimal::write (o, t);
 			}
 		};
 	}
@@ -140,7 +140,7 @@ namespace Diophant {
 			}
 		};
 
-		template <> struct base_type<secp256k1::secret> {
+		template <> struct base_type<uint256> {
 			type operator () () {
 				return symbol::make ("secret");
 			}

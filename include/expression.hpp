@@ -29,6 +29,12 @@ namespace Diophant {
 
     std::ostream &operator << (std::ostream &, Expression);
 
+    std::ostream &operator << (std::ostream &, const form *);
+
+    std::ostream inline &operator << (std::ostream &o, Expression p) {
+        return o << static_cast<const form *> (p.get ());
+    }
+
 }
 
 #endif

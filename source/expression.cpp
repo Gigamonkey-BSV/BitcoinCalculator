@@ -1,5 +1,6 @@
 #include <values/list.hpp>
 #include <nodes.hpp>
+#include <pattern.hpp>
 
 namespace Diophant {
 
@@ -45,7 +46,7 @@ namespace Diophant {
     std::ostream &write_unary (std::ostream &, const unary_operation &);
     std::ostream &write_call (std::ostream &, const call &);
 
-    std::ostream &write (std::ostream &o, const node *n, precedence Prec) {
+    std::ostream &write (std::ostream &o, const form *n, precedence Prec) {
         if (n == nullptr) return o << "nil";
 
         if (const value *v = dynamic_cast<const value *> (n); v != nullptr)
@@ -72,12 +73,18 @@ namespace Diophant {
         if (const list *ll = dynamic_cast<const list *> (n); ll != nullptr)
             return data::functional::write (o, ll->List);
 
+        if (const blank *bl = dynamic_cast<const blank *> (n); bl != nullptr)
+            return o << "_" << bl->Name;
+
+        if (const typed *y = dynamic_cast<const typed *> (n); y != nullptr)
+            return o << y->Match << " : " << y->Required;
+
         throw data::exception {} <<
             "incomplete method: << expression; expression.cpp.";
     }
 
-    std::ostream &operator << (std::ostream &o, Expression E) {
-        return write (o, E.get (), max_precedence);
+    std::ostream &operator << (std::ostream &o, const form *n) {
+        return write (o, n, max_precedence);
     }
 
     std::ostream &write_binary (std::ostream &o, const binary_operation &b) {

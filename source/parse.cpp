@@ -7,7 +7,7 @@
 #include <gigamonkey/numbers.hpp>
 
 namespace tao_pegtl_grammar {
-    struct expression_grammar : seq<ws, opt<seq<expression, ws>>, eof> {};
+    struct expression_grammar : seq<ws, opt<seq<property, ws>>, eof> {};
 }
 
 namespace Diophant {

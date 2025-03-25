@@ -25,6 +25,8 @@ namespace Diophant {
 
     bool operator == (Pattern, Pattern);
 
+    std::ostream &operator << (std::ostream &, const pattern &);
+
     // matches everything.
     struct blank : form {
         symbol Name;
@@ -85,6 +87,10 @@ namespace Diophant {
 
     bool inline operator == (Pattern a, Pattern b) {
         throw data::exception {} << "we cannot check patterns equal yet; pattern.hpp line 87";
+    }
+
+    std::ostream inline &operator << (std::ostream &o, const pattern &p) {
+        return o << p.get ();
     }
 
 }
