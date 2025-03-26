@@ -17,10 +17,10 @@ namespace Diophant {
         virtual ~node () {}
     };
 
-    struct expression : data::ptr<const node> {
+    struct expression : data::ptr<node> {
         // a nil expression
-        expression (): data::ptr<const node> {} {}
-        expression (data::ptr<const node> x): data::ptr<const node> {x} {}
+        expression (): data::ptr<node> {} {}
+        expression (data::ptr<node> x): data::ptr<node> {x} {}
     };
 
     using Expression = const expression &;

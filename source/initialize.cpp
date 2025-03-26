@@ -468,11 +468,11 @@ namespace Diophant {
                 const secp256k1::pubkey &>::make (&push), {X}));
 
         // base 58
-        m = m.define (symbol {"ReadBase58"}, secret_type, {{string_type, x}},
+        m = m.define (symbol {"EncodeBase58"}, secret_type, {{string_type, x}},
             call::make (built_in_function<uint256,
                 const data::string &>::make (&read_base_58), {X}));
 
-        m = m.define (symbol {"WriteBase58"}, string_type, {{secret_type, x}},
+        m = m.define (symbol {"DecodeBase58"}, string_type, {{secret_type, x}},
             call::make (built_in_function<data::string,
                 const uint256 &>::make (&write_base_58), {X}));
 
@@ -822,6 +822,7 @@ namespace Diophant {
     secp256k1::pubkey secret_to_public (const uint256 &x, const Bitcoin::integer &y) {
         secp256k1::secret z {x};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";
+
         return z.to_public (bool (y));
     }
 

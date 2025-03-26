@@ -22,8 +22,8 @@ namespace Diophant {
         return secret::make (secp256k1::secret {uint256 {u}});
     }
 
-    expression make_scriptnum (const Bitcoin::integer &x) {
-        return scriptnum::make (x);
+    expression make_scriptnum (const std::string &x) {
+        return scriptnum::make (Bitcoin::integer {x});
     }
 
     expression unary (char x, expression e) {
@@ -128,17 +128,24 @@ namespace Diophant {
         test ("-0", make_secret (0), make_secret (0));
         test ("- 0", make_secret (0), make_secret (0));
 
+        // negative zero
         test ("-0x00", make_scriptnum ("0x00"), make_scriptnum ("0x80"));
         test ("-0x", make_scriptnum ("0x"), make_scriptnum ("0x80"));
 
-        // cat
+        // bitnot
+
+        // string cat
         test (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
 
+        // scriptnum cat
+
+        // arithmetic with secrets
+        test ("-0", unary ('-', make_secret (0)), make_secret (0));
+        test ("-1", unary ('-', make_secret (1)),
+            make_secret (uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
         test ("0 + 0");
         test ("1 + 0");
         test ("1 + 1");
-        test ("-1", unary ('-', make_secret (1)),
-            make_secret (uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
 
         // these should both have a divide by zero error on evaluation.
         test ("1 / 0");
@@ -147,9 +154,6 @@ namespace Diophant {
         test ("!8", unary ('!', make_secret (8)));
         test ("8+", false);
         test ("8-", false);
-
-        // negative zero
-        test ("-0x");
 
     }
 
@@ -164,8 +168,8 @@ namespace Diophant {
 
     expression test_parse (std::string input, expression expect_read) {
         expression ex;
-        EXPECT_NO_THROW (ex = read_line (input));
-        EXPECT_EQ (ex, expect_read);
+        EXPECT_NO_THROW (ex = read_line (input)) << "testing input " << input;
+        EXPECT_EQ (ex, expect_read) << "testing input " << input;
         return ex;
     }
 
@@ -177,7 +181,7 @@ namespace Diophant {
     // test whether the expression will evaluate to a given expression.
     void test (std::string input, expression expect_read, expression expect_eval) {
         expression ex = m.evaluate (test_parse (input, expect_read));
-        EXPECT_EQ (ex, expect_eval);
+        EXPECT_EQ (ex, expect_eval) << "expected " << input << " to evaluate to " << expect_eval;
     }
 
     void test (std::string input, expression expect_read, bool expect_eval) {

@@ -268,11 +268,18 @@ namespace Diophant {
     }
 
     void inline parser::call () {
-        Exp = prepend (
-            rest (rest (Exp)),
-            call::make (
-                first (rest (Exp)),
-                take (Exp, 1)));
+        if (data::size (Exp) < 2) throw data::exception {} << "invalid parser stack on call: too small";
+
+        expression arg = data::first (Exp);
+        Exp = data::rest (Exp);
+        expression fun = data::first (Exp);
+
+        if (Diophant::call *fx = dynamic_cast<Diophant::call *> (fun.get ()); fx != nullptr) {
+            fx->Args <<= arg;
+            return;
+        }
+
+        Exp = prepend (data::rest (Exp), call::make (fun, {arg}));
     }
 
     void inline parser::push (Expression x) {

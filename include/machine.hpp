@@ -69,11 +69,11 @@ namespace Diophant {
     inline casted::casted (Type t, Expression x): Cast {t}, Def {x} {}
 
     expression inline casted::make (Type t) {
-        return expression {std::static_pointer_cast<const node> (std::make_shared<casted> (t))};
+        return expression {std::static_pointer_cast<node> (std::make_shared<casted> (t))};
     }
 
     expression inline casted::make (Type t, Expression x) {
-        return expression {std::static_pointer_cast<const node> (std::make_shared<casted> (t, x))};
+        return expression {std::static_pointer_cast<node> (std::make_shared<casted> (t, x))};
     }
 
 }

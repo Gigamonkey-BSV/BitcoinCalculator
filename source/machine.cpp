@@ -72,7 +72,7 @@ namespace Diophant {
 
     namespace {
 
-        expression evaluate_round (const machine &m, Expression e);
+        data::maybe<expression> evaluate_round (const machine &m, Expression e);
 
     }
 
@@ -81,11 +81,14 @@ namespace Diophant {
     // We might want to mark expressions as already having been
     // evaluated.
     expression machine::evaluate (Expression e) const {
+
         expression last = e;
         while (true) {
-            expression next = evaluate_round (*this, last);
-            if (next == expression {} || next.get () == last.get ()) return last;
-            last = next;
+            data::maybe<expression> next = evaluate_round (*this, last);
+            if (!bool (next) || next->get () == last.get ())
+                return last;
+
+            last = *next;
         }
     }
 
@@ -164,17 +167,17 @@ namespace Diophant {
 
     namespace {
 
-        expression evaluate_list (const machine &m, const list &ls);
+        data::maybe<expression> evaluate_list (const machine &m, const list &ls);
 
-        expression evaluate_symbol (const machine &m, const symbol &x);
+        data::maybe<expression> evaluate_symbol (const machine &m, const symbol &x);
 
-        expression evaluate_binary_operation (const machine &m, const binary_operation &b);
+        data::maybe<expression> evaluate_binary_operation (const machine &m, const binary_operation &b);
 
-        expression evaluate_unary_operation (const machine &m, const unary_operation &u);
+        data::maybe<expression> evaluate_unary_operation (const machine &m, const unary_operation &u);
 
-        expression evaluate_call (const machine &m, const call &c);
+        data::maybe<expression> evaluate_call (const machine &m, const call &c);
 
-        expression evaluate_round (const machine &m, Expression e) {
+        data::maybe<expression> evaluate_round (const machine &m, Expression e) {
             const node *p = e.get ();
             if (p == nullptr) return e;
 
@@ -223,7 +226,7 @@ namespace Diophant {
             return {};
         }
 
-        expression evaluate_list (const machine &m, const list &ls) {
+        data::maybe<expression> evaluate_list (const machine &m, const list &ls) {
             bool changed = false;
 
             data::list<expression> new_ls;
@@ -232,24 +235,24 @@ namespace Diophant {
                 if (new_arg != old_arg) changed = true;
             }
 
-            return changed ? list::make (new_ls) : expression {};
+            return changed ? list::make (new_ls) : data::maybe<expression> {};
         }
 
-        expression evaluate_symbol (const machine &m, const symbol &x) {
+        data::maybe<expression> evaluate_symbol (const machine &m, const symbol &x) {
 
             const machine::definition *v = m.SymbolDefinitions.contains (x);
-            if (v == nullptr) return expression {};
+            if (v == nullptr) return {};
 
-            if (!std::holds_alternative<casted> (*v)) return expression {};
+            if (!std::holds_alternative<casted> (*v)) return {};
 
             const casted &z = std::get<casted> (*v);
 
-            if (!bool (z.Def)) throw data::exception {} << "Error: attempt to evaluate undefined pattern";
+            if (!bool (z.Def)) return {};
 
             return *z.Def;
         }
 
-        expression evaluate_binary_operation (const machine &m, const binary_operation &b) {
+        data::maybe<expression> evaluate_binary_operation (const machine &m, const binary_operation &b) {
 
             // first we evaluate function and args individually.
             bool changed = false;
@@ -275,10 +278,10 @@ namespace Diophant {
             }
 
             done:
-            return changed ? binary_operation::make (b.Operator, left, right) : expression {};
+            return changed ? binary_operation::make (b.Operator, left, right) : data::maybe<expression> {};
         }
 
-        expression evaluate_unary_operation (const machine &m, const unary_operation &u) {
+        data::maybe<expression> evaluate_unary_operation (const machine &m, const unary_operation &u) {
             // first we evaluate function and args individually.
             bool changed = false;
             expression body = m.evaluate (u.Body);
@@ -301,10 +304,10 @@ namespace Diophant {
             }
 
             done:
-            return changed ? unary_operation::make (u.Operator, body) : expression {};
+            return changed ? unary_operation::make (u.Operator, body) : data::maybe<expression> {};
         }
 
-        expression evaluate_call (const machine &m, const call &c) {
+        data::maybe<expression> evaluate_call (const machine &m, const call &c) {
 
             // first we evaluate function and args individually.
             bool changed = false;
@@ -328,14 +331,14 @@ namespace Diophant {
 
                 // this only happens once because any further nested calls would
                 // have been flattened when the function was evaluated above.
-                if (const call *cc = dynamic_cast<const call *> (p); cc != nullptr) {
+                if (const call *fx = dynamic_cast<const call *> (p); fx != nullptr) {
                     // we will skip the definitions that have as many args as
                     // in the inner call or fewer, since these would
                     // have already been checked.
 
-                    min_args += data::size (cc->Args);
-                    args = cc->Args + args;
-                    fun = cc->Fun;
+                    min_args += data::size (fx->Args);
+                    args = fx->Args + args;
+                    fun = fx->Fun;
                     p = fun.get ();
                 }
 
@@ -364,7 +367,7 @@ namespace Diophant {
                 if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
 
                     const machine::definition *v = m.SymbolDefinitions.contains (*x);
-                    if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) goto done;
+                    if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) break;
 
                     data::stack<mtf> tfs = std::get<data::stack<mtf>> (*v);
 
@@ -381,16 +384,20 @@ namespace Diophant {
                             throw data::exception {} << "Error: attempt to evaluate undefined pattern";
                         fun = m.evaluate (replace (*cx->Result.Def, cx->Replacements));
                         args = cx->Remaining;
+                        if (args.size () == 0) return fun;
                         continue;
                     }
                 }
 
-                if (const value *v = dynamic_cast<const value *> (p); v != nullptr)
-                    return (*v) (args);
+                if (const value *v = dynamic_cast<const value *> (p); v != nullptr) {
+                    data::maybe<expression> next = (*v) (args);
+                    if (! bool (next)) break;
+                    return *next;
+                }
             }
 
             done:
-            return changed ? call::make (fun, args) : expression {};
+            return changed ? call::make (fun, args) : data::maybe<expression> {};
         }
 
         data::maybe<expression> &decl (machine &m, symbol x, type of) {

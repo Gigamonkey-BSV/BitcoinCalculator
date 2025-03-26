@@ -5,6 +5,7 @@
 namespace Diophant {
 
     bool operator == (Expression A, Expression B) {
+
         const node *a = A.get ();
         const node *b = B.get ();
 

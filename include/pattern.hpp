@@ -6,7 +6,7 @@
 
 namespace Diophant {
 
-    struct pattern : data::ptr<const form> {
+    struct pattern : data::ptr<form> {
 
         pattern (expression);
         // a blank pattern.
@@ -18,7 +18,7 @@ namespace Diophant {
         // a symbol of a particular type.
         pattern (Type, Symbol);
 
-        pattern (data::ptr<const form> x): data::ptr<const form> {x} {}
+        pattern (data::ptr<form> x): data::ptr<form> {x} {}
     };
 
     using Pattern = const pattern &;
@@ -49,22 +49,22 @@ namespace Diophant {
     };
 
     // a blank pattern.
-    inline pattern::pattern (): data::ptr<const form> {} {
+    inline pattern::pattern (): data::ptr<form> {} {
         *this = blank::make ();
     }
 
     // a pattern that matches a given type.
-    inline pattern::pattern (Type t): data::ptr<const form> {} {
+    inline pattern::pattern (Type t): data::ptr<form> {} {
         *this = typed::make (t, blank::make ());
     }
 
     // a symbol that matches anything.
-    inline pattern::pattern (Symbol x): data::ptr<const form> {} {
+    inline pattern::pattern (Symbol x): data::ptr<form> {} {
         *this = blank::make (x);
     }
 
     // a symbol of a particular type.
-    inline pattern::pattern (Type t, Symbol x): data::ptr<const form> {} {
+    inline pattern::pattern (Type t, Symbol x): data::ptr<form> {} {
         *this = typed::make (t, blank::make (x));
     }
 
@@ -72,18 +72,18 @@ namespace Diophant {
     inline blank::blank (Symbol x): form {}, Name {x} {}
 
     pattern inline blank::make () {
-        return pattern {std::static_pointer_cast<const form> (std::make_shared<blank> ())};
+        return pattern {std::static_pointer_cast<form> (std::make_shared<blank> ())};
     }
 
     pattern inline blank::make (Symbol x) {
-        return pattern {std::static_pointer_cast<const form> (std::make_shared<blank> (x))};
+        return pattern {std::static_pointer_cast<form> (std::make_shared<blank> (x))};
     }
 
     pattern inline typed::make (Type t, Pattern p) {
-        return pattern {std::static_pointer_cast<const form> (std::make_shared<typed> (t, p))};
+        return pattern {std::static_pointer_cast<form> (std::make_shared<typed> (t, p))};
     }
 
-    inline pattern::pattern (expression e): pattern {std::static_pointer_cast<const form> (e)} {}
+    inline pattern::pattern (expression e): pattern {std::static_pointer_cast<form> (e)} {}
 
     bool inline operator == (Pattern a, Pattern b) {
         throw data::exception {} << "we cannot check patterns equal yet; pattern.hpp line 87";
