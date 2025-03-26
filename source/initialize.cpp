@@ -85,14 +85,16 @@ namespace Diophant {
     Bitcoin::integer scriptnum_divide (const Bitcoin::integer &x, const Bitcoin::integer &y);
     Bitcoin::integer scriptnum_mod (const Bitcoin::integer &x, const Bitcoin::integer &y);
 
+    Bitcoin::integer scriptnum_abs (const Bitcoin::integer &x, const Bitcoin::integer &y);
+
     uint256 secret_negate (const uint256 &x);
     uint256 secret_plus (const uint256 &x, const uint256 &y);
     uint256 secret_minus (const uint256 &x, const uint256 &y);
     uint256 secret_times (const uint256 &x, const uint256 &y);
 
     // base 58
-    uint256 read_base_58 (const data::string &x);
-    data::string write_base_58 (const uint256 &x);
+    uint256 decode_base_58 (const data::string &x);
+    data::string encode_base_58 (const uint256 &x);
 
     // advanced math
     uint256 secret_invert (const uint256 &x);
@@ -468,13 +470,13 @@ namespace Diophant {
                 const secp256k1::pubkey &>::make (&push), {X}));
 
         // base 58
-        m = m.define (symbol {"EncodeBase58"}, secret_type, {{string_type, x}},
+        m = m.define (symbol {"Base58Decode"}, secret_type, {{string_type, x}},
             call::make (built_in_function<uint256,
-                const data::string &>::make (&read_base_58), {X}));
+                const data::string &>::make (&decode_base_58), {X}));
 
-        m = m.define (symbol {"DecodeBase58"}, string_type, {{secret_type, x}},
+        m = m.define (symbol {"Base58Encode"}, string_type, {{secret_type, x}},
             call::make (built_in_function<data::string,
-                const uint256 &>::make (&write_base_58), {X}));
+                const uint256 &>::make (&encode_base_58), {X}));
 
         // elliptic curve operations
         m = m.define (binary_operand::equal, bool_type, {pubkey_type, x}, {pubkey_type, y},
@@ -516,6 +518,10 @@ namespace Diophant {
         m = m.define (symbol {"Unceompressed"}, bool_type, {{pubkey_type, x}},
             call::make (built_in_function<Bitcoin::integer,
                 const secp256k1::pubkey &>::make (&pubkey_compressed), {X}));
+
+        m = m.define (unary_operand::negate, pubkey_type, {pubkey_type, x},
+            call::make (built_in_function<secp256k1::pubkey,
+                const secp256k1::pubkey &>::make (&pubkey_negate), {X}));
 
         m = m.define (binary_operand::plus, pubkey_type, {pubkey_type, x}, {pubkey_type, y},
             call::make (built_in_function<secp256k1::pubkey,
@@ -635,6 +641,7 @@ namespace Diophant {
     }
 
     Bitcoin::integer scriptnum_plus (const Bitcoin::integer &x, const Bitcoin::integer &y) {
+        std::cout << "calling scriptnum plus on " << x << " and " << y << std::endl;
         return x + y;
     }
 
@@ -687,7 +694,7 @@ namespace Diophant {
 
     uint256 secret_negate (const uint256 &x) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
-        return secp256k1_order - x;
+        return x == 0 ? 0 : secp256k1_order - x;
     }
 
     uint256 secret_plus (const uint256 &x, const uint256 &y) {
@@ -801,13 +808,14 @@ namespace Diophant {
         return static_cast<const data::bytes &> (x) == static_cast<const data::bytes &> (y);
     }
 
-    uint256 read_base_58 (const data::string &x) {
+    uint256 decode_base_58 (const data::string &x) {
         data::maybe<uint256> result = data::encoding::base58::decode<uint256> (x);
         if (!bool (result)) throw data::exception {} << "invalid base 58 string";
         return *result;
     }
 
-    data::string write_base_58 (const uint256 &x) {
+    data::string encode_base_58 (const uint256 &x) {
+        std::cout << "encoding base 58: " << x << std::endl;
         return data::encoding::base58::encode<uint256> (x);
     }
 

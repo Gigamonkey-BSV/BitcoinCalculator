@@ -69,7 +69,7 @@ namespace Diophant {
 
 		template <> struct write_leaf<uint256> {
 			std::ostream &operator () (std::ostream &o, const uint256 &t) {
-				return o << t;
+				return o << std::dec << t;
 			}
 		};
 

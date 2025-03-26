@@ -18,6 +18,10 @@ namespace Diophant {
     // test whether the expression will error when evaluated.
     void test (std::string input, expression expected_read, bool expect_eval);
 
+    // test whether the expression evaluates to the given expression or throws an error.
+    void test_eval (std::string input, expression expect_eval);
+    void test_eval (std::string input, bool expect_eval);
+
     expression make_secret (uint256 u) {
         return secret::make (secp256k1::secret {uint256 {u}});
     }
@@ -28,6 +32,10 @@ namespace Diophant {
 
     expression unary (char x, expression e) {
         return unary_operation::make (unary_operand {x}, e);
+    }
+
+    expression binary (binary_operand op, expression left, expression right) {
+        return binary_operation::make (op, left, right);
     }
 
     expression True () {
@@ -106,14 +114,11 @@ namespace Diophant {
         // invalid dec number
         test ("0923", false);
 
-        // hex numbers
-        test ("0x", make_scriptnum ("0x"));
-        test ("0x00", make_scriptnum ("0x00"));
-        test ("0x80", make_scriptnum ("0x80"));
-        test ("0x01", make_scriptnum ("0x01"));
-
-        // invalid hex number.
-        test ("0x0", false);
+        // valid pubkeys
+        test ("02cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+        test ("03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+        test ("04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523"
+                "42dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915");
 
         // invalid pubkeys
         test ("023456", false);
@@ -124,13 +129,26 @@ namespace Diophant {
         test ("'abcdef000001'");
         test ("'abcdef00001'", false);
 
+        // hex numbers
+        test ("0x", make_scriptnum ("0x"));
+        test ("0x00", make_scriptnum ("0x00"));
+        test ("0x80", make_scriptnum ("0x80"));
+        test ("0x01", make_scriptnum ("0x01"));
+
+        // invalid hex number.
+        test ("0x0", false);
+
         // unary operators
-        test ("-0", make_secret (0), make_secret (0));
-        test ("- 0", make_secret (0), make_secret (0));
+        test ("-0", unary ('-', make_secret (0)), make_secret (0));
+        test ("- 0", unary ('-', make_secret (0)), make_secret (0));
+
+        test ("!8", unary ('!', make_secret (8)));
+        test ("8+", false);
+        test ("8-", false);
 
         // negative zero
-        test ("-0x00", make_scriptnum ("0x00"), make_scriptnum ("0x80"));
-        test ("-0x", make_scriptnum ("0x"), make_scriptnum ("0x80"));
+        test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
+        test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
 
         // bitnot
 
@@ -140,20 +158,21 @@ namespace Diophant {
         // scriptnum cat
 
         // arithmetic with secrets
-        test ("-0", unary ('-', make_secret (0)), make_secret (0));
         test ("-1", unary ('-', make_secret (1)),
             make_secret (uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
         test ("0 + 0");
         test ("1 + 0");
         test ("1 + 1");
 
+        test ("123 + 234", binary (binary_operand::plus, make_secret (123), make_secret (234)), make_secret (357));
+
         // these should both have a divide by zero error on evaluation.
         test ("1 / 0");
         test ("1 % 0");
 
-        test ("!8", unary ('!', make_secret (8)));
-        test ("8+", false);
-        test ("8-", false);
+        // base 58
+        test_eval ("Base58Encode 1234", string::make ("NH"));
+        test_eval (R"(Base58Decode "NH")", make_secret (1234));
 
     }
 
@@ -191,6 +210,20 @@ namespace Diophant {
         } else {
             EXPECT_THROW (m.evaluate (ex), data::exception);
         }
+    }
+
+    void test_eval (std::string input, bool expect_eval) {
+        expression ex = read_line (input);
+        if (expect_eval) {
+            EXPECT_NO_THROW (m.evaluate (ex));
+        } else {
+            EXPECT_THROW (m.evaluate (ex), data::exception);
+        }
+    }
+
+    void test_eval (std::string input, expression expect_eval) {
+        expression ex = m.evaluate (read_line (input));
+        EXPECT_EQ (ex, expect_eval) << "expected " << input << " to evaluate to " << expect_eval;
     }
 
 }

@@ -74,6 +74,11 @@ namespace Diophant {
 
         data::maybe<expression> evaluate_round (const machine &m, Expression e);
 
+        // indicates that an expression has been checked already so we don't need to again.
+        struct checked : form {
+            expression Expr;
+        };
+
     }
 
     // note: this algorithm results in attempts to evaluate
