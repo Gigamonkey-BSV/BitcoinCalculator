@@ -173,6 +173,8 @@ namespace Diophant {
         test_eval ("Base58Encode 1234", string::make ("NH"));
         test_eval (R"(Base58Decode "NH")", make_secret (1234));
 
+        test_eval (R"(Verify (ToPublic 123 False) (Hash256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
+
         // TODO an undefined function seems to go into an infinite loop.
 
     }

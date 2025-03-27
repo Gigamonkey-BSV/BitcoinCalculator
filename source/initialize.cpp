@@ -157,7 +157,7 @@ namespace Diophant {
 
         Symbol x = dynamic_cast<Symbol> (*X.get ());
         Symbol y = dynamic_cast<Symbol> (*Y.get ());
-        Symbol z = dynamic_cast<Symbol> (*Y.get ());
+        Symbol z = dynamic_cast<Symbol> (*Z.get ());
 
         type undefined {expression {}};
         type nil {Diophant::nil::make ()};
@@ -241,6 +241,7 @@ namespace Diophant {
 
         m = m.define (symbol {"int"}, data::stack<pattern> {natural::make (data::N(512))}, int512_little_type);
         m = m.define (symbol {"uint"}, data::stack<pattern> {natural::make (data::N(512))}, uint512_little_type);
+
         type bytes_type {symbol::make ("bytes")};
         type string_type {symbol::make ("string")};
         type integer_type {symbol::make ("scriptnum")};
