@@ -127,6 +127,17 @@ namespace Diophant {
     Bitcoin::integer push (const data::string &x);
     Bitcoin::integer push (const secp256k1::pubkey &x);
 
+    // crypto
+    Bitcoin::integer sign (const uint256 &key, const uint256 &digest);
+    Bitcoin::integer verify (const secp256k1::pubkey &x, const uint256 &digest, const Bitcoin::integer &sig);
+
+    uint256 SHA2_256 (const Bitcoin::integer &key);
+    uint256 SHA2_256 (const data::string &key);
+    uint256 SHA3_256 (const Bitcoin::integer &key);
+    uint256 SHA3_256 (const data::string &key);
+    uint256 Hash256 (const Bitcoin::integer &key);
+    uint256 Hash256 (const data::string &key);
+
     machine initialize () {
 
         machine m {};
@@ -536,23 +547,31 @@ namespace Diophant {
                 const secp256k1::pubkey &, const uint256 &>::make (&pubkey_times), {X, Y}));
 
         // crypto
-        m = m.declare (symbol {"Sign"}, integer_type, {secret_type, integer_type});
+        m = m.define (symbol {"Sign"}, integer_type, {{secret_type, x}, {secret_type, y}},
+            call::make (built_in_function<Bitcoin::integer,
+                const uint256 &, const uint256 &>::make (&sign), {X, Y}));
 
-        m = m.declare (symbol {"Sign"}, integer_type, {secret_type, secret_type});
+        m = m.define (symbol {"Verify"}, bool_type, {{pubkey_type, x}, {secret_type, y}, {integer_type, z}},
+            call::make (built_in_function<Bitcoin::integer,
+                const secp256k1::pubkey &, const uint256 &, const Bitcoin::integer &>::make (&verify), {X, Y, Z}));
 
-        m = m.declare (symbol {"Verify"}, bool_type, {pubkey_type, integer_type, integer_type});
+        m = m.define (symbol {"SHA2_256"}, secret_type, {{integer_type, x}},
+            call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&SHA2_256), {X}));
 
-        m = m.declare (symbol {"Verify"}, bool_type, {pubkey_type, secret_type, integer_type});
+        m = m.define (symbol {"SHA3_256"}, secret_type, {{integer_type, x}},
+            call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&SHA2_256), {X}));
 
-        // hash operations
-        m = m.declare (symbol {"SHA"}, integer_type, {{secret_type, x}, {secret_type, y}, {integer_type, z}});
-        m = m.declare (symbol {"RIPEMD"}, integer_type, {{secret_type, x}, {integer_type, y}});
-        m = m.declare (symbol {"Hash160"}, integer_type, {{integer_type, x}});
-        m = m.declare (symbol {"Hash256"}, integer_type, {{integer_type, x}});
+        m = m.define (symbol {"Hash256"}, secret_type, {{integer_type, x}},
+            call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&SHA2_256), {X}));
 
-        // make a random key using the given string as extra entropy.
-        m = m.declare (symbol {"RandomKey"}, secret_type, {{integer_type, x}});
-        m = m.declare (symbol {"RandomKey"}, secret_type, {{string_type, x}});
+        m = m.define (symbol {"SHA2_256"}, secret_type, {{string_type, x}},
+            call::make (built_in_function<uint256, const data::string &>::make (&SHA2_256), {X}));
+
+        m = m.define (symbol {"SHA3_256"}, secret_type, {{string_type, x}},
+            call::make (built_in_function<uint256, const data::string &>::make (&SHA2_256), {X}));
+
+        m = m.define (symbol {"Hash256"}, secret_type, {{string_type, x}},
+            call::make (built_in_function<uint256, const data::string &>::make (&SHA2_256), {X}));
 
         return m;
     }
@@ -924,6 +943,39 @@ namespace Diophant {
     Bitcoin::integer push (const secp256k1::pubkey &x) {
         return Bitcoin::integer {Bitcoin::compile (Bitcoin::push_data (data::bytes (x)))};
     }
+
+    Bitcoin::integer sign (const uint256 &key, const uint256 &digest) {
+        return Bitcoin::integer {secp256k1::secret {key}.sign (digest)};
+    }
+
+    Bitcoin::integer verify (const secp256k1::pubkey &x, const uint256 &digest, const Bitcoin::integer &sig) {
+        return Bitcoin::integer {x.verify (digest, secp256k1::signature {sig})};
+    }
+
+    uint256 SHA2_256 (const Bitcoin::integer &key) {
+        return data::crypto::SHA2_256 (key);
+    }
+
+    uint256 SHA2_256 (const data::string &key) {
+        return data::crypto::SHA2_256 (key);
+    }
+
+    uint256 SHA3_256 (const Bitcoin::integer &key) {
+        return data::crypto::SHA3_256 (key);
+    }
+
+    uint256 SHA3_256 (const data::string &key) {
+        return data::crypto::SHA3_256 (key);
+    }
+
+    uint256 Hash256 (const Bitcoin::integer &key) {
+        return data::crypto::Bitcoin_256 (key);
+    }
+
+    uint256 Hash256 (const data::string &key) {
+        return data::crypto::Bitcoin_256 (key);
+    }
+
 
 }
 
