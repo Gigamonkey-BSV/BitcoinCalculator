@@ -1,5 +1,5 @@
 #include <parse.hpp>
-#include <value.hpp>
+#include <values/leaf.hpp>
 #include <operators.hpp>
 #include <parse/grammar.hpp>
 
@@ -7,7 +7,7 @@
 #include <gigamonkey/numbers.hpp>
 
 namespace tao_pegtl_grammar {
-    struct expression_grammar : seq<ws, opt<seq<property, ws>>, eof> {};
+    struct expression_grammar : seq<ws, opt<seq<object, ws>>, eof> {};
 }
 
 namespace Diophant {
@@ -292,7 +292,7 @@ namespace Diophant {
     }
 
     expression inline parser::top () {
-        if (Exp.size () == 0) return expression {};
+        if (Exp.size () == 0) return nil::make ();
         return Exp.first ();
     }
 

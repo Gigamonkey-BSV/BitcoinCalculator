@@ -10,6 +10,8 @@ namespace Diophant {
     using Type = const type &;
 
     struct type : expression {
+        // any type
+        type () : expression {} {}
         type (expression);
 
         bool operator == (Type) const;

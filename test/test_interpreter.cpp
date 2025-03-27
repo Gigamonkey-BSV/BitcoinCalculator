@@ -1,5 +1,5 @@
 #include <parse.hpp>
-#include <value.hpp>
+#include <values/leaf.hpp>
 #include "gtest/gtest.h"
 
 namespace Diophant {
@@ -62,15 +62,14 @@ namespace Diophant {
 
         m = initialize ();
 
-        // nil
-        test ("", expression {}, expression {});
-        test (" ", expression {});
-        test ("()", expression {});
-        test ("( )", expression {});
-        test (" ( ) ", expression {});
-        test (" ( () ) ", expression {});
-        test (" ( (()) ) ", expression {});
-        test ("nil", symbol::make ("nil"), expression {});
+        test ("", nil::make (), nil::make ());
+        test (" ", nil::make ());
+        test ("()", nil::make ());
+        test ("( )", nil::make ());
+        test (" ( ) ", nil::make ());
+        test (" ( () ) ", nil::make ());
+        test (" ( (()) ) ", nil::make ());
+        test ("nil", symbol::make ("nil"), nil::make ());
 
         // unmatched parentheses
         test ("(", false);
@@ -173,6 +172,8 @@ namespace Diophant {
         // base 58
         test_eval ("Base58Encode 1234", string::make ("NH"));
         test_eval (R"(Base58Decode "NH")", make_secret (1234));
+
+        // TODO an undefined function seems to go into an infinite loop.
 
     }
 

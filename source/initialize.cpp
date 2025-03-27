@@ -1,7 +1,16 @@
 #include <machine.hpp>
-#include <value.hpp>
+#include <values/leaf.hpp>
 
 namespace Diophant {
+
+    // bool operations
+    bool bool_not (const bool &x);
+    bool bool_and (const bool &x, const bool &y);
+    bool bool_or (const bool &x, const bool &y);
+    bool bool_implies (const bool &x, const bool &y);
+    bool bool_xor (const bool &x, const bool &y);
+    bool bool_nand (const bool &x, const bool &y);
+    bool bool_nor (const bool &x, const bool &y);
 
     // TODO
     // base 58 check encoding
@@ -142,18 +151,6 @@ namespace Diophant {
 
         machine m {};
 
-        type nil {expression {}};
-
-        m = m.define (symbol {"nil"}, nil, nil);
-
-        // the fundamental types.
-        type secret_type {symbol::make ("secret")};
-        type pubkey_type {symbol::make ("pubkey")};
-        type integer_type {symbol::make ("scriptnum")};
-        type string_type {symbol::make ("string")};
-        type sats_type {symbol::make ("satoshi")};
-        type &bool_type = integer_type;
-
         expression X = symbol::make ("x");
         expression Y = symbol::make ("y");
         expression Z = symbol::make ("z");
@@ -161,6 +158,102 @@ namespace Diophant {
         Symbol x = dynamic_cast<Symbol> (*X.get ());
         Symbol y = dynamic_cast<Symbol> (*Y.get ());
         Symbol z = dynamic_cast<Symbol> (*Y.get ());
+
+        type undefined {expression {}};
+        type nil {Diophant::nil::make ()};
+
+        m = m.define (symbol {"Nil"}, nil, nil);
+
+        //type bool_type {symbol::make ("bool")};
+
+        // next we have some basic number types.
+        type int8_type {call::make (symbol::make ("int"), {natural::make (data::N(8))})};
+        type uint8_type {call::make (symbol::make ("uint"), {natural::make (data::N(8))})};
+
+        m = m.define (symbol {"byte"}, uint8_type);
+        m = m.define (symbol {"char"}, int8_type);
+
+        type int16_type {call::make (symbol::make ("int"), {natural::make (data::N(16))})};
+        type uint16_type {call::make (symbol::make ("uint"), {natural::make (data::N(16))})};
+
+        type int32_type {call::make (symbol::make ("int"), {natural::make (data::N(32))})};
+        type uint32_type {call::make (symbol::make ("uint"), {natural::make (data::N(32))})};
+
+        type int32_little_type {call::make (symbol::make ("int_little"), {natural::make (data::N(32))})};
+        type uint32_little_type {call::make (symbol::make ("uint_little"), {natural::make (data::N(32))})};
+
+        type int32_big_type {call::make (symbol::make ("int_big"), {natural::make (data::N(32))})};
+        type uint32_big_type {call::make (symbol::make ("uint_big"), {natural::make (data::N(32))})};
+
+        type int64_little_type {call::make (symbol::make ("int_little"), {natural::make (data::N(64))})};
+        type uint64_little_type {call::make (symbol::make ("uint_little"), {natural::make (data::N(64))})};
+
+        type int64_big_type {call::make (symbol::make ("int_big"), {natural::make (data::N(64))})};
+        type uint64_big_type {call::make (symbol::make ("uint_big"), {natural::make (data::N(64))})};
+
+        type int64_type {call::make (symbol::make ("int"), {natural::make (data::N(64))})};
+        type uint64_type {call::make (symbol::make ("uint"), {natural::make (data::N(64))})};
+
+        type int128_little_type {call::make (symbol::make ("int_little"), {natural::make (data::N(128))})};
+        type uint128_little_type {call::make (symbol::make ("uint_little"), {natural::make (data::N(128))})};
+
+        type int128_big_type {call::make (symbol::make ("int_big"), {natural::make (data::N(128))})};
+        type uint128_big_type {call::make (symbol::make ("uint_big"), {natural::make (data::N(128))})};
+
+        type int128_type {call::make (symbol::make ("int"), {natural::make (data::N(128))})};
+        type uint128_type {call::make (symbol::make ("uint"), {natural::make (data::N(128))})};
+
+        m = m.define (symbol {"int"}, data::stack<pattern> {natural::make (data::N(128))}, int128_little_type);
+        m = m.define (symbol {"uint"}, data::stack<pattern> {natural::make (data::N(128))}, uint128_little_type);
+
+        type int160_little_type {call::make (symbol::make ("int_little"), {natural::make (data::N(160))})};
+        type uint160_little_type {call::make (symbol::make ("uint_little"), {natural::make (data::N(160))})};
+
+        type int160_big_type {call::make (symbol::make ("int_big"), {natural::make (data::N(160))})};
+        type uint160_big_type {call::make (symbol::make ("uint_big"), {natural::make (data::N(160))})};
+
+        type int160_type {call::make (symbol::make ("int"), {natural::make (data::N(160))})};
+        type uint160_type {call::make (symbol::make ("uint"), {natural::make (data::N(160))})};
+
+        m = m.define (symbol {"int"}, data::stack<pattern> {natural::make (data::N(160))}, int160_little_type);
+        m = m.define (symbol {"uint"}, data::stack<pattern> {natural::make (data::N(160))}, uint160_little_type);
+
+        type int256_little_type {call::make (symbol::make ("int_little"), {natural::make (data::N(256))})};
+        type uint256_little_type {call::make (symbol::make ("uint_little"), {natural::make (data::N(256))})};
+
+        type int256_big_type {call::make (symbol::make ("int_big"), {natural::make (data::N(256))})};
+        type uint256_big_type {call::make (symbol::make ("uint_big"), {natural::make (data::N(256))})};
+
+        type int256_type {call::make (symbol::make ("int"), {natural::make (data::N(256))})};
+        type uint256_type {call::make (symbol::make ("uint"), {natural::make (data::N(256))})};
+
+        m = m.define (symbol {"int"}, data::stack<pattern> {natural::make (data::N(256))}, int256_little_type);
+        m = m.define (symbol {"uint"}, data::stack<pattern> {natural::make (data::N(256))}, uint256_little_type);
+
+        type int512_little_type {call::make (symbol::make ("int_little"), {natural::make (data::N(512))})};
+        type uint512_little_type {call::make (symbol::make ("uint_little"), {natural::make (data::N(512))})};
+
+        type int512_big_type {call::make (symbol::make ("int_big"), {natural::make (data::N(512))})};
+        type uint512_big_type {call::make (symbol::make ("uint_big"), {natural::make (data::N(512))})};
+
+        type int512_type {call::make (symbol::make ("int"), {natural::make (data::N(512))})};
+        type uint512_type {call::make (symbol::make ("uint"), {natural::make (data::N(512))})};
+
+        m = m.define (symbol {"int"}, data::stack<pattern> {natural::make (data::N(512))}, int512_little_type);
+        m = m.define (symbol {"uint"}, data::stack<pattern> {natural::make (data::N(512))}, uint512_little_type);
+        type bytes_type {symbol::make ("bytes")};
+        type string_type {symbol::make ("string")};
+        type integer_type {symbol::make ("scriptnum")};
+        type secret_type {symbol::make ("secret")};
+        type pubkey_type {symbol::make ("pubkey")};
+        type sats_type {symbol::make ("satoshi")};
+        type &bool_type = integer_type;
+
+        m = m.define (symbol {"satoshi"}, call::make (symbol::make ("Satoshi"), {int64_little_type}));
+        m = m.define (symbol {"coordinate"}, call::make (symbol::make ("Coordinate"), {uint256_little_type}));
+        m = m.define (symbol {"secret"}, call::make (symbol::make ("Secret"), {uint256_little_type}));
+        m = m.define (symbol {"pubkey"}, call::make (symbol::make ("Pubkey"), {bytes_type}));
+        m = m.define (symbol {"scriptnum"}, call::make (symbol::make ("ScriptNum"), {bytes_type}));
 
         // bit operations
         m = m.define (unary_operand::tilda, integer_type, {integer_type, x},
@@ -660,7 +753,6 @@ namespace Diophant {
     }
 
     Bitcoin::integer scriptnum_plus (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        std::cout << "calling scriptnum plus on " << x << " and " << y << std::endl;
         return x + y;
     }
 
@@ -834,7 +926,6 @@ namespace Diophant {
     }
 
     data::string encode_base_58 (const uint256 &x) {
-        std::cout << "encoding base 58: " << x << std::endl;
         return data::encoding::base58::encode<uint256> (x);
     }
 

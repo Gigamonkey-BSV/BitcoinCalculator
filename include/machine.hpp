@@ -11,7 +11,7 @@ namespace Diophant {
         type Cast;
 
         // if there is no expression, this represents an undefined value.
-        data::maybe<expression> Def;
+        expression Def;
 
         casted (Type);
         casted (Type, Expression);
@@ -22,17 +22,29 @@ namespace Diophant {
 
     struct machine {
 
-        machine define (symbol x, type of, expression as) const;
-        machine define (symbol x, type of, data::stack<pattern> arg, expression as) const;
+        machine declare (symbol x) const;
+        machine declare (symbol x, data::stack<pattern> arg) const;
 
-        machine define (unary_operand op, type of, pattern in, expression as) const;
-        machine define (binary_operand op, type of, pattern left, pattern right, expression as) const;
+        machine declare (unary_operand op, pattern in) const;
+        machine declare (binary_operand op, pattern left, pattern right) const;
 
         machine declare (symbol x, type of) const;
         machine declare (symbol x, type of, data::stack<pattern> arg) const;
 
         machine declare (unary_operand op, type of, pattern in) const;
         machine declare (binary_operand op, type of, pattern left, pattern right) const;
+
+        machine define (symbol x, type of, expression as) const;
+        machine define (symbol x, type of, data::stack<pattern> arg, expression as) const;
+
+        machine define (unary_operand op, type of, pattern in, expression as) const;
+        machine define (binary_operand op, type of, pattern left, pattern right, expression as) const;
+
+        machine define (symbol x, expression as) const;
+        machine define (symbol x, data::stack<pattern> arg, expression as) const;
+
+        machine define (unary_operand op, pattern in, expression as) const;
+        machine define (binary_operand op, pattern left, pattern right, expression as) const;
 
         bool valid () const;
 
@@ -55,7 +67,7 @@ namespace Diophant {
             std::partial_ordering operator <=> (const transformation) const;
         };
 
-        using definition = data::either<expression, casted, data::stack<transformation>>;
+        using definition = data::either<casted, data::stack<transformation>>;
 
         data::map<symbol, definition> SymbolDefinitions;
         data::map<unary_operand, data::stack<transformation>> UnaryDefinitions;

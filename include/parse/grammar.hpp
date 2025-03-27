@@ -16,9 +16,9 @@ namespace tao_pegtl_grammar {
 
     // the overall structure of a program.
     struct statement;
-    struct property;
+    struct object;
 
-    struct program : seq<ws, star<seq<statement, ws>>, property> {};
+    struct program : seq<ws, star<seq<statement, ws>>, object> {};
 
     struct declaration;
     struct definition;
@@ -32,7 +32,7 @@ namespace tao_pegtl_grammar {
     struct predicate;
     struct definition : seq<subject, ws, predicate, ws, one<';'>> {};
 
-    struct predicate : seq<string<':','='>, property> {};
+    struct predicate : seq<string<':','='>, object> {};
 
     // a decimal lit is 0 by itself or the digits 1 through 9 followed by digits.
     struct dec_lit : sor<one<'0'>, seq<range<'1', '9'>, star<digit>>> {};
@@ -242,7 +242,7 @@ namespace tao_pegtl_grammar {
 
     template <typename atom> struct expression : cast_expr<atom> {};
 
-    struct property : expression<atom> {};
+    struct object : expression<atom> {};
 
     struct pattern : expression<pattom> {};
 
