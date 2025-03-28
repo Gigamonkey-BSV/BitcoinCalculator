@@ -1,7 +1,9 @@
 #include <parse.hpp>
 #include <values/leaf.hpp>
+#include <values/lambda.hpp>
+#include <values/list.hpp>
 #include <operators.hpp>
-#include <parse/grammar.hpp>
+#include <grammar.hpp>
 
 #include <gigamonkey/secp256k1.hpp>
 #include <gigamonkey/numbers.hpp>

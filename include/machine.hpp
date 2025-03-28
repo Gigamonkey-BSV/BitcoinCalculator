@@ -52,8 +52,8 @@ namespace Diophant {
 
         bool operator == (const machine &) const;
 
-        data::maybe<replacements> match (pattern, expression, data::stack<casted> known = {}) const;
-        data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>, data::stack<casted> known = {}) const;
+        data::maybe<replacements> match (pattern, expression) const;
+        data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>) const;
 
         // try to cast a value as a type.
         data::maybe<casted> cast (Type, Expression) const;

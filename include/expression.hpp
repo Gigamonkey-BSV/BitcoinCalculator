@@ -17,10 +17,13 @@ namespace Diophant {
         virtual ~node () {}
     };
 
-    struct expression : data::ptr<node> {
+    struct expression : data::ptr<form> {
         // a nil expression
-        expression (): data::ptr<node> {} {}
-        expression (data::ptr<node> x): data::ptr<node> {x} {}
+        expression ();
+        expression (data::ptr<node> x);
+
+        node *get ();
+        const node *get () const;
     };
 
     using Expression = const expression &;
@@ -33,6 +36,17 @@ namespace Diophant {
 
     std::ostream inline &operator << (std::ostream &o, Expression p) {
         return o << static_cast<const form *> (p.get ());
+    }
+
+    inline expression::expression (): data::ptr<form> {} {}
+    inline expression::expression (data::ptr<node> x): data::ptr<form> {static_pointer_cast<form> (x)} {}
+
+    node inline *expression::get () {
+        return dynamic_cast<node *> (data::ptr<form>::get ());
+    }
+
+    const node inline *expression::get () const {
+        return dynamic_cast<const node *> (data::ptr<form>::get ());
     }
 
 }

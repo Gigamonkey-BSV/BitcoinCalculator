@@ -32,7 +32,7 @@ namespace Diophant {
         if (const binary_operation *b = dynamic_cast<const binary_operation *> (a); b != nullptr) {
             const binary_operation *c = dynamic_cast<const binary_operation *> (b);
             return c == nullptr ? false:
-                b->Operator == c->Operator && b->Left == c->Left && b->Right == c->Right;
+                b->Operator == c->Operator && b->Body == c->Body;
         }
 
         if (const list *ll = dynamic_cast<const list *> (a); ll != nullptr) {
@@ -80,8 +80,7 @@ namespace Diophant {
         if (const typed *y = dynamic_cast<const typed *> (n); y != nullptr)
             return o << y->Match << " : " << y->Required;
 
-        throw data::exception {} <<
-            "incomplete method: << expression; expression.cpp.";
+        throw data::exception {} << "incomplete method: << expression; expression.cpp.";
     }
 
     std::ostream &operator << (std::ostream &o, const form *n) {
@@ -89,7 +88,14 @@ namespace Diophant {
     }
 
     std::ostream &write_binary (std::ostream &o, const binary_operation &b) {
-        return write (write (o, b.Left.get (), b.Operator) << b.Operator, b.Right.get (), b.Operator);
+        data::stack<expression> body = b.Body;
+        if (data::size (body) < 2) throw data::exception {} << "invalid binary operation " << b.Operator;
+        write (o, body.first ().get (), b.Operator);
+        do {
+            body = data::rest (body);
+            write (o << b.Operator, body.first ().get (), b.Operator);
+        } while (!data::empty (body));
+        return o;
     }
 
     std::ostream &write_unary (std::ostream &o, const unary_operation &u) {

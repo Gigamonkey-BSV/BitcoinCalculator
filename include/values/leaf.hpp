@@ -18,8 +18,6 @@ namespace Diophant {
         bool cast (const machine &, Type) const final override;
         std::ostream &write (std::ostream &) const final override;
         bool operator == (const value &) const final override;
-
-        expression operator () (data::stack<expression>) const final override;
     };
 
     template <typename Y, typename ...X> struct leaf<Y (*)(X...)> final : value {
@@ -155,14 +153,14 @@ namespace Diophant {
         template <typename Y, typename X> struct base_type<Y (*)(const X &)> {
             type operator () () {
                 return binary_operation::make (binary_operand::intuitionistic_implies,
-                                               base_type<X> {} (), base_type<Y> {} ());
+                    base_type<X> {} (), base_type<Y> {} ());
             }
         };
 
         template <typename Z, typename X, typename ... Y> struct base_type<Z (*)(const X &, Y...)> {
             type operator () () {
                 return binary_operation::make (binary_operand::intuitionistic_implies,
-                                               base_type<X> {} (), base_type<Z (*)(Y...)> {} ());
+                    base_type<X> {} (), base_type<Z (*)(Y...)> {} ());
             }
         };
 
@@ -180,10 +178,6 @@ namespace Diophant {
         return leaf_cast<Y (*)(X...)> {} (t);
     }
 
-    template <typename T> expression inline leaf<T>::operator () (data::stack<expression> x) const {
-        return {};
-    };
-
     namespace {
 
         template <typename ...X> struct expand_stack;
@@ -200,7 +194,7 @@ namespace Diophant {
             auto expand (Y f, data::stack<expression> stack, Z... z) {
                 // this should not happen because we check earlier.
                 if (data::empty (stack)) throw data::exception {} << "try to expand empty argument list";
-                expression first = data::first (stack);
+                pattern first = data::first (stack);
 
                 using type = std::remove_const_t<std::remove_reference_t<A>>;
 

@@ -15,7 +15,9 @@ namespace Diophant {
 		virtual std::ostream &write (std::ostream &) const = 0;
 		virtual bool operator == (const value &) const = 0;
 		// return undefined if the arguments don't fit.
-		virtual expression operator () (data::stack<expression>) const = 0;
+		virtual expression operator () (data::stack<expression>) const {
+			return {};
+		};
 	};
 
 	struct nil final : value {
@@ -36,10 +38,6 @@ namespace Diophant {
 		bool operator == (const value &v) const final override {
 			const nil *n = dynamic_cast<const nil *> (&v);
 			return n != nullptr;
-		}
-
-		expression operator () (data::stack<expression>) const final override {
-			return expression {};
 		}
 	};
 }

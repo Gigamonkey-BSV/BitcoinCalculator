@@ -34,12 +34,19 @@ namespace Diophant {
 
             return replacement_was_made ? list::make (data::reverse (new_list)): expression {};
         } else if (const binary_operation *b = dynamic_cast<const binary_operation *> (p); b != nullptr) {
-            expression replaced_left = replace_inner (b->Left, rr);
-            expression replaced_right = replace_inner (b->Left, rr);
-            if (replaced_left == expression {} && replaced_right == nullptr) return expression {};
-            return binary_operation::make (b->Operator,
-                replaced_left == expression {} ? b->Left : replaced_left,
-                replaced_right == expression {} ? b->Right : replaced_right);
+            bool replacement_was_made = false;
+            data::stack<expression> new_list;
+
+            for (Expression z : b->Body) {
+                expression replaced = replace_inner (z, rr);
+                if (replaced != expression {}) {
+                    replacement_was_made = true;
+                    new_list <<= replaced;
+                } else new_list <<= z;
+            }
+
+            if (!replacement_was_made) return expression {};
+            return binary_operation::make (b->Operator, new_list);
         } if (const unary_operation *u = dynamic_cast<const unary_operation *> (p); u != nullptr) {
             expression replaced = replace_inner (u->Body, rr);
             return replaced == expression {} ? expression {} : unary_operation::make (u->Operator, replaced);

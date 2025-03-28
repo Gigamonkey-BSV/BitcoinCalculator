@@ -19,6 +19,8 @@ namespace Diophant {
         pattern (Type, Symbol);
 
         pattern (data::ptr<form> x): data::ptr<form> {x} {}
+
+        explicit operator expression () const;
     };
 
     using Pattern = const pattern &;
