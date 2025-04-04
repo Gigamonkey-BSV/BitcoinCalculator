@@ -94,17 +94,17 @@ namespace Diophant {
         test ("x123");
 
         // boolean
-        test ("True", symbol::make ("True"), True ());
-        test ("False", symbol::make ("False"), False ());
+        test ("true", symbol::make ("true"), True ());
+        test ("false", symbol::make ("false"), False ());
 
-        test ("!True", unary ('!', symbol::make ("True")), False ());
-        test ("!False", unary ('!', symbol::make ("False")), True ());
+        test ("!true", unary ('!', symbol::make ("true")), False ());
+        test ("!false", unary ('!', symbol::make ("false")), True ());
 
-        test ("True && False", And (symbol::make ("True"), symbol::make ("False")), False ());
-        test ("False && True", And (symbol::make ("False"), symbol::make ("True")), False ());
+        test ("true && false", And (symbol::make ("true"), symbol::make ("false")), False ());
+        test ("false && true", And (symbol::make ("false"), symbol::make ("true")), False ());
 
-        test ("True || False", Or (symbol::make ("True"), symbol::make ("False")), True ());
-        test ("False || True", Or (symbol::make ("False"), symbol::make ("True")), True ());
+        test ("true || false", Or (symbol::make ("true"), symbol::make ("false")), True ());
+        test ("false || true", Or (symbol::make ("false"), symbol::make ("true")), True ());
 
         // number formats.
         test ("0", make_secret (0), make_secret (0));
@@ -169,11 +169,15 @@ namespace Diophant {
         test ("1 / 0");
         test ("1 % 0");
 
-        // base 58
-        test_eval ("Base58Encode 1234", string::make ("NH"));
-        test_eval (R"(Base58Decode "NH")", make_secret (1234));
+        // valid and invalid secret keys
+        test_eval ("valid 1", True ());
+        test_eval ("valid 0", False ());
 
-        test_eval (R"(Verify (ToPublic 123 False) (Hash256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
+        // base 58
+        test_eval ("base58_encode 1234", string::make ("NH"));
+        test_eval (R"(base58_decode "NH")", make_secret (1234));
+
+        test_eval (R"(verify (to_public 123 false) (Hash256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
 
         // TODO an undefined function seems to go into an infinite loop.
 

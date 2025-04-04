@@ -154,7 +154,6 @@ namespace Diophant {
     }
 
     data::maybe<replacements> machine::match (data::stack<pattern> p, data::stack<expression> e) const {
-
         if (data::size (p) != data::size (e)) return {};
 
         replacements r;
@@ -164,46 +163,65 @@ namespace Diophant {
             try {
                 r = r + *m;
             // will be thrown if these maps have any of the same keys.
-            } catch (data::exception r) {
+            } catch (data::exception xxx) {
                 return {};
             }
 
             p = data::rest (p);
             e = data::rest (e);
         }
-
         return r;
     }
 
-    data::maybe<replacements> machine::match (const pattern p, const expression e) const {
-
-        const form *z = p.get ();
-        const node *n = e.get ();
+    data::maybe<replacements> machine::match (const pattern patt, const expression expr) const {
+        const form *z = patt.get ();
+        const form *n = expr.get ();
 
         using mr = data::maybe<replacements>;
 
         if (z == n || z == nullptr) return mr {{}};
 
+        if (const symbol *x = dynamic_cast<const symbol *> (z); x != nullptr) {
+            const symbol *y = dynamic_cast<const symbol *> (n);
+            if (y == nullptr) return {};
+            return *x == *y ? mr {replacements {}} : mr {};
+        }
+
+        if (const value *v = dynamic_cast<const value *> (z); v != nullptr) {
+            const value *q = dynamic_cast<const value *> (n);
+            if (q == nullptr) return {};
+            return *v == *q ? mr {replacements {}} : mr {};
+        }
+
         if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr) {
-            return b->Name != "" ? mr {{{b->Name, e}}} : mr {{}};
-        } else if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
-            mr r = match (t->Match, e);
+            return b->Name != "" ? mr {{{b->Name, expr}}} : mr {replacements {}};
+        }
+
+        if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
+            mr r = match (t->Match, expr);
             if (!bool (r)) return {};
-            if (cast (t->Required, e)) return r;
-        } else if (const unary_operation *u = dynamic_cast<const unary_operation *> (z); u != nullptr) {
+            if (cast (t->Required, expr)) return r;
+        }
+
+        if (const unary_operation *u = dynamic_cast<const unary_operation *> (z); u != nullptr) {
             const unary_operation *v = dynamic_cast<const unary_operation *> (n);
             if (v == nullptr || v->Operator != u->Operator) return {};
             return match (u->Body, v->Body);
-        } else if (const binary_operation *b = dynamic_cast<const binary_operation *> (z); u != nullptr) {
+        }
+
+        if (const binary_operation *b = dynamic_cast<const binary_operation *> (z); b != nullptr) {
             const binary_operation *c = dynamic_cast<const binary_operation *> (n);
             if (c == nullptr || b->Operator != c->Operator) return {};
             return match (b->Body, c->Body);
-        } else if (const call *fx = dynamic_cast<const call *> (z); fx != nullptr) {
+        }
+
+        if (const call *fx = dynamic_cast<const call *> (z); fx != nullptr) {
             const call *gx = dynamic_cast<const call *> (n);
             if (gx == nullptr) return {};
             auto rf = match (fx->Fun, gx->Fun);
+            if (!bool (rf)) return {};
             auto rx = match (data::stack<pattern> (data::stack<expression> (fx->Args)), data::stack<expression> (gx->Args));
-            if (!bool (rf) || !bool (rx)) return {};
+            if (!bool (rx)) return {};
             return *rf + *rx;
         }
 
@@ -211,31 +229,31 @@ namespace Diophant {
     }
 
     namespace {
-        data::maybe<casted> cast_symbol (const machine &, const type &T, const expression &E);
-        data::maybe<casted> cast_call (const machine &, const type &T, const expression &E);
-        data::maybe<casted> cast_binary_operation (const machine &, const type &T, const expression &E);
-        data::maybe<casted> cast_unary_operation (const machine &, const type &T, const expression &E);
+        bool cast_symbol (const machine &, const form *t, const symbol *x);
+        bool cast_call (const machine &, const form *t, const call *c);
+        bool cast_binary_operation (const machine &, const form *t, const expression &E);
+        bool cast_unary_operation (const machine &, const form *t, const expression &E);
     }
 
     // try to cast a value as a type.
-    data::maybe<casted> machine::cast (Type T, Expression E) const {
-        const node *t = T.get ();
-        const node *e = E.get ();
+    bool machine::cast (Type T, Expression E) const {
+        const form *t = T.get ();
+        const form *e = E.get ();
 
-        if (e == nullptr) return t == nullptr ? data::maybe<casted> {} : data::maybe<casted> {{T, E}};
+        if (e == nullptr) return t == nullptr;
 
         if (const value *v = dynamic_cast<const value *> (e); v != nullptr)
-            return v->cast (*this, T) ? data::maybe<casted> {{T, E}}: data::maybe<casted> {};
+            return v->cast (*this, T);
         if (const symbol *x = dynamic_cast<const symbol *> (e); x != nullptr)
-            return cast_symbol (*this, T, E);
+            return cast_symbol (*this, t, x);
         if (const binary_operation *b = dynamic_cast<const binary_operation *> (e); b != nullptr)
-            return cast_binary_operation (*this, T, E);
+            return cast_binary_operation (*this, t, E);
         if (const unary_operation *u = dynamic_cast<const unary_operation *> (e); u != nullptr)
-            return cast_unary_operation (*this, T, E);
+            return cast_unary_operation (*this, t, E);
         if (const call *c = dynamic_cast<const call *> (e); c != nullptr)
-            return cast_call (*this, T, E);
+            return cast_call (*this, t, c);
 
-        return {};
+        return false;
     }
 
     namespace {
@@ -251,7 +269,7 @@ namespace Diophant {
         expression evaluate_call (const machine &m, const call &c);
 
         expression evaluate_round (const machine &m, Expression e) {
-            const node *p = e.get ();
+            const form *p = e.get ();
             if (p == nullptr) return e;
 
             if (const checked *c = dynamic_cast<const checked *> (p); c != nullptr) return {};
@@ -280,7 +298,6 @@ namespace Diophant {
 
         // TODO we need an option for a set of automatic replacements.
         data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
-
             data::maybe<candidate> matched {};
             while (!data::empty (tfs)) {
 
@@ -329,7 +346,6 @@ namespace Diophant {
         }
 
         expression evaluate_binary_operation (const machine &m, const binary_operation &b) {
-
             // first we evaluate function and args individually.
             bool changed = false;
 
@@ -340,14 +356,11 @@ namespace Diophant {
                 body <<= new_arg;
             }
 
-            {
-                const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operator);
-                if (v == nullptr) goto done;
+            if (const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operator); v != nullptr) {
 
                 data::stack<mtf> tfs = *v;
 
-                data::maybe<candidate> cx = get_candidate (m, tfs, body);
-                if (bool (cx)) {
+                if (data::maybe<candidate> cx = get_candidate (m, tfs, body); bool (cx)) {
                     changed = true;
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
@@ -355,7 +368,6 @@ namespace Diophant {
                 }
             }
 
-            done:
             return changed ? binary_operation::make (b.Operator, body) : expression {};
         }
 
@@ -401,7 +413,7 @@ namespace Diophant {
 
             // next we try to match the function and args against our definitions.
             while (true) {
-                const node *p = fun.get ();
+                const form *p = fun.get ();
 
                 if (p == nullptr) break;
 
@@ -545,20 +557,35 @@ namespace Diophant {
             return insert_declaration_into_stack (*v, of, {left, right});
         }
 
-        data::maybe<casted> cast_symbol (const machine &, const type &T, const expression &E) {
-            throw data::exception {} << "cast_symbol: " << E << " : " << T;
+        bool cast_symbol (const machine &, const form *t, const symbol *x) {
+            const symbol *cx = dynamic_cast<const symbol *> (t);
+            if (x == nullptr) return false;
+            return *cx == *x;
         }
 
-        data::maybe<casted> cast_call (const machine &, const type &T, const expression &E) {
-            throw data::exception {} << "cast call: " << E << " : " << T;
+        bool cast_call (const machine &m, const form *t, const call *c) {
+            const call *ct = dynamic_cast<const call *> (t);
+            if (ct == nullptr) return false;
+
+            auto targ = ct->Args;
+            auto carg = c->Args;
+            if (data::size (targ) != data::size (carg)) return false;
+
+            while (data::size (targ) > 0) {
+                if (!m.cast (targ.first (), carg.first ())) return false;
+                targ = data::rest (targ);
+                carg = data::rest (carg);
+            }
+
+            return m.cast (ct->Fun, c->Fun);
         }
 
-        data::maybe<casted> cast_binary_operation (const machine &, const type &T, const expression &E) {
-            throw data::exception {} << "cast_binary_operation: " << E << " : " << T;
+        bool cast_binary_operation (const machine &, const form *t, const expression &E) {
+            throw data::exception {} << "cast_binary_operation: ";
         }
 
-        data::maybe<casted> cast_unary_operation (const machine &, const type &T, const expression &E) {
-            throw data::exception {} << "cast_unary_operation: " << E << " : " << T;
+        bool cast_unary_operation (const machine &, const form *t, const expression &E) {
+            throw data::exception {} << "cast_unary_operation: ";
         }
 
         // we need to find a matching definition or add one in if it doesn't exist.

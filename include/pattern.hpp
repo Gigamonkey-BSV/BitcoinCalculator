@@ -6,7 +6,7 @@
 
 namespace Diophant {
 
-    struct pattern : data::ptr<form> {
+    struct pattern : expression {
 
         pattern (expression);
         // a blank pattern.
@@ -18,9 +18,9 @@ namespace Diophant {
         // a symbol of a particular type.
         pattern (Type, Symbol);
 
-        pattern (data::ptr<form> x): data::ptr<form> {x} {}
-
-        explicit operator expression () const;
+        pattern (data::ptr<form> x): expression {} {
+            *static_cast<data::ptr<form> *> (this) = x;
+        }
     };
 
     using Pattern = const pattern &;
@@ -51,22 +51,22 @@ namespace Diophant {
     };
 
     // a blank pattern.
-    inline pattern::pattern (): data::ptr<form> {} {
+    inline pattern::pattern (): expression {} {
         *this = blank::make ();
     }
 
     // a pattern that matches a given type.
-    inline pattern::pattern (Type t): data::ptr<form> {} {
+    inline pattern::pattern (Type t): expression {} {
         *this = typed::make (t, blank::make ());
     }
 
     // a symbol that matches anything.
-    inline pattern::pattern (Symbol x): data::ptr<form> {} {
+    inline pattern::pattern (Symbol x): expression {} {
         *this = blank::make (x);
     }
 
     // a symbol of a particular type.
-    inline pattern::pattern (Type t, Symbol x): data::ptr<form> {} {
+    inline pattern::pattern (Type t, Symbol x): expression {} {
         *this = typed::make (t, blank::make (x));
     }
 
