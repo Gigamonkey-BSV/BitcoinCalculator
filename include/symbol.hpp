@@ -15,7 +15,7 @@ namespace Diophant {
     using Symbol = const symbol &;
 
     expression inline symbol::make (const std::string &x) {
-        return expression {std::static_pointer_cast<node> (std::make_shared<symbol> (x))};
+        return expression {std::static_pointer_cast<form> (std::make_shared<symbol> (x))};
     }
 
 }

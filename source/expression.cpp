@@ -6,8 +6,8 @@ namespace Diophant {
 
     bool operator == (Expression A, Expression B) {
 
-        const node *a = A.get ();
-        const node *b = B.get ();
+        const form *a = A.get ();
+        const form *b = B.get ();
 
         if (a == b) return true;
         if (a == nullptr || b == nullptr) return false;
@@ -90,10 +90,12 @@ namespace Diophant {
     std::ostream &write_binary (std::ostream &o, const binary_operation &b) {
         data::stack<expression> body = b.Body;
         if (data::size (body) < 2) throw data::exception {} << "invalid binary operation " << b.Operator;
+
         write (o, body.first ().get (), b.Operator);
+        body = data::rest (body);
         do {
+            write (o << " " << b.Operator << " ", body.first ().get (), b.Operator);
             body = data::rest (body);
-            write (o << b.Operator, body.first ().get (), b.Operator);
         } while (!data::empty (body));
         return o;
     }

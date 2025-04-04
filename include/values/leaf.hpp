@@ -6,8 +6,8 @@
 namespace Diophant {
 
     namespace secp256k1 = Gigamonkey::secp256k1;
-    using uint256 = data::uint256;
-    using uint512 = data::uint512;
+    using uint256 = data::uint256_little;
+    using uint512 = data::uint512_little;
 
     template <typename T> struct leaf final : value {
         T Value;

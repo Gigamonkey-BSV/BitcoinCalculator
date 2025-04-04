@@ -37,19 +37,19 @@ namespace Diophant {
 
     expression inline call::make (expression fun, data::list<expression> args) {
         if (args.size () == 0) throw data::exception {} << "call should not be created with empty argument list (for now)";
-        return expression {std::static_pointer_cast<node> (std::make_shared<call> (fun, args))};
+        return expression {std::static_pointer_cast<form> (std::make_shared<call> (fun, args))};
     }
 
     expression inline unary_operation::make (unary_operand op, expression body) {
-        return expression {std::static_pointer_cast<node> (std::make_shared<unary_operation> (op, body))};
+        return expression {std::static_pointer_cast<form> (std::make_shared<unary_operation> (op, body))};
     }
 
     expression inline binary_operation::make (binary_operand op, expression left, expression right) {
-        return expression {std::static_pointer_cast<node> (std::make_shared<binary_operation> (op, left, right))};
+        return expression {std::static_pointer_cast<form> (std::make_shared<binary_operation> (op, left, right))};
     }
 
     expression inline binary_operation::make (binary_operand op, data::stack<expression> body) {
-        return expression {std::static_pointer_cast<node> (std::make_shared<binary_operation> (op, body))};
+        return expression {std::static_pointer_cast<form> (std::make_shared<binary_operation> (op, body))};
     }
 
     inline call::call (expression fun, data::list<expression> args): Fun {fun}, Args {args} {}

@@ -6,7 +6,7 @@ namespace Diophant {
 
     // return null if no replacement is made.
     expression replace_inner (Expression e, replacements rr) {
-        const node *p = e.get ();
+        const form *p = e.get ();
         if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
             const auto *r = rr.contains (*x);
             return r != nullptr ? *r : expression {};
