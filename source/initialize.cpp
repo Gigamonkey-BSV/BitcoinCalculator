@@ -250,20 +250,20 @@ namespace Diophant {
             call::make (built_in_function<Bitcoin::integer,
                 const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_identical), {X, Y}));
 
-        m = m.define (binary_operand::equal, bool_type, {string_type, x}, {string_type, y},
+        m = m.define (binary_operand::bool_equal, bool_type, {string_type, x}, {string_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const data::string &, const data::string &>::make (string_equal), {X, Y}));
 
-        m = m.define (binary_operand::unequal, bool_type, {string_type, x}, {string_type, y},
+        m = m.define (binary_operand::bool_unequal, bool_type, {string_type, x}, {string_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const data::string &, const data::string &>::make (&string_unequal), {X, Y}));
 
         // comparisons
-        m = m.define (binary_operand::equal, bool_type, {integer_type, x}, {integer_type, y},
+        m = m.define (binary_operand::bool_equal, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_equal), {X, Y}));
 
-        m = m.define (binary_operand::unequal, bool_type, {integer_type, x}, {integer_type, y},
+        m = m.define (binary_operand::bool_unequal, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_unequal), {X, Y}));
 
@@ -284,11 +284,11 @@ namespace Diophant {
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_less), {X, Y}));
 
         // comparisons for secret keys
-        m = m.define (binary_operand::equal, bool_type, {secret_type, x}, {secret_type, y},
+        m = m.define (binary_operand::bool_equal, bool_type, {secret_type, x}, {secret_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const uint256 &, const uint256 &>::make (&secret_equal), {X, Y}));
 
-        m = m.define (binary_operand::unequal, bool_type, {secret_type, x}, {secret_type, y},
+        m = m.define (binary_operand::bool_unequal, bool_type, {secret_type, x}, {secret_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const uint256 &, const uint256 &>::make (&secret_unequal), {X, Y}));
 
@@ -309,13 +309,13 @@ namespace Diophant {
                 const uint256 &, const uint256 &>::make (&secret_less), {X, Y}));
 
         // comparisons for coordinates
-        m = m.define (binary_operand::equal, bool_type,
+        m = m.define (binary_operand::bool_equal, bool_type,
             call::make (symbol::make ("coord"), {pattern {secret_type, x}}),
             call::make (symbol::make ("coord"), {pattern {secret_type, y}}),
             call::make (built_in_function<Bitcoin::integer,
                 const uint256 &, const uint256 &>::make (&coord_equal), {X, Y}));
 
-        m = m.define (binary_operand::unequal, bool_type,
+        m = m.define (binary_operand::bool_unequal, bool_type,
             call::make (symbol::make ("coord"), {pattern {secret_type, x}}),
             call::make (symbol::make ("coord"), {pattern {secret_type, y}}),
             call::make (built_in_function<Bitcoin::integer,
@@ -564,15 +564,7 @@ namespace Diophant {
                 const uint256 &>::make (&encode_base_58), {X}));
 
         // elliptic curve operations
-        m = m.define (binary_operand::equal, bool_type, {pubkey_type, x}, {pubkey_type, y},
-            call::make (built_in_function<Bitcoin::integer,
-                const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_equal), {X, Y}));
-
-        m = m.define (binary_operand::equal, bool_type, {pubkey_type, x}, {pubkey_type, y},
-            call::make (built_in_function<Bitcoin::integer,
-                const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_identical), {X, Y}));
-
-        m = m.define (binary_operand::unequal, bool_type, {pubkey_type, x}, {pubkey_type, y},
+        m = m.define (binary_operand::bool_unequal, bool_type, {pubkey_type, x}, {pubkey_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_unequal), {X, Y}));
 
@@ -584,9 +576,9 @@ namespace Diophant {
             call::make (built_in_function<Bitcoin::integer,
                 const secp256k1::pubkey &>::make (&pubkey_valid), {X}));
 
-        m = m.define (symbol {"to_public"}, pubkey_type, {{secret_type, x}, {bool_type, y}},
+        m = m.define (symbol {"to_public"}, pubkey_type, {{bool_type, x}, {secret_type, y}},
             call::make (built_in_function<secp256k1::pubkey,
-                const uint256 &, const Bitcoin::integer &>::make (&secret_to_public), {X, Y}));
+                const uint256 &, const Bitcoin::integer &>::make (&secret_to_public), {Y, X}));
 
         m = m.define (symbol {"compress"}, pubkey_type, {{pubkey_type, x}},
             call::make (built_in_function<secp256k1::pubkey,

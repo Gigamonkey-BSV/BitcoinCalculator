@@ -27,6 +27,8 @@ namespace Diophant {
 
     bool operator == (Pattern, Pattern);
 
+    impartial_ordering operator <=> (Pattern, Pattern);
+
     std::ostream &operator << (std::ostream &, const pattern &);
 
     // matches everything.

@@ -33,6 +33,13 @@ namespace Diophant {
 
     impartial_ordering operator <=> (Type, Type);
 
+    impartial_ordering operator && (impartial_ordering, impartial_ordering);
+
+    impartial_ordering inline operator - (impartial_ordering x) {
+        return x == impartial_ordering::superset ? impartial_ordering::subset:
+            x == impartial_ordering::superset ? impartial_ordering::subset: x;
+    }
+
     bool inline type::operator == (Type t) const {
         return (*this <=> t) == impartial_ordering::equal;
     }

@@ -111,64 +111,30 @@ namespace Diophant {
 
     uint256 secret_negate (const uint256 &x) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
-        return x == 0 ? 0 : secp256k1_order - x;
+        return data::negate_mod (x, data::math::nonzero {secp256k1_order});
     }
 
     uint256 secret_plus (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return static_cast<uint256> ((uint512 (x) + uint512 (y)) % uint512 (secp256k1_order));
+        return data::plus_mod (x, y, data::math::nonzero {secp256k1_order});
     }
 
     uint256 secret_minus (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        auto order = uint512 (secp256k1_order);
-        return static_cast<uint256> ((uint512 (x) + (order - uint512 (y))) % order);
+        return data::minus_mod (x, y, data::math::nonzero {secp256k1_order});
     }
 
     uint256 secret_times (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return static_cast<uint256> ((uint512 (x) * uint512 (y)) % uint512 (secp256k1_order));
-    }
-
-    uint256 coord_negate (const uint256 &x) {
-        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
-        return x == 0 ? 0 : secp256k1_prime - x;
-    }
-
-    uint256 coord_plus (const uint256 &x, const uint256 &y) {
-        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
-        if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return static_cast<uint256> ((uint512 (x) + uint512 (y)) % uint512 (secp256k1_prime));
-    }
-
-    uint256 coord_minus (const uint256 &x, const uint256 &y) {
-        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
-        if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        auto order = uint512 (secp256k1_prime);
-        return static_cast<uint256> ((uint512 (x) + (order - uint512 (y))) % order);
-    }
-
-    uint256 coord_times (const uint256 &x, const uint256 &y) {
-        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
-        if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return static_cast<uint256> ((uint512 (x) * uint512 (y)) % uint512 (secp256k1_prime));
+        return data::times_mod (x, y, data::math::nonzero {secp256k1_order});
     }
 
     uint256 secret_invert (const uint256 &x) {
         if (!secret_valid (x)) throw data::exception {} << "invalid secret key value";
-
-        data::N big_order (secp256k1_order);
-
-        data::Z bt =
-            data::math::number::euclidian::extended<data::N, data::Z>::algorithm
-                (big_order, data::N (x)).BezoutT;
-
-        if (bt < 0) bt += big_order;
-
-        return static_cast<uint256> (data::abs (bt));
+        return *data::invert_mod (x, data::math::nonzero {secp256k1_order});
     }
 
     uint256 secret_divide (const uint256 &x, const uint256 &y) {
@@ -178,21 +144,35 @@ namespace Diophant {
     uint256 secret_power (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return data::pow_mod (x, y, secp256k1_order);
+        return data::pow_mod (x, y, data::math::nonzero {secp256k1_order});
+    }
+
+    uint256 coord_negate (const uint256 &x) {
+        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
+        return data::negate_mod (x, data::math::nonzero {secp256k1_prime});
+    }
+
+    uint256 coord_plus (const uint256 &x, const uint256 &y) {
+        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
+        if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
+        return data::plus_mod (x, y, data::math::nonzero {secp256k1_prime});
+    }
+
+    uint256 coord_minus (const uint256 &x, const uint256 &y) {
+        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
+        if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
+        return data::minus_mod (x, y, data::math::nonzero {secp256k1_prime});
+    }
+
+    uint256 coord_times (const uint256 &x, const uint256 &y) {
+        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
+        if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
+        return data::times_mod (x, y, data::math::nonzero {secp256k1_prime});
     }
 
     uint256 coord_invert (const uint256 &x) {
         if (!coord_valid (x)) throw data::exception {} << "invalid coordinate value";
-
-        data::N big_order (secp256k1_prime);
-
-        data::Z bt =
-            data::math::number::euclidian::extended<data::N, data::Z>::algorithm
-                (big_order, data::N (x)).BezoutT;
-
-        if (bt < 0) bt += big_order;
-
-        return static_cast<uint256> (data::abs (bt));
+        return *data::invert_mod (x, data::math::nonzero {secp256k1_prime});
     }
 
     uint256 coord_divide (const uint256 &x, const uint256 &y) {
@@ -202,7 +182,7 @@ namespace Diophant {
     uint256 coord_power (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
         if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return data::pow_mod (x, y, secp256k1_order);
+        return data::pow_mod (x, y, data::math::nonzero {secp256k1_prime});
     }
 
 }

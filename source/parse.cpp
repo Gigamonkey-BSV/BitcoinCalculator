@@ -18,6 +18,9 @@ namespace Diophant {
 
         void call ();
 
+        void open ();
+        void close ();
+
         void unary (unary_operand op);
         void binary (binary_operand op);
 
@@ -26,6 +29,7 @@ namespace Diophant {
         expression top ();
 
         data::stack<expression> Exp;
+        data::stack<data::stack<expression>> Back;
 
     };
 

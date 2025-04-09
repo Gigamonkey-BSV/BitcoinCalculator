@@ -17,6 +17,9 @@ namespace Diophant {
         // a nil expression
         expression ();
         expression (data::ptr<form> x);
+        operator bool () const {
+            return this->get () != nullptr;
+        }
     };
 
     using Expression = const expression &;
@@ -29,6 +32,10 @@ namespace Diophant {
 
     struct node : form {
         virtual ~node () {}
+
+        // if this exists, then an evaluation was already done and this was the result.
+        // if the result is null, that means that the expression evaluated to itself.
+        mutable data::maybe<expression> Evaluated;
     };
 
     std::ostream inline &operator << (std::ostream &o, Expression p) {

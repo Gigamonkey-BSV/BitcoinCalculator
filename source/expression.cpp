@@ -40,6 +40,13 @@ namespace Diophant {
             return mm == nullptr ? false: ll->List == mm->List;
         }
 
+        if (const call *fx = dynamic_cast<const call *> (a); fx != nullptr) {
+            const call *gx = dynamic_cast<const call *> (b);
+            if (gx == nullptr) return false;
+            if (fx->Fun != gx->Fun) return false;
+            return fx->Args == gx->Args;
+        }
+
         throw data::exception {} << "incomplete method: expression == expressions; trying to evaluate " << A << " == " << B;
     }
 

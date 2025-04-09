@@ -69,9 +69,17 @@ namespace Diophant {
 
         using definition = data::either<casted, data::stack<transformation>>;
 
-        data::map<symbol, definition> SymbolDefinitions;
-        data::map<unary_operand, data::stack<transformation>> UnaryDefinitions;
-        data::map<binary_operand, data::stack<transformation>> BinaryDefinitions;
+        using symbol_defs = data::map<symbol, definition>;
+        using unary_defs = data::map<unary_operand, data::stack<transformation>>;
+        using binary_defs = data::map<binary_operand, data::stack<transformation>>;
+
+        symbol_defs SymbolDefinitions {};
+        unary_defs UnaryDefinitions {};
+        binary_defs BinaryDefinitions {};
+
+        machine (symbol_defs xd, unary_defs ud, binary_defs bd):
+            SymbolDefinitions {xd}, UnaryDefinitions {ud}, BinaryDefinitions {bd} {}
+        machine () {}
     };
 
     machine initialize ();
@@ -86,6 +94,38 @@ namespace Diophant {
 
     expression inline casted::make (Type t, Expression x) {
         return expression {std::static_pointer_cast<node> (std::make_shared<casted> (t, x))};
+    }
+
+    machine inline machine::declare (symbol x) const {
+        return define (x, type {}, expression {});
+    }
+
+    machine inline machine::declare (symbol x, data::stack<pattern> arg) const {
+        return define (x, type {}, arg, expression {});
+    }
+
+    machine inline machine::declare (unary_operand op, pattern in) const {
+        return define (op, type {}, in, expression {});
+    }
+
+    machine inline machine::declare (binary_operand op, pattern left, pattern right) const {
+        return define (op, type {}, left, right, expression {});
+    }
+
+    machine inline machine::declare (symbol x, type of) const {
+        return define (x, of, expression {});
+    }
+
+    machine inline machine::declare (symbol x, type of, data::stack<pattern> arg) const {
+        return define (x, of, arg, expression {});
+    }
+
+    machine inline machine::declare (unary_operand op, type of, pattern in) const {
+        return define (op, of, in, expression {});
+    }
+
+    machine inline machine::declare (binary_operand op, type of, pattern left, pattern right) const {
+        return define (op, of, left, right, expression {});
     }
 
 }
