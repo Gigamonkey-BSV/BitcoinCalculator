@@ -20,6 +20,7 @@ namespace Diophant {
 
         void open ();
         void close ();
+        void comma ();
 
         void unary (unary_operand op);
         void binary (binary_operand op);
@@ -84,6 +85,27 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 eval.push (symbol::make (in.string ()));
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::open_list> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.open ();
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::close_list> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.close ();
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::comma> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.comma ();
             }
         };
 
@@ -308,6 +330,20 @@ namespace Diophant {
 
     void parser::binary (binary_operand op) {
         Exp = prepend (rest (rest (Exp)), binary_operation::make (op, first (rest (Exp)), first (Exp)));
+    }
+
+    void parser::open () {
+        Back = prepend (Back, Exp);
+        Exp = {};
+    }
+
+    void parser::close () {
+        Exp = prepend (data::first (Back), list::make (data::reverse (Exp)));
+        Back = data::rest (Back);
+    }
+
+    void parser::comma () {
+
     }
 
 }

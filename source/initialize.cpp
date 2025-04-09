@@ -1,6 +1,8 @@
 #include <machine.hpp>
 #include <values/leaf.hpp>
-#include <built.in/pubkey.hpp>
+#include <values/list.hpp>
+#include <built.in/hash.hpp>
+#include <built.in/base58.hpp>
 
 namespace Diophant {
 
@@ -13,32 +15,6 @@ namespace Diophant {
     bool bool_nand (const bool &x, const bool &y);
     bool bool_nor (const bool &x, const bool &y);
 
-    // TODO
-    // base 58 check encoding
-    //   * addresses
-    //   * wif
-    // string split
-
-    // both of these require structs and bytes.
-
-    // string operations
-    data::string string_cat (const data::string &x, const data::string &y);
-    data::string string_left (const data::string &x, const Bitcoin::integer &y);
-    data::string string_left (const data::string &x, const uint256 &y);
-    data::string string_right (const data::string &x, const Bitcoin::integer &y);
-    data::string string_right (const data::string &x, const uint256 &y);
-
-    Bitcoin::integer string_equal (const data::string &x, const data::string &y);
-    Bitcoin::integer string_unequal (const data::string &x, const data::string &y);
-
-    // size operations
-    data::string string_size (const data::string &x);
-
-    // base 58
-    uint256 decode_base_58 (const data::string &x);
-    data::string encode_base_58 (const uint256 &x);
-
-
     // script
     Bitcoin::integer push (const uint256 &x);
     Bitcoin::integer push (const Bitcoin::integer &x);
@@ -48,13 +24,6 @@ namespace Diophant {
     // crypto
     Bitcoin::integer sign (const uint256 &key, const uint256 &digest);
     Bitcoin::integer verify (const secp256k1::pubkey &x, const uint256 &digest, const Bitcoin::integer &sig);
-
-    uint256 SHA2_256 (const Bitcoin::integer &key);
-    uint256 SHA2_256 (const data::string &key);
-    uint256 SHA3_256 (const Bitcoin::integer &key);
-    uint256 SHA3_256 (const data::string &key);
-    uint256 Hash256 (const Bitcoin::integer &key);
-    uint256 Hash256 (const data::string &key);
 
     machine initialize () {
 
@@ -77,7 +46,7 @@ namespace Diophant {
 
         // next we have some basic number types.
         type int8_type {call::make (symbol::make ("int"), {natural::make (data::N (8))})};
-        type uint8_type {call::make (symbol::make ("uint"), {natural::make (data::N(8))})};
+        type uint8_type {call::make (symbol::make ("uint"), {natural::make (data::N (8))})};
 
         m = m.define (symbol {"byte"}, uint8_type);
         m = m.define (symbol {"char"}, int8_type);
@@ -153,6 +122,16 @@ namespace Diophant {
         type pubkey_type {symbol::make ("pubkey")};
         type sats_type {symbol::make ("satoshi")};
         type &bool_type = integer_type;
+
+        m = m.define (symbol {"address_main"}, byte::make (data::byte (0x00)));
+        m = m.define (symbol {"address_test"}, byte::make (data::byte (0x6f)));
+        m = m.define (symbol {"WIF_main"}, byte::make (data::byte (0x80)));
+        m = m.define (symbol {"WIF_test"}, byte::make (data::byte (0xef)));
+        m = m.define (symbol {"sighash_all"}, byte::make (data::byte (1)));
+        m = m.define (symbol {"sighash_none"}, byte::make (data::byte (2)));
+        m = m.define (symbol {"sighash_single"}, byte::make (data::byte (3)));
+        m = m.define (symbol {"sighash_anyone_can_pay"}, byte::make (data::byte (0x80)));
+        m = m.define (symbol {"sighash_forkid"}, byte::make (data::byte (0x40)));
 
         m = m.define (symbol {"Satoshi"}, call::make (symbol::make ("sats"), {int64_little_type}));
         m = m.define (symbol {"Coordinate"}, call::make (symbol::make ("coord"), {uint256_little_type}));
@@ -480,60 +459,94 @@ namespace Diophant {
                 const Bitcoin::integer &>::make (&scriptnum_negate), {X, Y}));
 
         // string operations
-        m = m.define (binary_operand::cat, integer_type, {integer_type, x}, {integer_type, x},
+        m = m.define (binary_operand::cat, integer_type,
+            {integer_type, x}, {integer_type, y},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_cat), {X, Y}));
 
-        m = m.define (binary_operand::cat, string_type, {string_type, x}, {string_type, y},
+        m = m.define (binary_operand::cat, string_type,
+            {string_type, x}, {string_type, y},
             call::make (built_in_function<data::string,
                 const data::string &, const data::string &>::make (&string_cat), {X, Y}));
 
-        m = m.define (symbol {"left"}, integer_type, {{integer_type, x}, {integer_type, x}},
+        m = m.define (symbol {"left"}, integer_type,
+            {{integer_type, x}, {integer_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_left), {X, Y}));
 
-        m = m.define (symbol {"left"}, integer_type, {{integer_type, x}, {secret_type, x}},
+        m = m.define (symbol {"left"}, integer_type,
+            {{integer_type, x}, {secret_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const uint256 &>::make (&scriptnum_left), {X, Y}));
 
-        m = m.define (symbol {"left"}, string_type, {{string_type, x}, {integer_type, y}},
+        m = m.define (symbol {"left"}, string_type,
+            {{string_type, x}, {integer_type, y}},
             call::make (built_in_function<data::string,
                 const data::string &, const Bitcoin::integer &>::make (&string_left), {X, Y}));
 
-        m = m.define (symbol {"left"}, string_type, {{string_type, x}, {secret_type, y}},
+        m = m.define (symbol {"left"}, string_type,
+            {{string_type, x}, {secret_type, y}},
             call::make (built_in_function<data::string,
                 const data::string &, const uint256 &>::make (&string_left), {X, Y}));
 
-        m = m.define (symbol {"right"}, integer_type, {{integer_type, x}, {integer_type, x}},
+        m = m.define (symbol {"right"}, integer_type,
+            {{integer_type, x}, {integer_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_right), {X, Y}));
 
-        m = m.define (symbol {"right"}, integer_type, {{integer_type, x}, {secret_type, x}},
+        m = m.define (symbol {"right"}, integer_type,
+            {{integer_type, x}, {secret_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const uint256 &>::make (&scriptnum_right), {X, Y}));
 
-        m = m.define (symbol {"right"}, string_type, {{string_type, x}, {integer_type, y}},
+        m = m.define (symbol {"right"}, string_type,
+            {{string_type, x}, {integer_type, y}},
             call::make (built_in_function<data::string,
                 const data::string &, const Bitcoin::integer &>::make (&string_right), {X, Y}));
 
-        m = m.define (symbol {"right"}, string_type, {{string_type, x}, {secret_type, y}},
+        m = m.define (symbol {"right"}, string_type,
+            {{string_type, x}, {secret_type, y}},
             call::make (built_in_function<data::string,
                 const data::string &, const uint256 &>::make (&string_right), {X, Y}));
 
+        m = m.define (symbol {"split"}, list::make ({integer_type, integer_type}),
+            {{integer_type, x}, {integer_type, y}},
+            call::make (built_in_function<std::tuple<Bitcoin::integer, Bitcoin::integer>,
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_split), {X, Y}));
+
+        m = m.define (symbol {"split"}, list::make ({integer_type, integer_type}),
+            {{integer_type, x}, {secret_type, y}},
+            call::make (built_in_function<std::tuple<Bitcoin::integer, Bitcoin::integer>,
+                const Bitcoin::integer &, const uint256 &>::make (&scriptnum_split), {X, Y}));
+
+        m = m.define (symbol {"split"}, list::make ({string_type, string_type}),
+            {{string_type, x}, {integer_type, y}},
+            call::make (built_in_function<std::tuple<data::string, data::string>,
+                const data::string &, const Bitcoin::integer &>::make (&string_split), {X, Y}));
+
+        m = m.define (symbol {"split"}, list::make ({string_type, string_type}),
+            {{string_type, x}, {secret_type, y}},
+            call::make (built_in_function<std::tuple<data::string, data::string>,
+                const data::string &, const uint256 &>::make (&string_split), {X, Y}));
+
         // bit shifts
-        m = m.define (symbol {"right_shift"}, integer_type, {{integer_type, x}, {integer_type, y}},
+        m = m.define (symbol {"right_shift"}, integer_type,
+            {{integer_type, x}, {integer_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_right_shift), {X, Y}));
 
-        m = m.define (symbol {"left_shift"}, integer_type, {{integer_type, x}, {integer_type, y}},
+        m = m.define (symbol {"left_shift"}, integer_type,
+            {{integer_type, x}, {integer_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const Bitcoin::integer &>::make (&scriptnum_left_shift), {X, Y}));
 
-        m = m.define (symbol {"right_shift"}, integer_type, {{integer_type, x}, {secret_type, y}},
+        m = m.define (symbol {"right_shift"}, integer_type,
+            {{integer_type, x}, {secret_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const uint256 &>::make (&scriptnum_right_shift), {X, Y}));
 
-        m = m.define (symbol {"left_shift"}, integer_type, {{integer_type, x}, {secret_type, y}},
+        m = m.define (symbol {"left_shift"}, integer_type,
+            {{integer_type, x}, {secret_type, y}},
             call::make (built_in_function<Bitcoin::integer,
                 const Bitcoin::integer &, const uint256 &>::make (&scriptnum_left_shift), {X, Y}));
 
@@ -562,6 +575,16 @@ namespace Diophant {
         m = m.define (symbol {"base58_encode"}, string_type, {{secret_type, x}},
             call::make (built_in_function<data::string,
                 const uint256 &>::make (&encode_base_58), {X}));
+
+        m = m.define (symbol {"base58_check_decode"}, list::make ({uint8_type, integer_type}),
+            {pattern {string_type, x}},
+            call::make (built_in_function<std::tuple<data::byte, Bitcoin::integer>,
+                const data::string &>::make (&decode_base_58_check), {X}));
+
+        m = m.define (symbol {"base58_check_encode"}, string_type,
+            {list::make ({pattern {uint8_type, x}, pattern {integer_type, y}})},
+            call::make (built_in_function<data::string,
+                const data::byte &, const Bitcoin::integer &>::make (&encode_base_58_check), {X, Y}));
 
         // elliptic curve operations
         m = m.define (binary_operand::bool_unequal, bool_type, {pubkey_type, x}, {pubkey_type, y},
@@ -625,59 +648,30 @@ namespace Diophant {
             call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&SHA2_256), {X}));
 
         m = m.define (symbol {"SHA3_256"}, secret_type, {{integer_type, x}},
-            call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&SHA2_256), {X}));
-
-        m = m.define (symbol {"Hash256"}, secret_type, {{integer_type, x}},
-            call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&SHA2_256), {X}));
+            call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&SHA3_256), {X}));
 
         m = m.define (symbol {"SHA2_256"}, secret_type, {{string_type, x}},
             call::make (built_in_function<uint256, const data::string &>::make (&SHA2_256), {X}));
 
         m = m.define (symbol {"SHA3_256"}, secret_type, {{string_type, x}},
-            call::make (built_in_function<uint256, const data::string &>::make (&SHA2_256), {X}));
+            call::make (built_in_function<uint256, const data::string &>::make (&SHA3_256), {X}));
+
+        m = m.define (symbol {"Hash256"}, secret_type, {{integer_type, x}},
+            call::make (built_in_function<uint256, const Bitcoin::integer &>::make (&Hash256), {X}));
 
         m = m.define (symbol {"Hash256"}, secret_type, {{string_type, x}},
-            call::make (built_in_function<uint256, const data::string &>::make (&SHA2_256), {X}));
+            call::make (built_in_function<uint256, const data::string &>::make (&Hash256), {X}));
+
+        m = m.define (symbol {"Hash160"}, integer_type, {{integer_type, x}},
+            call::make (built_in_function<Bitcoin::integer, const Bitcoin::integer &>::make (&Hash160), {X}));
+
+        m = m.define (symbol {"Hash160"}, integer_type, {{string_type, x}},
+            call::make (built_in_function<Bitcoin::integer, const data::string &>::make (&Hash160), {X}));
+
+        m = m.define (symbol {"Hash160"}, integer_type, {{pubkey_type, x}},
+            call::make (built_in_function<Bitcoin::integer, const secp256k1::pubkey &>::make (&Hash160), {X}));
 
         return m;
-    }
-
-    Bitcoin::integer string_equal (const data::string &x, const data::string &y) {
-        return Bitcoin::integer {x == y};
-    }
-
-    Bitcoin::integer string_unequal (const data::string &x, const data::string &y) {
-        return Bitcoin::integer {x != y};
-    }
-
-    data::string string_cat (const data::string &x, const data::string &y) {
-        return Bitcoin::cat (x, y);
-    }
-
-    data::string string_left (const data::string &x, const Bitcoin::integer &y) {
-        return data::string {Bitcoin::left (x, static_cast<size_t> (data::int64 (y)))};
-    }
-
-    data::string string_left (const data::string &x, const uint256 &y) {
-        return data::string {Bitcoin::left (x, size_t (y))};
-    }
-
-    data::string string_right (const data::string &x, const Bitcoin::integer &y) {
-        return data::string {Bitcoin::right (x, static_cast<size_t> (data::int64 (y)))};
-    }
-
-    data::string string_right (const data::string &x, const uint256 &y) {
-        return data::string {Bitcoin::right (x, size_t (y))};
-    }
-
-    uint256 decode_base_58 (const data::string &x) {
-        data::maybe<uint256> result = data::encoding::base58::decode<uint256> (x);
-        if (!bool (result)) throw data::exception {} << "invalid base 58 string";
-        return *result;
-    }
-
-    data::string encode_base_58 (const uint256 &x) {
-        return data::encoding::base58::encode<uint256> (x);
     }
 
     Bitcoin::integer push (const uint256 &x) {
@@ -702,30 +696,6 @@ namespace Diophant {
 
     Bitcoin::integer verify (const secp256k1::pubkey &x, const uint256 &digest, const Bitcoin::integer &sig) {
         return Bitcoin::integer {x.verify (digest, secp256k1::signature {sig})};
-    }
-
-    uint256 SHA2_256 (const Bitcoin::integer &key) {
-        return data::crypto::SHA2_256 (key);
-    }
-
-    uint256 SHA2_256 (const data::string &key) {
-        return data::crypto::SHA2_256 (key);
-    }
-
-    uint256 SHA3_256 (const Bitcoin::integer &key) {
-        return data::crypto::SHA3_256 (key);
-    }
-
-    uint256 SHA3_256 (const data::string &key) {
-        return data::crypto::SHA3_256 (key);
-    }
-
-    uint256 Hash256 (const Bitcoin::integer &key) {
-        return data::crypto::Bitcoin_256 (key);
-    }
-
-    uint256 Hash256 (const data::string &key) {
-        return data::crypto::Bitcoin_256 (key);
     }
 
 }

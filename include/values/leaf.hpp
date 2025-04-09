@@ -2,6 +2,7 @@
 #define BITCOIN_CALCULATOR_VALUE_LEAF
 
 #include <value.hpp>
+#include <values/list.hpp>
 
 namespace Diophant {
 
@@ -43,6 +44,7 @@ namespace Diophant {
     using secret = leaf<uint256>;
     using sat = leaf<Bitcoin::satoshi>;
     template <typename... X> using tuple = leaf<std::tuple<X...>>;
+    template <typename X> using stack = leaf<data::stack<X>>;
     template <typename Y, typename ... X> using built_in_function = leaf<Y (*)(X...)>;
 
     namespace {
@@ -58,6 +60,12 @@ namespace Diophant {
             }
         };
 
+        template <> struct write_leaf<data::byte> {
+            std::ostream &operator () (std::ostream &o, const data::byte &t) {
+                return data::encoding::hex::write (o << "0x", data::bytes {{t}});
+            }
+        };
+
         template <> struct write_leaf<secp256k1::pubkey> {
             std::ostream &operator () (std::ostream &o, const secp256k1::pubkey &p) {
                 return data::encoding::hex::write (o, static_cast<const data::bytes &> (p));
@@ -68,6 +76,28 @@ namespace Diophant {
             std::ostream &operator () (std::ostream &o, const Bitcoin::integer &t) {
                 return data::encoding::hexidecimal::write (o, t);
             }
+        };
+
+        template <typename... X> struct write_leaf<std::tuple<X...>> {
+            template <int index>
+            std::ostream &write (std::ostream &o, const std::tuple<X...> &x) {
+                if constexpr (index >= std::tuple_size<std::tuple<X...>>::value) return o;
+                else return write<index + 1>
+                    (write_leaf<std::remove_const_t<data::unref<decltype(std::get<index> (x))>>> {} (o << ", ", std::get<index> (x)), x);
+            }
+
+            std::ostream &operator () (std::ostream &o, const std::tuple<X...> &x) {
+                o << "[";
+                if (std::tuple_size<std::tuple<X...>>::value > 1) {
+                    write_leaf<std::remove_const_t<data::unref<decltype(std::get<0> (x))>>> {} (o, std::get<0> (x));
+                    write<1> (o, x);
+                }
+                return o << "]";
+            }
+        };
+
+        template <typename X> struct write_leaf<data::stack<X>> {
+            std::ostream &operator () (std::ostream &o, const data::stack<X> &t);
         };
     }
 
@@ -110,7 +140,7 @@ namespace Diophant {
 
         template <> struct base_type<data::byte> {
             type operator () () {
-                return symbol::make ("byte");
+                return call::make (symbol::make ("uint"), {natural::make (data::N (8))});
             }
         };
 
@@ -148,6 +178,23 @@ namespace Diophant {
             type operator () () {
                 return symbol::make ("integer");
             }
+        };
+
+        template <typename ...X> struct base_type<std::tuple<X...>> {
+            template <int index>
+            data::stack<expression> base () {
+                if constexpr (index >= std::tuple_size<std::tuple<X...>>::value)
+                    return data::prepend (base<index + 1> (), base_type<decltype(std::get<index> ())> {} ());
+                else return data::stack<expression> {};
+            }
+
+            type operator () () {
+                return type {list::make (base<0> ())};
+            }
+        };
+
+        template <typename X> struct base_type<data::stack<X>> {
+            type operator () ();
         };
 
         template <typename Y, typename X> struct base_type<Y (*)(const X &)> {

@@ -20,6 +20,19 @@ namespace Diophant {
         static expression make (Type, Expression);
     };
 
+    std::ostream &operator << (std::ostream &o, const casted &cx);
+
+    struct transformation {
+        data::stack<pattern> Arguments;
+        casted Value;
+
+        // throws exception if two transformations
+        // are not either disjoint or one is a subset of the other.
+        std::partial_ordering operator <=> (const transformation) const;
+    };
+
+    std::ostream &operator << (std::ostream &o, const transformation &tf);
+
     struct machine {
 
         machine declare (symbol x) const;
@@ -57,15 +70,6 @@ namespace Diophant {
 
         // try to cast a value as a type.
         bool cast (Type, Expression) const;
-
-        struct transformation {
-            data::stack<pattern> Arguments;
-            casted Value;
-
-            // throws exception if two transformations
-            // are not either disjoint or one is a subset of the other.
-            std::partial_ordering operator <=> (const transformation) const;
-        };
 
         using definition = data::either<casted, data::stack<transformation>>;
 
@@ -126,6 +130,14 @@ namespace Diophant {
 
     machine inline machine::declare (binary_operand op, type of, pattern left, pattern right) const {
         return define (op, of, left, right, expression {});
+    }
+
+    std::ostream inline &operator << (std::ostream &o, const casted &cx) {
+        return o << cx.Cast << " : " << cx.Def;
+    }
+
+    std::ostream inline &operator << (std::ostream &o, const transformation &tf) {
+        return o << tf.Arguments << " -> " << tf.Value;
     }
 
 }

@@ -1,5 +1,6 @@
 
 #include <built.in/scriptnum.hpp>
+#include <gigamonkey/p2p/checksum.hpp>
 
 namespace Diophant {
 
@@ -140,6 +141,15 @@ namespace Diophant {
 
     Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const Bitcoin::integer &y) {
         return data::pow (x, y);
+    }
+
+    std::tuple<Bitcoin::integer, Bitcoin::integer> scriptnum_split (const Bitcoin::integer &x, const Bitcoin::integer &y) {
+        auto sp = Bitcoin::split (x, static_cast<size_t> (data::int64 (y)));
+        return {Bitcoin::integer::read (sp.first), Bitcoin::integer::read (sp.second)};
+    }
+
+    Bitcoin::integer bitcoin_checksum (const Bitcoin::integer &x) {
+        return Bitcoin::integer::read (bitcoin_checksum (x));
     }
 
 }

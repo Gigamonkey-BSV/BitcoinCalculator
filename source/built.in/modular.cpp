@@ -26,6 +26,11 @@ namespace Diophant {
         return Bitcoin::integer {extend (x, size_t (y))};
     }
 
+    std::tuple<Bitcoin::integer, Bitcoin::integer> scriptnum_split (const Bitcoin::integer &x, const uint256 &y) {
+        auto sp = Bitcoin::split (x, static_cast<size_t> (data::uint64 (y)));
+        return {Bitcoin::integer::read (sp.first), Bitcoin::integer::read (sp.second)};
+    }
+
     uint256 secp256k1_prime {"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"};
     uint256 secp256k1_order {"0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"};
 

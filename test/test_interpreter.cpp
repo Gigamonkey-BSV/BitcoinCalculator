@@ -145,6 +145,10 @@ namespace Diophant {
         test ("8+", false);
         test ("8-", false);
 
+        // lists
+        test (R"([])", list::make ({}), list::make ({}));
+        test (R"([x, 21, "hi"])");
+
         // negative zero
         test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
         test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
@@ -177,7 +181,7 @@ namespace Diophant {
         test_eval ("base58_encode 1234", string::make ("NH"));
         test_eval (R"(base58_decode "NH")", make_secret (1234));
 
-        test_eval (R"(verify (to_public 123 false) (Hash256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
+        test_eval (R"(verify (to_public false 123) (SHA2_256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
 
         // TODO an undefined function seems to go into an infinite loop.
 

@@ -93,7 +93,8 @@ namespace tao_pegtl_grammar {
         string<'t', 'h', 'e', 'n'>, not_at<symbol_char>, ws, expression<atom>, ws,
         string<'e', 'l', 's', 'e'>, not_at<symbol_char>, ws, expression<atom>> {};
 
-    template <typename elem> struct sequence : seq<elem, star<seq<ws, one<','>>, elem, ws>> {};
+    struct comma : one<','> {};
+    template <typename elem> struct sequence : seq<elem, star<seq<ws, comma, ws, elem>>> {};
     template <typename elem> struct empty_sequence : seq<ws, opt<seq<sequence<elem>, ws>>> {};
 
     struct open_paren : one<'('> {};

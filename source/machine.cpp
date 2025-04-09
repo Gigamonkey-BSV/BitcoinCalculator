@@ -107,26 +107,20 @@ namespace Diophant {
 
         if (z == n || z == nullptr) return mr {{}};
 
-        if (const symbol *x = dynamic_cast<const symbol *> (z); x != nullptr) {
-            const symbol *y = dynamic_cast<const symbol *> (n);
-            if (y == nullptr) return {};
-            return *x == *y ? mr {replacements {}} : mr {};
-        }
-
-        if (const value *v = dynamic_cast<const value *> (z); v != nullptr) {
-            const value *q = dynamic_cast<const value *> (n);
-            if (q == nullptr) return {};
-            return *v == *q ? mr {replacements {}} : mr {};
-        }
-
         if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr) {
-            return b->Name != "" ? mr {{{b->Name, expr}}} : mr {replacements {}};
+            return b->Name != "" ? mr {replacements {{b->Name, expr}}} : mr {replacements {}};
         }
 
         if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
             mr r = match (t->Match, expr);
             if (!bool (r)) return {};
             if (cast (t->Required, expr)) return r;
+        }
+
+        if (const symbol *x = dynamic_cast<const symbol *> (z); x != nullptr) {
+            const symbol *y = dynamic_cast<const symbol *> (n);
+            if (y == nullptr) return {};
+            return *x == *y ? mr {replacements {}} : mr {};
         }
 
         if (const unary_operation *u = dynamic_cast<const unary_operation *> (z); u != nullptr) {
@@ -148,7 +142,40 @@ namespace Diophant {
             if (!bool (rf)) return {};
             auto rx = match (data::stack<pattern> (data::stack<expression> (fx->Args)), data::stack<expression> (gx->Args));
             if (!bool (rx)) return {};
-            return *rf & *rx;
+            try {
+                return *rf & *rx;
+            // will be thrown if these maps have any of the same keys.
+            } catch (replacements::key_already_exists) {
+                return {};
+            }
+        }
+
+        if (const list *jk = dynamic_cast<const list *> (z); jk != nullptr) {
+            const list *mn = dynamic_cast<const list *> (n);
+            if (mn == nullptr || jk->List.size () != mn->List.size ()) return {};
+
+            replacements m {};
+            auto jkl = jk->List;
+            auto mno = mn->List;
+            while (!data::empty (jkl)) {
+                auto r = match (data::first (jkl), data::first (mno));
+                if (!bool (r)) return {};
+                jkl = data::rest (jkl);
+                mno = data::rest (mno);
+                try {
+                    m = m & *r;
+                    // will be thrown if these maps have any of the same keys.
+                } catch (replacements::key_already_exists) {
+                    return {};
+                }
+            }
+            return m;
+        }
+
+        if (const value *v = dynamic_cast<const value *> (z); v != nullptr) {
+            const value *q = dynamic_cast<const value *> (n);
+            if (q == nullptr) return {};
+            return *v == *q ? mr {replacements {}} : mr {};
         }
 
         return {};
@@ -208,7 +235,7 @@ namespace Diophant {
             else return {};
         }
 
-        using mtf = machine::transformation;
+        using mtf = transformation;
 
         struct candidate {
             replacements Replacements;
@@ -240,15 +267,17 @@ namespace Diophant {
         }
 
         expression evaluate_list (const machine &m, const list &ls) {
-            bool changed = false;
 
-            data::list<expression> new_ls;
+            bool changed = false;
+            data::stack<expression> new_ls;
+
             for (Expression old_arg : data::stack<expression> (ls.List)) {
                 expression new_arg = m.evaluate (old_arg);
                 if (new_arg != old_arg) changed = true;
+                new_ls <<= new_arg;
             }
 
-            return changed ? list::make (new_ls) : expression {};
+            return changed ? list::make (data::reverse (new_ls)) : expression {};
         }
 
         expression evaluate_symbol (const machine &m, const symbol &x) {

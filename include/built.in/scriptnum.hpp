@@ -14,6 +14,10 @@ namespace Diophant {
     Bitcoin::integer scriptnum_left_shift (const Bitcoin::integer &x, const Bitcoin::integer &y);
     Bitcoin::integer scriptnum_right_shift (const Bitcoin::integer &x, const Bitcoin::integer &y);
 
+    std::tuple<Bitcoin::integer, Bitcoin::integer> scriptnum_split (const Bitcoin::integer &x, const Bitcoin::integer &y);
+
+    Bitcoin::integer bitcoin_checksum (const Bitcoin::integer &x);
+
     // bool operations
     Bitcoin::integer scriptnum_bool_not (const Bitcoin::integer &x);
     Bitcoin::integer scriptnum_bool_and (const Bitcoin::integer &x, const Bitcoin::integer &y);

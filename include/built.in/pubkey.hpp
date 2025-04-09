@@ -24,6 +24,8 @@ namespace Diophant {
     secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const uint256 &y);
     secp256k1::pubkey pubkey_times (const uint256 &x, const secp256k1::pubkey &y);
 
+    Bitcoin::integer Hash160 (const secp256k1::pubkey &);
+
 }
 
 #endif

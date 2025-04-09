@@ -75,6 +75,10 @@ add_library (calc
     source/built.in/scriptnum.cpp
     source/built.in/modular.cpp
     source/built.in/pubkey.cpp
+    source/built.in/string.cpp
+    source/built.in/base58.cpp
+    source/built.in/hash.cpp
+    source/values/list.cpp
 )
 
 target_link_libraries (calc PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
