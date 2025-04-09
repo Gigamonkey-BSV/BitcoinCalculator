@@ -33,7 +33,7 @@ namespace Diophant {
             }
 
             return replacement_was_made ? list::make (data::reverse (new_list)): expression {};
-        } else if (const binary_operation *b = dynamic_cast<const binary_operation *> (p); b != nullptr) {
+        } else if (const binop *b = dynamic_cast<const binop *> (p); b != nullptr) {
             bool replacement_was_made = false;
             data::stack<expression> new_list;
 
@@ -46,10 +46,10 @@ namespace Diophant {
             }
 
             if (!replacement_was_made) return expression {};
-            return binary_operation::make (b->Operator, new_list);
-        } if (const unary_operation *u = dynamic_cast<const unary_operation *> (p); u != nullptr) {
+            return binop::make (b->Operand, new_list);
+        } if (const unop *u = dynamic_cast<const unop *> (p); u != nullptr) {
             expression replaced = replace_inner (u->Body, rr);
-            return replaced == expression {} ? expression {} : unary_operation::make (u->Operator, replaced);
+            return replaced == expression {} ? expression {} : unop::make (u->Operand, replaced);
         } if (const call *c = dynamic_cast<const call *> (p); c != nullptr) {
             bool replacement_was_made = false;
             data::stack<expression> new_list;

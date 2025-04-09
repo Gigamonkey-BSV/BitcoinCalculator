@@ -41,6 +41,7 @@ namespace Diophant {
         equal,
         unequal,
         identical,        // ===
+        apply,
         element,
         colon,
         such_that,
@@ -63,7 +64,7 @@ namespace Diophant {
     constexpr const char *binary_operator (binary_operand X) {
         switch (X) {
             case binary_operand::cat : return "<>";
-            case binary_operand::power : return "^";
+            case binary_operand::power : return "^^";
             case binary_operand::times : return "*";
             case binary_operand::divide : return "/";
             case binary_operand::mod : return "%";
@@ -84,14 +85,19 @@ namespace Diophant {
             case binary_operand::equal : return "=";
             case binary_operand::unequal : return "/=";
             case binary_operand::identical : return "===";
-            case binary_operand::element : return ":-";
+            case binary_operand::apply : return "$";
+            case binary_operand::element : return "-:";
             case binary_operand::such_that : return "/;";
             case binary_operand::double_implication : return "<==>";
-            case binary_operand::intuitionistic_and : return "&";
+            case binary_operand::intuitionistic_and : return "^";
             case binary_operand::intuitionistic_or : return "|";
             case binary_operand::intuitionistic_implies : return "=>";
             default : return "";
         }
+    }
+
+    constexpr bool inline is_associative (binary_operand x) {
+        return x != binary_operand::element && (x <= binary_operand::times || x > binary_operand::divmod);
     }
 
     std::ostream inline &operator << (std::ostream &o, unary_operand u) {

@@ -199,14 +199,14 @@ namespace Diophant {
 
         template <typename Y, typename X> struct base_type<Y (*)(const X &)> {
             type operator () () {
-                return binary_operation::make (binary_operand::intuitionistic_implies,
+                return binop::make (binary_operand::intuitionistic_implies,
                     base_type<X> {} (), base_type<Y> {} ());
             }
         };
 
         template <typename Z, typename X, typename ... Y> struct base_type<Z (*)(const X &, Y...)> {
             type operator () () {
-                return binary_operation::make (binary_operand::intuitionistic_implies,
+                return binop::make (binary_operand::intuitionistic_implies,
                     base_type<X> {} (), base_type<Z (*)(Y...)> {} ());
             }
         };

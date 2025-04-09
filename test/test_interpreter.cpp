@@ -31,11 +31,11 @@ namespace Diophant {
     }
 
     expression unary (char x, expression e) {
-        return unary_operation::make (unary_operand {x}, e);
+        return unop::make (unary_operand {x}, e);
     }
 
     expression binary (binary_operand op, expression left, expression right) {
-        return binary_operation::make (op, left, right);
+        return binop::make (op, left, right);
     }
 
     expression True () {
@@ -47,15 +47,15 @@ namespace Diophant {
     }
 
     expression And (expression a, expression b) {
-        return binary_operation::make (binary_operand::bool_and, a, b);
+        return binop::make (binary_operand::bool_and, a, b);
     }
 
     expression Or (expression a, expression b) {
-        return binary_operation::make (binary_operand::bool_or, a, b);
+        return binop::make (binary_operand::bool_or, a, b);
     }
 
     expression Plus (expression a, expression b) {
-        return binary_operation::make (binary_operand::plus, a, b);
+        return binop::make (binary_operand::plus, a, b);
     }
 
     TEST (InterpreterTest, TestInterpreter) {

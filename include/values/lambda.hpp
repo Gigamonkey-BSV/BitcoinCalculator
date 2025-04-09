@@ -9,6 +9,7 @@ namespace Diophant {
         data::stack<symbol> Args;
         expression Body;
 
+        lambda (data::stack<symbol> args, expression body): Args {args}, Body {body} {}
         static expression make (data::stack<symbol> args, expression body);
 
         bool cast (const machine &, const type &) const final override;
@@ -17,7 +18,7 @@ namespace Diophant {
     };
 
     expression inline lambda::make (data::stack<symbol> args, expression body) {
-        throw data::exception {} << "we are not using lambdas right now";
+        return expression {std::static_pointer_cast<form> (std::make_shared<lambda> (args, body))};
     }
 
     bool inline lambda::cast (const machine &, const type &) const {

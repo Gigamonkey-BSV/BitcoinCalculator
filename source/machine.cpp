@@ -123,16 +123,16 @@ namespace Diophant {
             return *x == *y ? mr {replacements {}} : mr {};
         }
 
-        if (const unary_operation *u = dynamic_cast<const unary_operation *> (z); u != nullptr) {
-            const unary_operation *v = dynamic_cast<const unary_operation *> (n);
-            if (v == nullptr || v->Operator != u->Operator) return {};
+        if (const unop *u = dynamic_cast<const unop *> (z); u != nullptr) {
+            const unop *v = dynamic_cast<const unop *> (n);
+            if (v == nullptr || v->Operand != u->Operand) return {};
             return match (u->Body, v->Body);
         }
 
-        if (const binary_operation *b = dynamic_cast<const binary_operation *> (z); b != nullptr) {
-            const binary_operation *c = dynamic_cast<const binary_operation *> (n);
-            if (c == nullptr || b->Operator != c->Operator) return {};
-            return match (b->Body, c->Body);
+        if (const binop *b = dynamic_cast<const binop *> (z); b != nullptr) {
+            const binop *c = dynamic_cast<const binop *> (n);
+            if (c == nullptr || b->Operand != c->Operand) return {};
+            return match (data::stack<expression> (b->Body), data::stack<expression> (c->Body));
         }
 
         if (const call *fx = dynamic_cast<const call *> (z); fx != nullptr) {
@@ -184,8 +184,8 @@ namespace Diophant {
     namespace {
         bool cast_symbol (const machine &, const form *t, const symbol *x);
         bool cast_call (const machine &, const form *t, const call *c);
-        bool cast_binary_operation (const machine &, const form *t, const expression &E);
-        bool cast_unary_operation (const machine &, const form *t, const expression &E);
+        bool cast_binop (const machine &, const form *t, const expression &E);
+        bool cast_unop (const machine &, const form *t, const expression &E);
     }
 
     // try to cast a value as a type.
@@ -199,10 +199,10 @@ namespace Diophant {
             return v->cast (*this, T);
         if (const symbol *x = dynamic_cast<const symbol *> (e); x != nullptr)
             return cast_symbol (*this, t, x);
-        if (const binary_operation *b = dynamic_cast<const binary_operation *> (e); b != nullptr)
-            return cast_binary_operation (*this, t, E);
-        if (const unary_operation *u = dynamic_cast<const unary_operation *> (e); u != nullptr)
-            return cast_unary_operation (*this, t, E);
+        if (const binop *b = dynamic_cast<const binop *> (e); b != nullptr)
+            return cast_binop (*this, t, E);
+        if (const unop *u = dynamic_cast<const unop *> (e); u != nullptr)
+            return cast_unop (*this, t, E);
         if (const call *c = dynamic_cast<const call *> (e); c != nullptr)
             return cast_call (*this, t, c);
 
@@ -215,9 +215,9 @@ namespace Diophant {
 
         expression evaluate_symbol (const machine &m, const symbol &x);
 
-        expression evaluate_binary_operation (const machine &m, const binary_operation &b);
+        expression evaluate_binop (const machine &m, const binop &b);
 
-        expression evaluate_unary_operation (const machine &m, const unary_operation &u);
+        expression evaluate_unop (const machine &m, const unop &u);
 
         expression evaluate_call (const machine &m, const call &c);
 
@@ -226,10 +226,10 @@ namespace Diophant {
                 return evaluate_symbol (m, *x);
             else if (const list *ls = dynamic_cast<const list *> (&n); ls != nullptr)
                 return evaluate_list (m, *ls);
-            else if (const binary_operation *b = dynamic_cast<const binary_operation *> (&n); b != nullptr)
-                return evaluate_binary_operation (m, *b);
-            else if (const unary_operation *u = dynamic_cast<const unary_operation *> (&n); u != nullptr)
-                return evaluate_unary_operation (m, *u);
+            else if (const binop *b = dynamic_cast<const binop *> (&n); b != nullptr)
+                return evaluate_binop (m, *b);
+            else if (const unop *u = dynamic_cast<const unop *> (&n); u != nullptr)
+                return evaluate_unop (m, *u);
             else if (const call *fx = dynamic_cast<const call *> (&n); fx != nullptr)
                 return evaluate_call (m, *fx);
             else return {};
@@ -294,7 +294,7 @@ namespace Diophant {
             return z.Def;
         }
 
-        expression evaluate_binary_operation (const machine &m, const binary_operation &b) {
+        expression evaluate_binop (const machine &m, const binop &b) {
             // first we evaluate function and args individually.
             bool changed = false;
 
@@ -305,7 +305,12 @@ namespace Diophant {
                 body <<= new_arg;
             }
 
-            if (const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operator); v != nullptr) {
+            if (b.Operand == binary_operand::apply) {
+                if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
+                return call::make (first (body), rest (body));
+            }
+
+            if (const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operand); v != nullptr) {
 
                 data::stack<mtf> tfs = *v;
 
@@ -317,17 +322,17 @@ namespace Diophant {
                 }
             }
 
-            return changed ? binary_operation::make (b.Operator, body) : expression {};
+            return changed ? binop::make (b.Operand, body) : expression {};
         }
 
-        expression evaluate_unary_operation (const machine &m, const unary_operation &u) {
+        expression evaluate_unop (const machine &m, const unop &u) {
             // first we evaluate function and args individually.
             bool changed = false;
             expression body = m.evaluate (u.Body);
             if (body != u.Body) changed = true;
 
             {
-                const data::stack<mtf> *v = m.UnaryDefinitions.contains (u.Operator);
+                const data::stack<mtf> *v = m.UnaryDefinitions.contains (u.Operand);
                 if (v == nullptr) goto done;
 
                 data::stack<mtf> tfs = *v;
@@ -343,7 +348,7 @@ namespace Diophant {
             }
 
             done:
-            return changed ? unary_operation::make (u.Operator, body) : expression {};
+            return changed ? unop::make (u.Operand, body) : expression {};
         }
 
         expression evaluate_call (const machine &m, const call &c) {
@@ -517,12 +522,12 @@ namespace Diophant {
             return m.cast (ct->Fun, c->Fun);
         }
 
-        bool cast_binary_operation (const machine &, const form *t, const expression &E) {
-            throw data::exception {} << "cast_binary_operation: ";
+        bool cast_binop (const machine &, const form *t, const expression &E) {
+            throw data::exception {} << "cast_binop: ";
         }
 
-        bool cast_unary_operation (const machine &, const form *t, const expression &E) {
-            throw data::exception {} << "cast_unary_operation: ";
+        bool cast_unop (const machine &, const form *t, const expression &E) {
+            throw data::exception {} << "cast_unop: ";
         }
 
         // we need to find a matching definition or add one in if it doesn't exist.

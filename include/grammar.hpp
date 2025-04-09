@@ -192,7 +192,7 @@ namespace tao_pegtl_grammar {
 
     template <typename atom> struct apply_expr;
     template <typename atom> struct apply_op : seq<ws, one<'$'>, ws, apply_expr<atom>> {};
-    template <typename atom> struct apply_expr : seq<identical_expr<atom>, opt<identical_op<atom>>> {};
+    template <typename atom> struct apply_expr : seq<identical_expr<atom>, opt<apply_op<atom>>> {};
 
     struct atom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol,
         dif<atom>, parenthetical<atom>, list<atom>, let<atom>, lambda<atom>, dstruct<atom>> {};
@@ -208,7 +208,7 @@ namespace tao_pegtl_grammar {
         seq<ws, sor<string<'-',':'>,
             seq<string<'i', 's'>, not_at<symbol_char>>>, ws, element_expr<atom>> {};
 
-    template <typename atom> struct element_expr : seq<identical_expr<atom>, opt<element_op<atom>>> {};
+    template <typename atom> struct element_expr : seq<apply_expr<atom>, opt<element_op<atom>>> {};
 
     template <typename atom> struct equal_expr;
     template <typename atom> struct unequal_expr;
@@ -238,8 +238,8 @@ namespace tao_pegtl_grammar {
 
     struct type : intuitionistic_implies_expr<atom> {};
 
-    struct cast_op : seq<ws, one<':'>, not_at<sor<one<':'>, one<'='>>>, ws, type> {};
-    template <typename atom> struct cast_expr : seq<identical_expr<atom>, opt<cast_op>> {};
+    struct cast_op : seq<ws, one<':'>, ws, apply_expr<atom>> {};
+    template <typename atom> struct cast_expr : seq<type, opt<cast_op>> {};
 
     template <typename atom> struct expression : cast_expr<atom> {};
 

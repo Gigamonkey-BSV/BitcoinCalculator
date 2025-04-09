@@ -243,6 +243,20 @@ namespace Diophant {
             }
         };
 
+        template <typename atom> struct read_expression<tao_pegtl_grammar::identical_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::identical);
+            }
+        };
+
+        template <typename atom> struct read_expression<tao_pegtl_grammar::apply_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::apply);
+            }
+        };
+
         template <typename atom> struct read_expression<tao_pegtl_grammar::intuitionistic_and_op<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
@@ -325,11 +339,22 @@ namespace Diophant {
     }
 
     void parser::unary (unary_operand op) {
-        Exp = prepend (rest (Exp), unary_operation::make (op, first (Exp)));
+        Exp = prepend (rest (Exp), unop::make (op, first (Exp)));
     }
 
     void parser::binary (binary_operand op) {
-        Exp = prepend (rest (rest (Exp)), binary_operation::make (op, first (rest (Exp)), first (Exp)));
+        expression x = first (Exp);
+        expression z = first (rest (Exp));
+        if (is_associative (op)) {
+            if (const auto *bb = dynamic_cast<const binop *> (z.get ()); bb != nullptr) {
+                if (bb->Operand == op) {
+                    Exp = prepend (rest (rest (Exp)), binop::make (op, append (bb->Body, x)));
+                    return;
+                }
+            }
+        }
+
+        Exp = prepend (rest (rest (Exp)), binop::make (op, z, x));
     }
 
     void parser::open () {

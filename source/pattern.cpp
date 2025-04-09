@@ -18,17 +18,17 @@ namespace Diophant {
             return *x == *y ? impartial_ordering::equal : impartial_ordering::disjoint;
         }
 
-        if (const unary_operation *u = dynamic_cast<const unary_operation *> (a); u != nullptr) {
-            const unary_operation *v = dynamic_cast<const unary_operation *> (b);
+        if (const unop *u = dynamic_cast<const unop *> (a); u != nullptr) {
+            const unop *v = dynamic_cast<const unop *> (b);
             if (v == nullptr) return impartial_ordering::disjoint;
-            if (u->Operator != v->Operator) return impartial_ordering::disjoint;
+            if (u->Operand != v->Operand) return impartial_ordering::disjoint;
             return pattern_compare (u->Body, v->Body);
         }
 
-        if (const binary_operation *b = dynamic_cast<const binary_operation *> (a); b != nullptr) {
-            const binary_operation *c = dynamic_cast<const binary_operation *> (b);
+        if (const binop *b = dynamic_cast<const binop *> (a); b != nullptr) {
+            const binop *c = dynamic_cast<const binop *> (b);
             if (c == nullptr) return impartial_ordering::disjoint;
-            if (b->Operator != c->Operator) return impartial_ordering::disjoint;
+            if (b->Operand != c->Operand) return impartial_ordering::disjoint;
             data::stack<expression> l = b->Body;
             data::stack<expression> m = c->Body;
             if (l.size () != m.size ()) return impartial_ordering::disjoint;
