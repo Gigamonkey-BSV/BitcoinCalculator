@@ -116,8 +116,9 @@ namespace tao_pegtl_grammar {
 
     struct lambda_start : one<'@'> {};
     template <typename atom> struct lambda_body;
+    struct lambda_symbol : symbol {};
     template <typename atom> struct lambda : seq<lambda_start, ws,
-        sor<seq<sequence<symbol>, arrow, ws, lambda_body<atom>>, lambda_body<sor<anon_var, atom>>>> {};
+        /*sor<seq<*/lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow, ws, lambda_body<atom>/*>, lambda_body<sor<anon_var, atom>>>*/> {};
 
     struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
     struct right_unary_operand : sor<one<'!'>> {};

@@ -18,9 +18,11 @@ namespace Diophant {
 
         void call ();
 
-        void open ();
-        void close ();
-        void comma ();
+        void open_list ();
+        void close_list ();
+
+        void start_lambda ();
+        void complete_lambda ();
 
         void unary (unary_operand op);
         void binary (binary_operand op);
@@ -31,6 +33,8 @@ namespace Diophant {
 
         data::stack<expression> Exp;
         data::stack<data::stack<expression>> Back;
+
+        data::stack<data::stack<symbol>> LambdaSymbols;
 
     };
 
@@ -91,21 +95,35 @@ namespace Diophant {
         template <> struct read_expression<tao_pegtl_grammar::open_list> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.open ();
+                eval.open_list ();
             }
         };
 
         template <> struct read_expression<tao_pegtl_grammar::close_list> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.close ();
+                eval.close_list ();
             }
         };
 
-        template <> struct read_expression<tao_pegtl_grammar::comma> {
+        template <> struct read_expression<tao_pegtl_grammar::lambda_start> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.comma ();
+                eval.start_lambda ();
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::lambda<tao_pegtl_grammar::atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.complete_lambda ();
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::lambda_symbol> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.LambdaSymbols = prepend (rest (eval.LambdaSymbols), first (eval.LambdaSymbols) << in.string ());
             }
         };
 
@@ -346,9 +364,9 @@ namespace Diophant {
         expression x = first (Exp);
         expression z = first (rest (Exp));
         if (is_associative (op)) {
-            if (const auto *bb = dynamic_cast<const binop *> (z.get ()); bb != nullptr) {
+            if (const auto *bb = dynamic_cast<const binop *> (x.get ()); bb != nullptr) {
                 if (bb->Operand == op) {
-                    Exp = prepend (rest (rest (Exp)), binop::make (op, append (bb->Body, x)));
+                    Exp = prepend (rest (rest (Exp)), binop::make (op, prepend (bb->Body, z)));
                     return;
                 }
             }
@@ -357,18 +375,30 @@ namespace Diophant {
         Exp = prepend (rest (rest (Exp)), binop::make (op, z, x));
     }
 
-    void parser::open () {
+    void parser::open_list () {
         Back = prepend (Back, Exp);
         Exp = {};
     }
 
-    void parser::close () {
+    void parser::close_list () {
         Exp = prepend (data::first (Back), list::make (data::reverse (Exp)));
         Back = data::rest (Back);
     }
 
-    void parser::comma () {
+    void parser::start_lambda () {
+        open_list ();
+        LambdaSymbols = prepend (LambdaSymbols, data::stack<symbol> {});
+    }
 
+    void parser::complete_lambda () {
+
+        // remove all previous expressions from the stack.
+        // This is done in case we start to read one lambda
+        // format and then find out that it isn't valid and
+        // read the other one instead.
+        Exp = prepend (data::first (Back), lambda::make (reverse (first (LambdaSymbols)), first (Exp)));
+        LambdaSymbols = rest (LambdaSymbols);
+        Back = data::rest (Back);
     }
 
 }

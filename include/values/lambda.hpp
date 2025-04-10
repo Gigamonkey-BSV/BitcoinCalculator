@@ -25,8 +25,10 @@ namespace Diophant {
         throw data::exception {} << "we are not using lambdas right now";
     }
 
-    std::ostream inline &lambda::write (std::ostream &) const {
-        throw data::exception {} << "we are not using lambdas right now";
+    std::ostream inline &lambda::write (std::ostream &o) const {
+        o << "@";
+        for (const symbol &x : Args) o << " " << x;
+        return o << " -> " << Body;
     }
 
     bool inline lambda::operator == (const value &) const {

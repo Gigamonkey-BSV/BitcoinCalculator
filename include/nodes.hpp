@@ -26,13 +26,13 @@ namespace Diophant {
 
     struct binop : node {
         binary_operand Operand;
-        data::list<expression> Body;
+        data::stack<expression> Body;
 
         binop (binary_operand op, expression left, expression right);
-        binop (binary_operand op, data::list<expression> body);
+        binop (binary_operand op, data::stack<expression> body);
 
         static expression make (binary_operand op, expression left, expression right);
-        static expression make (binary_operand op, data::list<expression> body);
+        static expression make (binary_operand op, data::stack<expression> body);
     };
 
     expression inline call::make (expression fun, data::list<expression> args) {
@@ -48,7 +48,7 @@ namespace Diophant {
         return expression {std::static_pointer_cast<form> (std::make_shared<binop> (op, left, right))};
     }
 
-    expression inline binop::make (binary_operand op, data::list<expression> body) {
+    expression inline binop::make (binary_operand op, data::stack<expression> body) {
         return expression {std::static_pointer_cast<form> (std::make_shared<binop> (op, body))};
     }
 
@@ -57,7 +57,7 @@ namespace Diophant {
     inline unop::unop (unary_operand op, expression body): Operand {op}, Body {body} {}
 
     inline binop::binop (binary_operand op, expression left, expression right): Operand {op}, Body {left, right} {}
-    inline binop::binop (binary_operand op, data::list<expression> body): Operand {op}, Body {body} {}
+    inline binop::binop (binary_operand op, data::stack<expression> body): Operand {op}, Body {body} {}
 
 
 }
