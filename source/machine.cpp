@@ -1,6 +1,8 @@
 #include <machine.hpp>
 #include <values/list.hpp>
 #include <values/lambda.hpp>
+#include <values/struct.hpp>
+#include <values/leaf.hpp>
 #include <data/io/wait_for_enter.hpp>
 
 namespace Diophant {
@@ -55,6 +57,7 @@ namespace Diophant {
     // evaluated.
     expression machine::evaluate (Expression e) const {
 
+        data::wait_for_enter ();
         expression last = e;
         while (true) {
 
@@ -211,9 +214,11 @@ namespace Diophant {
 
     namespace {
 
+        expression evaluate_symbol (const machine &m, const symbol &x);
+
         expression evaluate_list (const machine &m, const list &ls);
 
-        expression evaluate_symbol (const machine &m, const symbol &x);
+        expression evaluate_struct (const machine &m, const dstruct &);
 
         expression evaluate_binop (const machine &m, const binop &b);
 
@@ -221,18 +226,36 @@ namespace Diophant {
 
         expression evaluate_call (const machine &m, const call &c);
 
+        expression evaluate_if (const machine &m, const dif &);
+
+        expression evaluate_let (const machine &m, const let &);
+
         expression evaluate_round (const machine &m, const node &n) {
             if (const symbol *x = dynamic_cast<const symbol *> (&n); x != nullptr)
                 return evaluate_symbol (m, *x);
-            else if (const list *ls = dynamic_cast<const list *> (&n); ls != nullptr)
+
+            if (const list *ls = dynamic_cast<const list *> (&n); ls != nullptr)
                 return evaluate_list (m, *ls);
-            else if (const binop *b = dynamic_cast<const binop *> (&n); b != nullptr)
+
+            if (const dstruct *s = dynamic_cast<const dstruct *> (&n); s != nullptr)
+                return evaluate_struct (m, *s);
+
+            if (const binop *b = dynamic_cast<const binop *> (&n); b != nullptr)
                 return evaluate_binop (m, *b);
-            else if (const unop *u = dynamic_cast<const unop *> (&n); u != nullptr)
+
+            if (const unop *u = dynamic_cast<const unop *> (&n); u != nullptr)
                 return evaluate_unop (m, *u);
-            else if (const call *fx = dynamic_cast<const call *> (&n); fx != nullptr)
+
+            if (const call *fx = dynamic_cast<const call *> (&n); fx != nullptr)
                 return evaluate_call (m, *fx);
-            else return {};
+
+            if (const dif *df = dynamic_cast<const dif *> (&n); df != nullptr)
+                return evaluate_if (m, *df);
+
+            if (const let *l = dynamic_cast<const let *> (&n); l != nullptr)
+                return evaluate_let (m, *l);
+
+            return {};
         }
 
         using mtf = transformation;
@@ -280,6 +303,19 @@ namespace Diophant {
             return changed ? list::make (data::reverse (new_ls)) : expression {};
         }
 
+        expression evaluate_struct (const machine &m, const dstruct &dst) {
+            bool changed = false;
+            data::stack<data::entry<symbol, expression>> new_dst;
+
+            for (data::entry<symbol, expression> old : dst.Values) {
+                data::entry<symbol, expression> new_e {old.Key, m.evaluate (old.Value)};
+                if (new_e.Value != old.Value) changed = true;
+                new_dst <<= new_e;
+            }
+
+            return changed ? dstruct::make (data::reverse (new_dst)) : expression {};
+        }
+
         expression evaluate_symbol (const machine &m, const symbol &x) {
 
             const machine::definition *v = m.SymbolDefinitions.contains (x);
@@ -305,9 +341,18 @@ namespace Diophant {
                 body <<= new_arg;
             }
 
-            if (b.Operand == binary_operand::apply) {
-                if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
+            if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
+
+            if (b.Operand == binary_operand::apply)
                 return call::make (first (body), rest (body));
+
+            if (b.Operand == binary_operand::dot) {
+                auto fst = first (body);
+                auto snd = first (rest (body));
+                if (const dstruct *ds = dynamic_cast<const dstruct *> (fst.get ()); ds != nullptr)
+                    for (const auto &[name, val] : ds->Values)
+                        if (const symbol *x = dynamic_cast<const symbol *> (snd.get ()); x != nullptr)
+                            if (*x == name) return val;
             }
 
             if (const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operand); v != nullptr) {
@@ -442,6 +487,19 @@ namespace Diophant {
 
             done:
             return changed ? call::make (fun, args) : expression {};
+        }
+
+        expression evaluate_if (const machine &m, const dif &df) {
+            auto If = m.evaluate (df.If);
+            if (const scriptnum *xx = dynamic_cast<const scriptnum *> (If.get ()); xx != nullptr)
+                return Bitcoin::nonzero (xx->Value) ? df.Then : df.Else;
+            else return {};
+        }
+
+        expression evaluate_let (const machine &m, const let &l) {
+            return replace (l.In, data::fold ([] (auto &&r, auto &&v) {
+                return r.insert (v);
+            }, replacements {}, l.Values));
         }
 
         machine::symbol_defs def (machine::symbol_defs defs, symbol x, type of, expression as) {

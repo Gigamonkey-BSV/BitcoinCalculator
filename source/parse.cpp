@@ -2,11 +2,13 @@
 #include <values/leaf.hpp>
 #include <values/lambda.hpp>
 #include <values/list.hpp>
+#include <values/struct.hpp>
 #include <operators.hpp>
 #include <grammar.hpp>
 
 #include <gigamonkey/secp256k1.hpp>
 #include <gigamonkey/numbers.hpp>
+#include <data/io/wait_for_enter.hpp>
 
 namespace tao_pegtl_grammar {
     struct expression_grammar : seq<ws, opt<seq<object, ws>>, eof> {};
@@ -21,8 +23,18 @@ namespace Diophant {
         void open_list ();
         void close_list ();
 
+        void open_struct ();
+        void close_struct ();
+
+        void read_symbol (const symbol &);
+
+        void make_if ();
+
         void start_lambda ();
         void complete_lambda ();
+
+        void let_open ();
+        void let_close ();
 
         void unary (unary_operand op);
         void binary (binary_operand op);
@@ -34,7 +46,7 @@ namespace Diophant {
         data::stack<expression> Exp;
         data::stack<data::stack<expression>> Back;
 
-        data::stack<data::stack<symbol>> LambdaSymbols;
+        data::stack<data::stack<symbol>> Symbols;
 
     };
 
@@ -76,7 +88,7 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();
-                // this must work because it woludn't be here if the parser didn't read it.
+                // this must be valid because it woludn't be here if the parser didn't read it.
                 data::maybe<data::bytes> decoded = data::encoding::hex::read (x.substr (1, x.size () - 2));
                 Bitcoin::integer i {};
                 i.resize (decoded->size ());
@@ -106,6 +118,27 @@ namespace Diophant {
             }
         };
 
+        template <> struct read_expression<tao_pegtl_grammar::open_struct> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.open_struct ();
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::close_struct> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.close_struct ();
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::rule_symbol> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.read_symbol (in.string ());
+            }
+        };
+
         template <> struct read_expression<tao_pegtl_grammar::lambda_start> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
@@ -113,7 +146,7 @@ namespace Diophant {
             }
         };
 
-        template <> struct read_expression<tao_pegtl_grammar::lambda<tao_pegtl_grammar::atom>> {
+        template <typename atom> struct read_expression<tao_pegtl_grammar::lambda<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 eval.complete_lambda ();
@@ -123,7 +156,28 @@ namespace Diophant {
         template <> struct read_expression<tao_pegtl_grammar::lambda_symbol> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.LambdaSymbols = prepend (rest (eval.LambdaSymbols), first (eval.LambdaSymbols) << in.string ());
+                eval.read_symbol (in.string ());
+            }
+        };
+
+        template <typename atom> struct read_expression<tao_pegtl_grammar::dif<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.make_if ();
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::let_open> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.let_open ();
+            }
+        };
+
+        template <typename atom> struct read_expression<tao_pegtl_grammar::let<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.let_close ();
             }
         };
 
@@ -139,6 +193,13 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 eval.call ();
+            }
+        };
+
+        template <typename atom> struct read_expression<tao_pegtl_grammar::dot_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::dot);
             }
         };
 
@@ -387,7 +448,7 @@ namespace Diophant {
 
     void parser::start_lambda () {
         open_list ();
-        LambdaSymbols = prepend (LambdaSymbols, data::stack<symbol> {});
+        Symbols = prepend (Symbols, data::stack<symbol> {});
     }
 
     void parser::complete_lambda () {
@@ -396,8 +457,44 @@ namespace Diophant {
         // This is done in case we start to read one lambda
         // format and then find out that it isn't valid and
         // read the other one instead.
-        Exp = prepend (data::first (Back), lambda::make (reverse (first (LambdaSymbols)), first (Exp)));
-        LambdaSymbols = rest (LambdaSymbols);
+        Exp = prepend (data::first (Back), lambda::make (reverse (first (Symbols)), first (Exp)));
+        Symbols = rest (Symbols);
+        Back = data::rest (Back);
+    }
+
+    void parser::open_struct () {
+        Back = prepend (Back, Exp);
+        Exp = {};
+        Symbols = prepend (Symbols, data::stack<symbol> {});
+    }
+
+    void parser::close_struct () {
+        Exp = prepend (data::first (Back), dstruct::make (data::reverse (data::map_thread ([] (const symbol &x, const expression &p) {
+            return data::entry<symbol, expression> {x, p};
+        }, first (Symbols), Exp))));
+        Symbols = rest (Symbols);
+        Back = data::rest (Back);
+    }
+
+    void parser::make_if () {
+        Exp = prepend (drop (Exp, 3), dif::make (Exp[2], Exp[1], Exp[0]));
+    }
+
+    void parser::read_symbol (const symbol &x) {
+        Symbols = prepend (rest (Symbols), first (Symbols) << x);
+    }
+
+    void parser::let_open () {
+        Back = prepend (Back, Exp);
+        Exp = {};
+        Symbols = prepend (Symbols, data::stack<symbol> {});
+    }
+
+    void parser::let_close () {
+        Exp = prepend (data::first (Back), let::make (data::reverse (data::map_thread ([] (const symbol &x, const expression &p) {
+            return data::entry<const symbol, expression> {x, p};
+        }, first (Symbols), data::rest (Exp))), data::first (Exp)));
+        Symbols = rest (Symbols);
         Back = data::rest (Back);
     }
 

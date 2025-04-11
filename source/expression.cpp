@@ -1,4 +1,5 @@
 #include <values/list.hpp>
+#include <values/struct.hpp>
 #include <nodes.hpp>
 #include <pattern.hpp>
 
@@ -47,6 +48,16 @@ namespace Diophant {
             return fx->Args == gx->Args;
         }
 
+        if (const dif *df = dynamic_cast<const dif *> (a); df != nullptr) {
+            const dif *fi = dynamic_cast<const dif *> (b);
+            return fi == nullptr ? false: df->If == fi->If && df->Then == fi->Then && df->Else == fi->Else;
+        }
+
+        if (const let *l = dynamic_cast<const let *> (a); l != nullptr) {
+            const let *m = dynamic_cast<const let *> (b);
+            return m == nullptr ? false: l->Values == m->Values && l->In == m->In;
+        }
+
         throw data::exception {} << "incomplete method: expression == expressions; trying to evaluate " << A << " == " << B;
     }
 
@@ -80,6 +91,25 @@ namespace Diophant {
 
         if (const list *ll = dynamic_cast<const list *> (n); ll != nullptr)
             return data::functional::write (o, ll->List);
+
+        if (const let *l = dynamic_cast<const let *> (n); l != nullptr) {
+            o << "let ";
+            auto b = l->Values.begin ();
+
+            if (b != l->Values.end ()) {
+                o << b->Key << " -> " << b->Value;
+                while (true) {
+                    b++;
+                    if (b == l->Values.end ()) break;
+                    o << ", " << b->Key << " -> " << b->Value;
+                }
+            }
+
+            return o << " in " << l->In;
+        }
+
+        if (const dif *df = dynamic_cast<const dif *> (n); df != nullptr)
+            return o << "if " << df->If << " then " << df->Then << " else " << df->Else;
 
         if (const blank *bl = dynamic_cast<const blank *> (n); bl != nullptr)
             return o << "_" << bl->Name;

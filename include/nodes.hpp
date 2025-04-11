@@ -1,7 +1,7 @@
 #ifndef BITCOIN_CALCULATOR_NODES
 #define BITCOIN_CALCULATOR_NODES
 
-#include <expression.hpp>
+#include <symbol.hpp>
 #include <operators.hpp>
 
 namespace Diophant {
@@ -35,6 +35,25 @@ namespace Diophant {
         static expression make (binary_operand op, data::stack<expression> body);
     };
 
+    struct dif : node {
+        expression If;
+        expression Then;
+        expression Else;
+
+        dif (expression f, expression t, expression e): If {f}, Then {t}, Else {e} {}
+
+        static expression make (expression f, expression t, expression e);
+    };
+
+    struct let : node {
+        data::stack<data::entry<const symbol, expression>> Values;
+        expression In;
+
+        let (data::stack<data::entry<const symbol, expression>> vals, expression in): Values {vals}, In {in} {}
+
+        static expression make (data::stack<data::entry<const symbol, expression>> vals, expression in);
+    };
+
     expression inline call::make (expression fun, data::list<expression> args) {
         if (args.size () == 0) throw data::exception {} << "call should not be created with empty argument list (for now)";
         return expression {std::static_pointer_cast<form> (std::make_shared<call> (fun, args))};
@@ -52,13 +71,20 @@ namespace Diophant {
         return expression {std::static_pointer_cast<form> (std::make_shared<binop> (op, body))};
     }
 
+    expression inline dif::make (expression f, expression t, expression e) {
+        return expression {std::static_pointer_cast<form> (std::make_shared<dif> (f, t, e))};
+    }
+
+    expression inline let::make (data::stack<data::entry<const symbol, expression>> vals, expression in) {
+        return expression {std::static_pointer_cast<form> (std::make_shared<let> (vals, in))};
+    }
+
     inline call::call (expression fun, data::list<expression> args): Fun {fun}, Args {args} {}
 
     inline unop::unop (unary_operand op, expression body): Operand {op}, Body {body} {}
 
     inline binop::binop (binary_operand op, expression left, expression right): Operand {op}, Body {left, right} {}
     inline binop::binop (binary_operand op, data::stack<expression> body): Operand {op}, Body {body} {}
-
 
 }
 

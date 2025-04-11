@@ -17,6 +17,7 @@ namespace Diophant {
     enum class binary_operand : data::byte {
         unary,
         call,
+        dot,
         cat,
         power,
         times,
@@ -63,6 +64,7 @@ namespace Diophant {
 
     constexpr const char *binary_operator (binary_operand X) {
         switch (X) {
+            case binary_operand::dot : return ".";
             case binary_operand::cat : return "<>";
             case binary_operand::power : return "^^";
             case binary_operand::times : return "*";
@@ -97,7 +99,7 @@ namespace Diophant {
     }
 
     constexpr bool inline is_associative (binary_operand x) {
-        return x != binary_operand::element && (x <= binary_operand::times || x > binary_operand::divmod);
+        return x != binary_operand::element && x >= binary_operand::dot && (x <= binary_operand::times || x > binary_operand::divmod);
     }
 
     std::ostream inline &operator << (std::ostream &o, unary_operand u) {

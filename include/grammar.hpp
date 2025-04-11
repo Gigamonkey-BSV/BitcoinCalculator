@@ -107,18 +107,21 @@ namespace tao_pegtl_grammar {
 
     struct arrow : string<'-','>'> {};
 
-    template <typename atom> struct rule : seq<symbol, ws, arrow, ws, expression<atom>> {};
+    struct rule_symbol : symbol {};
+    template <typename atom> struct rule : seq<rule_symbol, ws, arrow, ws, expression<atom>> {};
     struct let_open : seq<string<'l', 'e', 't'>, not_at<symbol_char>> {};
     struct let_in : seq<string<'i','n'>, not_at<symbol_char>> {};
     template <typename atom> struct let : seq<let_open, ws, sequence<rule<atom>>, ws, let_in, ws, expression<atom>> {};
 
-    template <typename atom> struct dstruct : seq<one<'{'>, empty_sequence<rule<atom>>, one<'}'>> {};
+    struct open_struct : one<'{'> {};
+    struct close_struct : one<'}'> {};
+    template <typename atom> struct dstruct : seq<open_struct, empty_sequence<rule<atom>>, close_struct> {};
 
     struct lambda_start : one<'@'> {};
     template <typename atom> struct lambda_body;
     struct lambda_symbol : symbol {};
     template <typename atom> struct lambda : seq<lambda_start, ws,
-        /*sor<seq<*/lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow, ws, lambda_body<atom>/*>, lambda_body<sor<anon_var, atom>>>*/> {};
+        sor<seq<lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow, ws, lambda_body<atom>>, lambda_body<sor<anon_var, atom>>>> {};
 
     struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
     struct right_unary_operand : sor<one<'!'>> {};
@@ -130,9 +133,13 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct left_unary_operation : seq<left_unary_operand, ws, left_unary_expr<atom>> {};
     template <typename atom> struct left_unary_expr : sor<left_unary_operation<atom>, call_expr<atom>> {};
 
+    template <typename atom> struct dot_expr;
+    template <typename atom> struct dot_op : seq<ws, one<'.'>, ws, left_unary_expr<atom>> {};
+    template <typename atom> struct dot_expr : seq<left_unary_expr<atom>, star<dot_op<atom>>> {};
+
     template <typename atom> struct cat_expr;
     template <typename atom> struct cat_op : seq<ws, string<'<','>'>, ws, cat_expr<atom>> {};
-    template <typename atom> struct cat_expr : seq<left_unary_expr<atom>, opt<cat_op<atom>>> {};
+    template <typename atom> struct cat_expr : seq<dot_expr<atom>, opt<cat_op<atom>>> {};
 
     template <typename atom> struct pow_expr;
     template <typename atom> struct mul_expr;
