@@ -57,7 +57,6 @@ namespace Diophant {
     // evaluated.
     expression machine::evaluate (Expression e) const {
 
-        data::wait_for_enter ();
         expression last = e;
         while (true) {
 
