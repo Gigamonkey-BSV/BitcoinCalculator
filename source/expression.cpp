@@ -13,52 +13,12 @@ namespace Diophant {
         if (a == b) return true;
         if (a == nullptr || b == nullptr) return false;
 
-        if (const value *v = dynamic_cast<const value *> (a); v != nullptr) {
-            const value *w = dynamic_cast<const value *> (b);
-            if (w == nullptr) return false;
-            return *v == *w;
-        }
+        const node *n = dynamic_cast<const node *> (a);
+        const node *m = dynamic_cast<const node *> (b);
 
-        if (const symbol *x = dynamic_cast<const symbol *> (a); x != nullptr) {
-            const symbol *y = dynamic_cast<const symbol *> (b);
-            if (y == nullptr) return false;
-            return *x == *y;
-        }
+        if (m == nullptr || n == nullptr) throw data::exception {} << "check equality of patterns";
 
-        if (const unop *u = dynamic_cast<const unop *> (a); u != nullptr) {
-            const unop *v = dynamic_cast<const unop *> (b);
-            return v == nullptr ? false: u->Operand == v->Operand && u->Body == v->Body;
-        }
-
-        if (const binop *b = dynamic_cast<const binop *> (a); b != nullptr) {
-            const binop *c = dynamic_cast<const binop *> (b);
-            return c == nullptr ? false:
-                b->Operand == c->Operand && b->Body == c->Body;
-        }
-
-        if (const list *ll = dynamic_cast<const list *> (a); ll != nullptr) {
-            const list *mm = dynamic_cast<const list *> (b);
-            return mm == nullptr ? false: ll->List == mm->List;
-        }
-
-        if (const call *fx = dynamic_cast<const call *> (a); fx != nullptr) {
-            const call *gx = dynamic_cast<const call *> (b);
-            if (gx == nullptr) return false;
-            if (fx->Fun != gx->Fun) return false;
-            return fx->Args == gx->Args;
-        }
-
-        if (const dif *df = dynamic_cast<const dif *> (a); df != nullptr) {
-            const dif *fi = dynamic_cast<const dif *> (b);
-            return fi == nullptr ? false: df->If == fi->If && df->Then == fi->Then && df->Else == fi->Else;
-        }
-
-        if (const let *l = dynamic_cast<const let *> (a); l != nullptr) {
-            const let *m = dynamic_cast<const let *> (b);
-            return m == nullptr ? false: l->Values == m->Values && l->In == m->In;
-        }
-
-        throw data::exception {} << "incomplete method: expression == expressions; trying to evaluate " << A << " == " << B;
+        return *n == *m;
     }
 
     std::ostream &write_binary (std::ostream &, const binop &);

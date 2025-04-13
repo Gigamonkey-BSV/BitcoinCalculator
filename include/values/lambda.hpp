@@ -12,17 +12,17 @@ namespace Diophant {
         lambda (data::stack<symbol> args, expression body): Args {args}, Body {body} {}
         static expression make (data::stack<symbol> args, expression body);
 
-        bool cast (const machine &, const type &) const final override;
+        bool cast (const machine &, const node &) const final override;
         std::ostream &write (std::ostream &) const final override;
-        bool operator == (const value &) const final override;
+        bool operator == (const node &) const final override;
     };
 
     expression inline lambda::make (data::stack<symbol> args, expression body) {
         return expression {std::static_pointer_cast<form> (std::make_shared<lambda> (args, body))};
     }
 
-    bool inline lambda::cast (const machine &, const type &) const {
-        throw data::exception {} << "we are not using lambdas right now";
+    bool inline lambda::cast (const machine &, const node &) const {
+        throw data::exception {} << "we don't know how to cast lambdas right now. ";
     }
 
     std::ostream inline &lambda::write (std::ostream &o) const {
@@ -31,8 +31,8 @@ namespace Diophant {
         return o << " -> " << Body;
     }
 
-    bool inline lambda::operator == (const value &) const {
-        throw data::exception {} << "we are not using lambdas right now";
+    bool inline lambda::operator == (const node &) const {
+        throw data::exception {} << "we don't know how to compare lambdas for equality.";
     }
 
 }

@@ -11,9 +11,8 @@ namespace Diophant {
 
 	struct value : node {
 		virtual ~value () {}
-		virtual bool cast (const machine &, Type) const = 0;
+		virtual bool cast (const machine &, const node &) const = 0;
 		virtual std::ostream &write (std::ostream &) const = 0;
-		virtual bool operator == (const value &) const = 0;
 		// return undefined if the arguments don't fit.
 		virtual expression operator () (data::stack<expression>) const {
 			return {};
@@ -27,15 +26,16 @@ namespace Diophant {
 			return expr;
 		}
 
-		bool cast (const machine &, Type t) const final override {
-			return t > type {make ()};
+		bool cast (const machine &m, const node &n) const final override {
+			auto x = type::compare (m, n, type {make ()});
+			return x == impartial_ordering::equal || x == impartial_ordering::superset;
 		}
 
 		std::ostream &write (std::ostream &o) const final override {
 			return o << "nil";
 		}
 
-		bool operator == (const value &v) const final override {
+		bool operator == (const node &v) const final override {
 			const nil *n = dynamic_cast<const nil *> (&v);
 			return n != nullptr;
 		}

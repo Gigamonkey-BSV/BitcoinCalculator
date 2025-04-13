@@ -1,11 +1,12 @@
 #include <pattern.hpp>
 #include <value.hpp>
+#include <type.hpp>
 #include <values/list.hpp>
 
 namespace Diophant {
-    impartial_ordering pattern_compare (Expression A, Expression B);
+    impartial_ordering pattern_compare (Machine m, Expression A, Expression B);
 
-    impartial_ordering pattern_compare (const node *a, const node *b) {
+    impartial_ordering pattern_compare (Machine m, const node *a, const node *b) {
         if (const value *v = dynamic_cast<const value *> (a); v != nullptr) {
             const value *w = dynamic_cast<const value *> (b);
             if (w == nullptr) return impartial_ordering::disjoint;
@@ -22,22 +23,22 @@ namespace Diophant {
             const unop *v = dynamic_cast<const unop *> (b);
             if (v == nullptr) return impartial_ordering::disjoint;
             if (u->Operand != v->Operand) return impartial_ordering::disjoint;
-            return pattern_compare (u->Body, v->Body);
+            return pattern_compare (m, u->Body, v->Body);
         }
 
         if (const binop *b = dynamic_cast<const binop *> (a); b != nullptr) {
             const binop *c = dynamic_cast<const binop *> (b);
             if (c == nullptr) return impartial_ordering::disjoint;
             if (b->Operand != c->Operand) return impartial_ordering::disjoint;
-            data::stack<expression> l = b->Body;
-            data::stack<expression> m = c->Body;
-            if (l.size () != m.size ()) return impartial_ordering::disjoint;
+            data::stack<expression> j = b->Body;
+            data::stack<expression> k = c->Body;
+            if (j.size () != k.size ()) return impartial_ordering::disjoint;
             impartial_ordering compare = impartial_ordering::equal;
-            while (!data::empty (l)) {
-                compare = compare && pattern_compare (l.first (), m.first ());
+            while (!data::empty (j)) {
+                compare = compare && pattern_compare (m, j.first (), k.first ());
                 if (compare == impartial_ordering::disjoint) return impartial_ordering::disjoint;
-                l = data::rest (l);
-                m = data::rest (m);
+                j = data::rest (j);
+                k = data::rest (k);
             }
             return compare;
         }
@@ -45,15 +46,15 @@ namespace Diophant {
         if (const list *ll = dynamic_cast<const list *> (a); ll != nullptr) {
             const list *mm = dynamic_cast<const list *> (b);
             if (mm == nullptr) return impartial_ordering::disjoint;
-            data::stack<expression> l = ll->List;
-            data::stack<expression> m = mm->List;
-            if (l.size () != m.size ()) return impartial_ordering::disjoint;
+            data::stack<expression> j = ll->List;
+            data::stack<expression> k = mm->List;
+            if (j.size () != k.size ()) return impartial_ordering::disjoint;
             impartial_ordering compare = impartial_ordering::equal;
-            while (!data::empty (l)) {
-                compare = compare && pattern_compare (l.first (), m.first ());
+            while (!data::empty (j)) {
+                compare = compare && pattern_compare (m, j.first (), k.first ());
                 if (compare == impartial_ordering::disjoint) return impartial_ordering::disjoint;
-                l = data::rest (l);
-                m = data::rest (m);
+                j = data::rest (j);
+                k = data::rest (k);
             }
             return compare;
         }
@@ -61,14 +62,14 @@ namespace Diophant {
         throw data::exception {} << "incomplete method: pattern <=> ";
     }
 
-    impartial_ordering pattern_compare (const form *a, const node *b) {
+    impartial_ordering pattern_compare (Machine m, const form *a, const node *b) {
         if (const node *n = dynamic_cast<const node *> (a); n != nullptr)
-            return pattern_compare (n, b);
+            return pattern_compare (m, n, b);
 
         if (const blank *n = dynamic_cast<const blank *> (a); n != nullptr) return impartial_ordering::superset;
 
         if (const typed *n = dynamic_cast<const typed *> (a); n != nullptr) {
-            impartial_ordering cmp = pattern_compare (n->Match.get (), b);
+            impartial_ordering cmp = pattern_compare (m, n->Match.get (), b);
             if (cmp == impartial_ordering::disjoint) return impartial_ordering::disjoint;
 
             // TODO this is incorrect but it is the best we can do for now.
@@ -78,7 +79,7 @@ namespace Diophant {
         throw data::exception {} << "incomplete method: pattern <=> ";
     }
 
-    impartial_ordering pattern_compare (Expression A, Expression B) {
+    impartial_ordering pattern_compare (Machine m, Expression A, Expression B) {
 
         const form *a = A.get ();
         const form *b = B.get ();
@@ -86,10 +87,10 @@ namespace Diophant {
         if (a == nullptr || b == nullptr) throw data::exception {} << "cannot compare null patterns";
 
         if (const node *n = dynamic_cast<const node *> (a); n != nullptr)
-            return -pattern_compare (b, n);
+            return -pattern_compare (m, b, n);
 
         if (const node *n = dynamic_cast<const node *> (b); n != nullptr)
-            return pattern_compare (a, n);
+            return pattern_compare (m, a, n);
 
         if (const blank *n = dynamic_cast<const blank *> (a); n != nullptr) {
             if (const blank *m = dynamic_cast<const blank *> (b); m != nullptr)
@@ -97,21 +98,21 @@ namespace Diophant {
             else return impartial_ordering::superset;
         }
 
-        if (const blank *m = dynamic_cast<const blank *> (b); m != nullptr)
+        if (const blank *u = dynamic_cast<const blank *> (b); u != nullptr)
             return impartial_ordering::subset;
 
         {
-            const typed *n = dynamic_cast<const typed *> (a);
-            const typed *m = dynamic_cast<const typed *> (b);
-            if (n != nullptr && m != nullptr)
-                return n->Required <=> m->Required && pattern_compare (n->Match, m->Match);
+            const typed *u = dynamic_cast<const typed *> (a);
+            const typed *v = dynamic_cast<const typed *> (b);
+            if (u != nullptr && v != nullptr)
+                return compare (m, u->Required, v->Required) && pattern_compare (m, u->Match, v->Match);
         }
 
         throw data::exception {} << "incomplete method: pattern " << A << " <=> " << B;
     }
 
-    impartial_ordering operator <=> (Pattern A, Pattern B) {
-        return pattern_compare (A, B);
+    impartial_ordering compare (Machine m, Pattern A, Pattern B) {
+        return pattern_compare (m, A, B);
     }
 
 

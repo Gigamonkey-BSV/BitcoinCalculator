@@ -10,6 +10,20 @@ namespace Diophant {
         symbol (const std::string &x): node {}, std::string {x} {}
 
         static expression make (const std::string &);
+
+        bool operator == (const node &n) const final override {
+            if (const symbol *x = dynamic_cast<const symbol *> (&n); x != nullptr &&
+                static_cast<const std::string &> (*this) == static_cast<const std::string &> (*x)) return true;
+            return false;
+        };
+
+        bool operator == (const symbol &x) const {
+            return static_cast<const std::string &> (*this) == static_cast<const std::string &> (x);
+        }
+
+        std::strong_ordering operator <=> (const symbol &x) const {
+            return static_cast<const std::string &> (*this) <=> static_cast<const std::string &> (x);
+        }
     };
 
     using Symbol = const symbol &;

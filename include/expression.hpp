@@ -8,10 +8,8 @@ namespace Diophant {
 
     namespace Bitcoin = Gigamonkey::Bitcoin;
 
-    // includes patterns and symbols as well as concrete expressions.
-    struct form {
-        virtual ~form () {}
-    };
+    struct machine;
+    struct form;
 
     struct expression : data::ptr<form> {
         // a nil expression
@@ -28,6 +26,11 @@ namespace Diophant {
 
     std::ostream &operator << (std::ostream &, Expression);
 
+    // includes patterns and symbols as well as concrete expressions.
+    struct form {
+        virtual ~form () {}
+    };
+
     std::ostream &operator << (std::ostream &, const form *);
 
     struct node : form {
@@ -36,6 +39,8 @@ namespace Diophant {
         // if this exists, then an evaluation was already done and this was the result.
         // if the result is null, that means that the expression evaluated to itself.
         mutable data::maybe<expression> Evaluated;
+
+        virtual bool operator == (const node &) const = 0;
     };
 
     std::ostream inline &operator << (std::ostream &o, Expression p) {

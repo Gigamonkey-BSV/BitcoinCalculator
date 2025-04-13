@@ -1,5 +1,6 @@
 #include <parse.hpp>
 #include <values/leaf.hpp>
+#include <values/lambda.hpp>
 #include "gtest/gtest.h"
 
 namespace Diophant {
@@ -183,7 +184,23 @@ namespace Diophant {
 
         test_eval (R"(verify (to_public false 123) (SHA2_256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
 
-        // TODO an undefined function seems to go into an infinite loop.
+        test ("@ f -> let g -> @ x -> f x x in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5",
+            call::make (
+                lambda::make ({symbol {"f"}},
+                    let::make (
+                        {{symbol {"g"}, lambda::make (
+                            {symbol {"x"}},
+                            call::make (symbol::make ("f"), {symbol::make ("x"), symbol::make ("x")}))}},
+                        call::make (symbol::make ("g"), {symbol::make ("g")}))),
+                {
+                    lambda::make ({symbol {"f"}, symbol {"n"}}, dif::make (
+                        binary (binary_operand::bool_equal, symbol::make ("n"), make_secret (0)),
+                        make_secret (1),
+                        binary (binary_operand::times, symbol::make ("n"),
+                            call::make (symbol::make ("f"), {binary (binary_operand::minus, symbol::make ("n"), make_secret (1))})))),
+                    make_secret (5)
+                }),
+            make_secret (120));
 
     }
 

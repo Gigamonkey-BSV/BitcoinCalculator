@@ -16,9 +16,9 @@ namespace Diophant {
 
         static expression make (const T &);
 
-        bool cast (const machine &, Type) const final override;
+        bool cast (const machine &, const node &) const final override;
         std::ostream &write (std::ostream &) const final override;
-        bool operator == (const value &) const final override;
+        bool operator == (const node &) const final override;
     };
 
     template <typename Y, typename ...X> struct leaf<Y (*)(X...)> final : value {
@@ -27,9 +27,9 @@ namespace Diophant {
 
         static expression make (Y (*)(X...));
 
-        bool cast (const machine &, Type) const final override;
+        bool cast (const machine &, const node &) const final override;
         std::ostream &write (std::ostream &) const final override;
-        bool operator == (const value &) const final override;
+        bool operator == (const node &) const final override;
 
         expression operator () (data::stack<expression>) const final override;
     };
@@ -109,14 +109,14 @@ namespace Diophant {
         return o << "(*)";
     }
 
-    template <typename T> bool inline leaf<T>::operator == (const value &x) const {
+    template <typename T> bool inline leaf<T>::operator == (const node &x) const {
         if (const leaf<T> *c = dynamic_cast<const leaf<T> *> (&x); c != nullptr)
             return this->Value == c->Value;
 
         return false;
     }
 
-    template <typename Y, typename ...X> bool inline leaf<Y (*)(X...)>::operator == (const value &x) const {
+    template <typename Y, typename ...X> bool inline leaf<Y (*)(X...)>::operator == (const node &x) const {
         if (const leaf<Y (*)(X...)> *c = dynamic_cast<const leaf<Y (*)(X...)> *> (&x); c != nullptr)
             return this->Value == c->Value;
 
@@ -133,7 +133,7 @@ namespace Diophant {
 
     namespace {
         template <typename T> struct leaf_cast {
-            bool operator () (Type t);
+            bool operator () (Machine, const node &t);
         };
 
         template <typename T> struct base_type;
@@ -211,18 +211,20 @@ namespace Diophant {
             }
         };
 
-        template <typename T> bool inline leaf_cast<T>::operator () (Type t) {
-            return t >= base_type<T> {} ();
+        template <typename T> bool inline leaf_cast<T>::operator () (Machine m, const node &t) {
+            auto n = impartial_ordering::equal | impartial_ordering::superset;
+            auto x = type::compare (m, t, base_type<T> {} ());
+            return data::byte (x & n) && !data::byte (x & ~n);
         }
 
     }
 
-    template <typename T> bool inline leaf<T>::cast (const machine &, Type t) const {
-        return leaf_cast<T> {} (t);
+    template <typename T> bool inline leaf<T>::cast (const machine &m, const node &t) const {
+        return leaf_cast<T> {} (m, t);
     }
 
-    template <typename Y, typename ...X> bool inline leaf<Y (*)(X...)>::cast (const machine &, Type t) const {
-        return leaf_cast<Y (*)(X...)> {} (t);
+    template <typename Y, typename ...X> bool inline leaf<Y (*)(X...)>::cast (const machine &m, const node &t) const {
+        return leaf_cast<Y (*)(X...)> {} (m, t);
     }
 
     namespace {

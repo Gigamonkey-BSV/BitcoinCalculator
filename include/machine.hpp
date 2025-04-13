@@ -18,6 +18,11 @@ namespace Diophant {
 
         static expression make (Type);
         static expression make (Type, Expression);
+
+        bool operator == (const node &n) const final override {
+            const casted *x = dynamic_cast<const casted *> (&n);
+            return x != nullptr && this->Cast == x->Cast && this->Def == x->Def;
+        }
     };
 
     std::ostream &operator << (std::ostream &o, const casted &cx);
@@ -65,11 +70,7 @@ namespace Diophant {
 
         bool operator == (const machine &) const;
 
-        data::maybe<replacements> match (pattern, expression) const;
-        data::maybe<replacements> match (data::stack<pattern>, data::stack<expression>) const;
-
-        // try to cast a value as a type.
-        bool cast (Type, Expression) const;
+        match_result match (data::stack<pattern>, data::stack<expression>) const;
 
         using definition = data::either<casted, data::stack<transformation>>;
 
@@ -84,6 +85,7 @@ namespace Diophant {
         machine (symbol_defs xd, unary_defs ud, binary_defs bd):
             SymbolDefinitions {xd}, UnaryDefinitions {ud}, BinaryDefinitions {bd} {}
         machine () {}
+
     };
 
     machine initialize ();
