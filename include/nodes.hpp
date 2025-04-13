@@ -73,9 +73,7 @@ namespace Diophant {
 
         static expression make (data::stack<data::entry<const symbol, expression>> vals, expression in);
 
-        bool operator == (const node &) const final override {
-            throw data::exception {} << " we do not know how to test equality for let expressions yet";
-        }
+        bool operator == (const node &n) const final override;
     };
 
     expression inline call::make (expression fun, data::stack<expression> args) {

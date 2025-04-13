@@ -11,25 +11,30 @@ namespace Diophant {
 
         static expression make (const std::string &);
 
-        bool operator == (const node &n) const final override {
-            if (const symbol *x = dynamic_cast<const symbol *> (&n); x != nullptr &&
-                static_cast<const std::string &> (*this) == static_cast<const std::string &> (*x)) return true;
-            return false;
-        };
+        bool operator == (const node &n) const final override;
 
-        bool operator == (const symbol &x) const {
-            return static_cast<const std::string &> (*this) == static_cast<const std::string &> (x);
-        }
-
-        std::strong_ordering operator <=> (const symbol &x) const {
-            return static_cast<const std::string &> (*this) <=> static_cast<const std::string &> (x);
-        }
+        bool operator == (const symbol &x) const;
+        std::strong_ordering operator <=> (const symbol &x) const;
     };
 
     using Symbol = const symbol &;
 
     expression inline symbol::make (const std::string &x) {
         return expression {std::static_pointer_cast<form> (std::make_shared<symbol> (x))};
+    }
+
+    bool inline symbol::operator == (const node &n) const {
+        if (const symbol *x = dynamic_cast<const symbol *> (&n); x != nullptr &&
+            static_cast<const std::string &> (*this) == static_cast<const std::string &> (*x)) return true;
+        return false;
+    };
+
+    bool inline symbol::operator == (const symbol &x) const {
+        return static_cast<const std::string &> (*this) == static_cast<const std::string &> (x);
+    }
+
+    std::strong_ordering inline symbol::operator <=> (const symbol &x) const {
+        return static_cast<const std::string &> (*this) <=> static_cast<const std::string &> (x);
     }
 
 }

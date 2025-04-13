@@ -31,8 +31,14 @@ namespace Diophant {
         return o << " -> " << Body;
     }
 
-    bool inline lambda::operator == (const node &) const {
-        throw data::exception {} << "we don't know how to compare lambdas for equality.";
+    bool inline lambda::operator == (const node &n) const {
+        const lambda *ll = dynamic_cast<const lambda *> (&n);
+        if (ll == nullptr || data::size (Args) != data::size (ll->Args)) return false;
+        return replace (Body, data::fold ([] (auto &&rep, auto &&entry) {
+            return rep.insert (entry);
+        }, replacements {}, data::map_thread ([] (auto &&left, auto &&right) {
+            return data::entry<const symbol, expression> {left, symbol::make (right)};
+        }, Args, ll->Args))) == ll->Body;
     }
 
 }

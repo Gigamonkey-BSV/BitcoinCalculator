@@ -23,16 +23,15 @@ namespace Diophant {
 
     impartial_ordering operator ~ (impartial_ordering);
 
+    impartial_ordering operator - (impartial_ordering x);
+
     impartial_ordering operator | (impartial_ordering, impartial_ordering);
 
     impartial_ordering operator & (impartial_ordering, impartial_ordering);
 
     impartial_ordering operator && (impartial_ordering, impartial_ordering);
 
-    impartial_ordering inline operator - (impartial_ordering x) {
-        return x == impartial_ordering::superset ? impartial_ordering::subset:
-            x == impartial_ordering::superset ? impartial_ordering::subset: x;
-    }
+    std::ostream &operator << (std::ostream &, impartial_ordering);
 
     struct type : expression {
         // any type
@@ -78,6 +77,11 @@ namespace Diophant {
         static_cast<expression &> (*this) = e;
     }
 
+    impartial_ordering inline operator - (impartial_ordering x) {
+        return x == impartial_ordering::superset ? impartial_ordering::subset:
+            x == impartial_ordering::superset ? impartial_ordering::subset: x;
+    }
+
     impartial_ordering inline operator ~ (impartial_ordering a) {
         return static_cast<impartial_ordering> (~data::byte (a));
     }
@@ -87,7 +91,7 @@ namespace Diophant {
     }
 
     impartial_ordering inline operator & (impartial_ordering a, impartial_ordering b) {
-        return static_cast<impartial_ordering> (data::byte (b) & data::byte (b));
+        return static_cast<impartial_ordering> (data::byte (a) & data::byte (b));
     }
 
 }

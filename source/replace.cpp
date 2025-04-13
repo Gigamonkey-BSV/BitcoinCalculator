@@ -1,5 +1,6 @@
 #include <replace.hpp>
 #include <values/list.hpp>
+#include <values/struct.hpp>
 #include <values/lambda.hpp>
 
 namespace Diophant {
@@ -8,9 +9,11 @@ namespace Diophant {
     expression replace_inner (Expression e, replacements rr) {
         const form *p = e.get ();
         if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
-            const auto *r = rr.contains (*x);
+            const expression *r = rr.contains (*x);
             return r != nullptr ? *r : expression {};
-        } else if (const lambda *q = dynamic_cast<const lambda *> (p); q != nullptr) {
+        }
+
+        if (const lambda *q = dynamic_cast<const lambda *> (p); q != nullptr) {
             // if the variables in the lambda expression contain
             // any of the replacement symbols, they are removed
             // from the replacements.
@@ -21,7 +24,9 @@ namespace Diophant {
             if (expression replaced = replace_inner (q->Body, rr); replaced != nullptr)
                 return lambda::make (q->Args, replaced);
             else return expression {};
-        } else if (const list *ls = dynamic_cast<const list *> (p); ls != nullptr) {
+        }
+
+        if (const list *ls = dynamic_cast<const list *> (p); ls != nullptr) {
             bool replacement_was_made = false;
             data::stack<expression> new_list;
 
@@ -33,7 +38,13 @@ namespace Diophant {
             }
 
             return replacement_was_made ? list::make (data::reverse (new_list)): expression {};
-        } else if (const binop *b = dynamic_cast<const binop *> (p); b != nullptr) {
+        }
+
+        if (const dstruct *dt = dynamic_cast<const dstruct *> (p); dt != nullptr) {
+            throw data::exception {} << "replace struct: we don't handle this case yet.";
+        }
+
+        if (const binop *b = dynamic_cast<const binop *> (p); b != nullptr) {
             bool replacement_was_made = false;
             data::stack<expression> new_list;
 
@@ -47,13 +58,21 @@ namespace Diophant {
 
             if (!replacement_was_made) return expression {};
             return binop::make (b->Operand, new_list);
-        } if (const unop *u = dynamic_cast<const unop *> (p); u != nullptr) {
+        }
+
+        if (const unop *u = dynamic_cast<const unop *> (p); u != nullptr) {
             expression replaced = replace_inner (u->Body, rr);
             return replaced == expression {} ? expression {} : unop::make (u->Operand, replaced);
-        } if (const call *c = dynamic_cast<const call *> (p); c != nullptr) {
-            bool replacement_was_made = false;
-            data::stack<expression> new_list;
+        }
 
+        if (const call *c = dynamic_cast<const call *> (p); c != nullptr) {
+            bool replacement_was_made = false;
+
+            expression replaced = replace (c->Fun, rr);
+            if (replaced != expression {}) replacement_was_made = true;
+            else replaced = c->Fun;
+
+            data::stack<expression> new_list;
             for (Expression z : c->Args) {
                 expression replaced = replace_inner (z, rr);
                 if (replaced != expression {}) {
@@ -62,13 +81,34 @@ namespace Diophant {
                 } else new_list <<= z;
             }
 
-            expression replaced = replace (c->Fun, rr);
-            if (replaced == expression {}) {
-                if (!replacement_was_made) return expression {};
-                replaced = c->Fun;
+            return replacement_was_made ?
+                call::make (replaced, data::reverse (new_list)):
+                expression {};
+        }
+
+        if (const let *l = dynamic_cast<const let *> (p); l != nullptr) {
+            bool replacement_was_made = false;
+            data::stack<data::entry<const symbol, expression>> new_symbols;
+
+            replacements r = rr;
+
+            for (const auto &[k, v] : l->Values) {
+                r = r.remove (k);
+
+                expression replaced = replace_inner (v, r);
+                if (replaced != expression {}) {
+                    replacement_was_made = true;
+                    new_symbols <<= data::entry<const symbol, expression> {k, replaced};
+                } else new_symbols <<= data::entry<const symbol, expression> {k, v};
             }
 
-            return call::make (replaced, data::reverse (new_list));
+            expression replaced = replace_inner (l->In, r);
+            if (replaced != expression {}) replacement_was_made = true;
+            else replaced = l->In;
+
+            return replacement_was_made ?
+                let::make (data::reverse (new_symbols), replaced):
+                expression {};
         }
 
         return expression {};
@@ -100,7 +140,8 @@ namespace Diophant {
         if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
             mr r = match (m, t->Match, evaluated);
             if (intuit (r) != yes) return r;
-            if (t->Required.castable (m, evaluated) == yes) return r;
+            intuit is_castable = t->Required.castable (m, evaluated);
+            return is_castable == yes ? r : mr {is_castable};
         }
 
         // note here we check the expression first .

@@ -16,6 +16,8 @@ namespace Diophant {
         no = -1
     };
 
+    std::ostream &operator << (std::ostream &o, intuit i);
+
     // if the pattern can match, we may return
     // replacement rules for symbols. We also need
     // a case where we say that we cannot tell if the
@@ -35,6 +37,8 @@ namespace Diophant {
         }
     };
 
+    std::ostream &operator << (std::ostream &o, match_result mr);
+
     struct machine;
     struct pattern;
 
@@ -44,6 +48,17 @@ namespace Diophant {
 
     // we need a machine because we need to look up definitions.
     match_result match (Machine, Pattern, Expression);
+
+    std::ostream inline &operator << (std::ostream &o, intuit i) {
+        if (i == unknown) return o << "unknown";
+        if (i == yes) return o << "yes";
+        return o << "no";
+    }
+
+    std::ostream inline &operator << (std::ostream &o, match_result mr) {
+        if (std::holds_alternative<intuit> (mr)) return o << std::get<intuit> (mr);
+        return o << "yes: " << std::get<replacements> (mr);
+    }
 
 }
 

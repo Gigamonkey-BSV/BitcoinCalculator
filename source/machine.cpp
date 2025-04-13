@@ -56,10 +56,9 @@ namespace Diophant {
     // We might want to mark expressions as already having been
     // evaluated.
     expression machine::evaluate (Expression e) const {
-
         expression last = e;
         while (true) {
-
+            //data::wait_for_enter ();
             const form *p = last.get ();
             if (p == nullptr) throw data::exception {} << "null expression evaluated";
 
@@ -69,7 +68,7 @@ namespace Diophant {
             // It is possible that this expression was already evaluated
             // ahead a few steps. If it was, we just go to the end.
             if (bool (n->Evaluated)) {
-                if (n->Evaluated != expression {}) return last;
+                if (n->Evaluated == expression {}) return last;
                 last = *n->Evaluated;
                 continue;
             }
@@ -394,6 +393,16 @@ namespace Diophant {
                     return next;
                 }
 
+                // evaluate all arguments.
+                data::stack<expression> new_args {};
+                for (Expression ex : args) {
+                    expression next = m.evaluate (ex);
+                    new_args <<= next;
+                    if (next != ex) changed = true;
+                }
+
+                args = data::reverse (new_args);
+
                 break;
             }
 
@@ -410,7 +419,7 @@ namespace Diophant {
 
         expression evaluate_let (const machine &m, const let &l) {
             return replace (l.In, data::fold ([] (auto &&r, auto &&v) {
-                return r.insert (v);
+                return r.insert (v.Key, replace (v.Value, r));
             }, replacements {}, l.Values));
         }
 

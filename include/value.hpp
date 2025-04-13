@@ -32,7 +32,7 @@ namespace Diophant {
 		}
 
 		std::ostream &write (std::ostream &o) const final override {
-			return o << "nil";
+			return o << "<nil>";
 		}
 
 		bool operator == (const node &v) const final override {

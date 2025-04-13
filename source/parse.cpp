@@ -189,7 +189,7 @@ namespace Diophant {
             }
         };
 
-        template <typename atom> struct read_expression<tao_pegtl_grammar::call<atom>> {
+        template <typename atom> struct read_expression<tao_pegtl_grammar::call_op<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 eval.call ();
@@ -400,8 +400,8 @@ namespace Diophant {
         Exp = data::rest (Exp);
         expression fun = data::first (Exp);
 
-        if (Diophant::call *fx = dynamic_cast<Diophant::call *> (fun.get ()); fx != nullptr) {
-            fx->Args <<= arg;
+        if (Diophant::call *fx = dynamic_cast<Diophant::call *> (arg.get ()); fx != nullptr) {
+            Exp = prepend (data::rest (Exp), call::make (fun, fx->Args << fx->Fun));
             return;
         }
 

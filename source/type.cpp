@@ -4,6 +4,36 @@
 
 namespace Diophant {
 
+    std::ostream &operator << (std::ostream &o, impartial_ordering i) {
+        if (i == impartial_ordering {0}) return o << "\0";
+        bool written = false;
+        if (data::byte (i & impartial_ordering::equal)) {
+            o << "equal";
+            written = true;
+        }
+        if (data::byte (i & impartial_ordering::disjoint)) {
+            if (written) o << " | ";
+            o << "disjoint";
+            written = true;
+        }
+        if (data::byte (i & impartial_ordering::subset)) {
+            if (written) o << " | ";
+            o << "subset";
+            written = true;
+        }
+        if (data::byte (i & impartial_ordering::superset)) {
+            if (written) o << " | ";
+            o << "superset";
+            written = true;
+        }
+        if (data::byte (i & impartial_ordering::nonempty_complements)) {
+            if (written) o << " | ";
+            o << "nonempty_complements";
+            written = true;
+        }
+        return o;
+    }
+
     impartial_ordering compare (Machine m, Type a, Type b) {
         const form *x = a.get ();
 
@@ -31,7 +61,6 @@ namespace Diophant {
 
         const node *n = dynamic_cast<const node *> (y);
         if (n == nullptr) throw data::exception {} << "I don't know how to handle this case now.";
-
         return a == *n ? impartial_ordering::equal : impartial_ordering::disjoint;
     }
 

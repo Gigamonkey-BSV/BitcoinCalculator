@@ -89,9 +89,17 @@ namespace tao_pegtl_grammar {
 
     template <typename atom> struct expression;
 
+    struct arrow : string<'-','>'> {};
+
+    struct lambda_start : one<'@'> {};
+    template <typename atom> struct lambda_body;
+    struct lambda_symbol : symbol {};
+    template <typename atom> struct lambda : seq<lambda_start, ws,
+        sor<seq<lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow, ws, lambda_body<atom>>, lambda_body<sor<anon_var, atom>>>> {};
+
     template <typename atom> struct dif : seq<string<'i', 'f'>, not_at<symbol_char>, ws, expression<atom>, ws,
         string<'t', 'h', 'e', 'n'>, not_at<symbol_char>, ws, expression<atom>, ws,
-        string<'e', 'l', 's', 'e'>, not_at<symbol_char>, ws, expression<atom>> {};
+        string<'e', 'l', 's', 'e'>, not_at<symbol_char>, ws, lambda_body<atom>> {};
 
     struct comma : one<','> {};
     template <typename elem> struct sequence : seq<elem, star<seq<ws, comma, ws, elem>>> {};
@@ -105,35 +113,28 @@ namespace tao_pegtl_grammar {
     struct close_list : one<']'> {};
     template <typename atom> struct list : seq<open_list, empty_sequence<expression<atom>>, close_list> {};
 
-    struct arrow : string<'-','>'> {};
-
     struct rule_symbol : symbol {};
     template <typename atom> struct rule : seq<rule_symbol, ws, arrow, ws, expression<atom>> {};
     struct let_open : seq<string<'l', 'e', 't'>, not_at<symbol_char>> {};
     struct let_in : seq<string<'i','n'>, not_at<symbol_char>> {};
-    template <typename atom> struct let : seq<let_open, ws, sequence<rule<atom>>, ws, let_in, ws, expression<atom>> {};
+    template <typename atom> struct let : seq<let_open, ws, sequence<rule<atom>>, ws, let_in, ws, lambda_body<atom>> {};
 
     struct open_struct : one<'{'> {};
     struct close_struct : one<'}'> {};
     template <typename atom> struct dstruct : seq<open_struct, empty_sequence<rule<atom>>, close_struct> {};
 
-    struct lambda_start : one<'@'> {};
-    template <typename atom> struct lambda_body;
-    struct lambda_symbol : symbol {};
-    template <typename atom> struct lambda : seq<lambda_start, ws,
-        sor<seq<lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow, ws, lambda_body<atom>>, lambda_body<sor<anon_var, atom>>>> {};
-
     struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
     struct right_unary_operand : sor<one<'!'>> {};
 
-    template <typename atom> struct call : seq<plus<white>, atom> {};
-    template <typename atom> struct call_expr : seq<atom, star<call<atom>>> {};
+    template <typename atom> struct call_expr;
+    template <typename atom> struct call_op : seq<plus<white>, call_expr<atom>> {};
+    template <typename atom> struct call_expr : seq<atom, opt<call_op<atom>>> {};
 
     template <typename atom> struct left_unary_expr;
     template <typename atom> struct left_unary_operation : seq<left_unary_operand, ws, left_unary_expr<atom>> {};
     template <typename atom> struct left_unary_expr : sor<left_unary_operation<atom>, call_expr<atom>> {};
 
-    template <typename atom> struct dot_expr;
+    //template <typename atom> struct dot_expr;
     template <typename atom> struct dot_op : seq<ws, one<'.'>, ws, left_unary_expr<atom>> {};
     template <typename atom> struct dot_expr : seq<left_unary_expr<atom>, star<dot_op<atom>>> {};
 

@@ -70,6 +70,7 @@ add_library (calc
     source/replace.cpp
     source/parse.cpp
     source/expression.cpp
+    source/nodes.cpp
     source/type.cpp
     source/pattern.cpp
     source/built.in/scriptnum.cpp
