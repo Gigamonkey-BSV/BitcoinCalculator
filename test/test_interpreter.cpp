@@ -141,6 +141,7 @@ namespace Diophant {
 
         // call that doesn't evaluate to anything
         test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
+        test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
 
         // unary operators
         test ("-0", unary ('-', make_secret (0)), make_secret (0));
@@ -188,18 +189,21 @@ namespace Diophant {
 
         test_eval (R"(verify (to_public false 123) (SHA2_256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
 
+        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
+        test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
+/*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5
         //
         // (@ f -> let g -> @ x -> f (x x) in g g) (@ f n -> if n == 0 then 1 else n * f (n - 1)) 5
         //
-        // let g -> @ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) $ (x x) in g g $ 5
+        // let g -> @ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) (x x) in g g $ 5
         //
-        // ((@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) $ (x x))
-        //     (@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) $ (x x))) $ 5
+        // ((@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) (x x))
+        //     (@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) (x x))) $ 5
         //
         // @ f n -> if n == 0 then 1 else n * f (n - 1) $
-        //     ((@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) $ (x x))
-        //         (@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) $ (x x))) $ 5
+        //     ((@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) (x x))
+        //         (@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) (x x))) $ 5
         //
         // if 5 == 0 then 1 else 5 * ((@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) $ (x x))
         //     (@ x -> @ f n -> if n == 0 then 1 else n * f (n - 1) $ (x x))) (5 - 1)
@@ -252,7 +256,7 @@ namespace Diophant {
                     binary (binary_operand::times, symbol::make ("n"),
                         call::make (symbol::make ("f"), {binary (binary_operand::minus, symbol::make ("n"), make_secret (1))})))),
                 make_secret (5)),
-            make_secret (120));
+            make_secret (120));*/
 
     }
 

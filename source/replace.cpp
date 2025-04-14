@@ -111,6 +111,27 @@ namespace Diophant {
                 expression {};
         }
 
+        if (const dif *df = dynamic_cast<const dif *> (p); df != nullptr) {
+            bool replacement_was_made = false;
+            expression if_new = replace_inner (df->If, rr);
+            expression then_new = replace_inner (df->Then, rr);
+            expression else_new = replace_inner (df->Else, rr);
+
+            if (if_new != expression {}) {
+                replacement_was_made = true;
+            } else if_new = df->If;
+
+            if (then_new != expression {}) {
+                replacement_was_made = true;
+            } else then_new = df->Then;
+
+            if (else_new != expression {}) {
+                replacement_was_made = true;
+            } else else_new = df->Else;
+
+            return replacement_was_made ? dif::make (if_new, then_new, else_new): expression {};
+        }
+
         return expression {};
     }
 

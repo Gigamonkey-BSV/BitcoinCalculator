@@ -102,13 +102,13 @@ namespace Diophant {
     }
 
     std::ostream &write_call (std::ostream &o, const call &c) {
-        write (o, c.Fun.get (), precedence::call);
+        write (o << "(", c.Fun.get (), precedence::call);
         auto args = c.Args;
         while (!data::empty (args)) {
             write (o << " ", data::first (args).get (), precedence::call);
             args = data::rest (args);
         }
-        return o;
+        return o << ")";
     }
 
 }

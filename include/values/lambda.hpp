@@ -26,9 +26,9 @@ namespace Diophant {
     }
 
     std::ostream inline &lambda::write (std::ostream &o) const {
-        o << "@";
+        o << "(@";
         for (const symbol &x : Args) o << " " << x;
-        return o << " -> " << Body;
+        return o << " -> " << Body << ")";
     }
 
     bool inline lambda::operator == (const node &n) const {

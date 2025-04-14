@@ -126,9 +126,8 @@ namespace tao_pegtl_grammar {
     struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
     struct right_unary_operand : sor<one<'!'>> {};
 
-    template <typename atom> struct call_expr;
-    template <typename atom> struct call_op : seq<plus<white>, call_expr<atom>> {};
-    template <typename atom> struct call_expr : seq<atom, opt<call_op<atom>>> {};
+    template <typename atom> struct call_op : seq<plus<white>, atom> {};
+    template <typename atom> struct call_expr : seq<atom, star<call_op<atom>>> {};
 
     template <typename atom> struct left_unary_expr;
     template <typename atom> struct left_unary_operation : seq<left_unary_operand, ws, left_unary_expr<atom>> {};

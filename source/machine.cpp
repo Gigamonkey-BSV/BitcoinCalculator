@@ -3,7 +3,6 @@
 #include <values/lambda.hpp>
 #include <values/struct.hpp>
 #include <values/leaf.hpp>
-#include <data/io/wait_for_enter.hpp>
 
 namespace Diophant {
     namespace {
@@ -58,7 +57,6 @@ namespace Diophant {
     expression machine::evaluate (Expression e) const {
         expression last = e;
         while (true) {
-            //data::wait_for_enter ();
             const form *p = last.get ();
             if (p == nullptr) throw data::exception {} << "null expression evaluated";
 
@@ -318,9 +316,10 @@ namespace Diophant {
                     // have already been checked.
 
                     min_args += data::size (fx->Args);
-                    args = fx->Args + args;
+                    args = data::reverse (args + data::reverse (fx->Args));
                     fun = fx->Fun;
                     p = fun.get ();
+                    changed = true;
                 }
 
                 // if the head is a lambda, we can evaluate it completely lazily.
@@ -338,7 +337,6 @@ namespace Diophant {
                     }
 
                     fun = m.evaluate (replace (n->Body, r));
-
                     if (data::empty (args)) return fun;
                     continue;
                 }
@@ -380,10 +378,10 @@ namespace Diophant {
                                     next = *n->Evaluated;
                                 } else break;
                             }
-                            new_args <<= ex;
+                            new_args <<= next;
                         }
                         if (changed) args = data::reverse (new_args);
-                        continue;
+                        else return expression {};
                     }
                 }
 
