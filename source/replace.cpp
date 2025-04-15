@@ -112,7 +112,9 @@ namespace Diophant {
         }
 
         if (const dif *df = dynamic_cast<const dif *> (p); df != nullptr) {
+
             bool replacement_was_made = false;
+
             expression if_new = replace_inner (df->If, rr);
             expression then_new = replace_inner (df->Then, rr);
             expression else_new = replace_inner (df->Else, rr);

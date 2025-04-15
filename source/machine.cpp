@@ -239,6 +239,10 @@ namespace Diophant {
 
             if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
 
+            if (b.Operand == binary_operand::define) {
+                throw data::exception {} << "we don't know how to make a user definition yet";
+            }
+
             if (b.Operand == binary_operand::apply)
                 return call::make (first (body), rest (body));
 

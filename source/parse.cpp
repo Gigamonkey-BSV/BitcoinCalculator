@@ -10,10 +10,6 @@
 #include <gigamonkey/numbers.hpp>
 #include <data/io/wait_for_enter.hpp>
 
-namespace tao_pegtl_grammar {
-    struct expression_grammar : seq<ws, opt<seq<object, ws>>, eof> {};
-}
-
 namespace Diophant {
     struct parser {
         void push (Expression);
@@ -104,6 +100,20 @@ namespace Diophant {
             }
         };
 
+        template <> struct read_expression<tao_pegtl_grammar::var> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.push (blank::make (in.string ().substr (1)));
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::anon_var> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.push (blank::make (in.string ().substr (1)));
+            }
+        };
+
         template <> struct read_expression<tao_pegtl_grammar::open_list> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
@@ -139,17 +149,10 @@ namespace Diophant {
             }
         };
 
-        template <> struct read_expression<tao_pegtl_grammar::lambda_start> {
+        template <> struct read_expression<tao_pegtl_grammar::lambda_open> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 eval.start_lambda ();
-            }
-        };
-
-        template <typename atom> struct read_expression<tao_pegtl_grammar::lambda<atom>> {
-            template <typename Input>
-            static void apply (const Input &in, parser &eval) {
-                eval.complete_lambda ();
             }
         };
 
@@ -157,6 +160,20 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 eval.read_symbol (in.string ());
+            }
+        };
+
+        template <typename atom> struct read_expression<tao_pegtl_grammar::classic_lambda<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.complete_lambda ();
+            }
+        };
+
+        template <typename atom> struct read_expression<tao_pegtl_grammar::compact_lambda<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                std::cout << " we don't know how to read compact lambdas yet" << std::endl;
             }
         };
 
@@ -192,6 +209,7 @@ namespace Diophant {
         template <typename atom> struct read_expression<tao_pegtl_grammar::call_op<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
+                std::cout << " parser reads call op " << in.string () << std::endl;
                 eval.call ();
             }
         };
@@ -371,6 +389,20 @@ namespace Diophant {
             }
         };
 
+        template <> struct read_expression<tao_pegtl_grammar::definition> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::define);
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::declaration> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                std::cout << " we do not know how to handle a declaration yet"<< std::endl;
+            }
+        };
+
     }
 
     expression read_line (const data::string &input) {
@@ -378,7 +410,7 @@ namespace Diophant {
         tao::pegtl::memory_input<> in {input, "expression"};
 
         try {
-            if (!tao::pegtl::parse<tao_pegtl_grammar::expression_grammar, rules::read_expression> (in, p)) {
+            if (!tao::pegtl::parse<tao_pegtl_grammar::program, rules::read_expression> (in, p)) {
                 std::stringstream ss;
                 ss << input;
                 throw parse_error {ss.str ()};

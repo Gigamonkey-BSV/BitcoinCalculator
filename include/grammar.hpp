@@ -15,24 +15,23 @@ namespace tao_pegtl_grammar {
     struct ws : star<sor<white, comment>> {};
 
     // the overall structure of a program.
-    struct statement;
+    struct definition;
+    struct declaration;
+    struct statement : seq<sor<definition, declaration>, ws, one<';'>> {};
+
     struct object;
 
-    struct program : seq<ws, star<seq<statement, ws>>, object> {};
+    struct subject : seq<declaration, ws, string<':', '='>> {};
+    struct definition : seq<at<subject>, subject, ws, object> {};
 
-    struct declaration;
-    struct definition;
-
-    struct statement : sor<definition, declaration> {};
-
-    struct subject;
-
-    struct declaration : seq<subject, ws, one<';'>> {};
-
-    struct predicate;
-    struct definition : seq<subject, ws, predicate, ws, one<';'>> {};
-
-    struct predicate : seq<string<':','='>, object> {};
+    struct program : seq<ws, // the minimal program is empty
+        opt<seq<
+            star<seq<at<statement>, statement, ws>>,
+            opt<seq<
+                sor<definition, object>, ws
+            >>
+        >>
+        , eof> {};
 
     // a decimal lit is 0 by itself or the digits 1 through 9 followed by digits.
     struct dec_lit : sor<one<'0'>, seq<range<'1', '9'>, star<digit>>> {};
@@ -80,22 +79,27 @@ namespace tao_pegtl_grammar {
         string<'l', 'a', 'm', 'b', 'd', 'a'>> {};
 
     struct symbol_char : sor<alnum, one<'_'>> {};
+    struct symbol_lit : minus<seq<alnum, star<symbol_char>>, reserved_words> {};
 
-    struct symbol : minus<seq<alnum, star<symbol_char>>, reserved_words> {};
-    struct var : seq<one<'_'>, opt<symbol>> {};
+    struct symbol : symbol_lit {};
+    struct var : seq<one<'_'>, opt<symbol_lit>> {};
 
     // used inside lambdas
-    struct anon_var : seq<one<'_'>, opt<dec_lit>> {};
+    struct anon_var : seq<one<'_'>, dec_lit> {};
 
     template <typename atom> struct expression;
 
     struct arrow : string<'-','>'> {};
 
-    struct lambda_start : one<'@'> {};
+    struct lambda_open : one<'@'> {};
     template <typename atom> struct lambda_body;
-    struct lambda_symbol : symbol {};
-    template <typename atom> struct lambda : seq<lambda_start, ws,
-        sor<seq<lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow, ws, lambda_body<atom>>, lambda_body<sor<anon_var, atom>>>> {};
+    struct lambda_symbol : symbol_lit {};
+    struct lambda_input : seq<lambda_open, ws, lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow> {};
+
+    template <typename atom> struct classic_lambda : seq<at<lambda_open>, lambda_open, lambda_body<atom>> {};
+    template <typename atom> struct compact_lambda : seq<lambda_open, lambda_body<sor<anon_var, atom>>> {};
+
+    template <typename atom> struct lambda : sor<classic_lambda<atom>, compact_lambda<atom>> {};
 
     template <typename atom> struct dif : seq<string<'i', 'f'>, not_at<symbol_char>, ws, expression<atom>, ws,
         string<'t', 'h', 'e', 'n'>, not_at<symbol_char>, ws, expression<atom>, ws,
@@ -196,20 +200,29 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct identical_op : seq<ws, string<'=','=','='>, ws, identical_expr<atom>> {};
     template <typename atom> struct identical_expr : seq<bool_or_expr<atom>, opt<identical_op<atom>>> {};
 
-    template <typename atom> struct lambda_body : identical_expr<atom> {};
+    struct type;
+    struct cast : seq<type, ws, one<':'>> {};
+    template <typename atom> struct cast_expr : seq<opt<seq<at<cast>, cast, ws>>, identical_expr<atom>> {};
+
+    template <typename atom> struct lambda_body : cast_expr<atom> {};
 
     template <typename atom> struct apply_expr;
     template <typename atom> struct apply_op : seq<ws, one<'$'>, ws, apply_expr<atom>> {};
     template <typename atom> struct apply_expr : seq<identical_expr<atom>, opt<apply_op<atom>>> {};
 
+    template <typename atom> struct expression : apply_expr<atom> {};
+
     struct atom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol,
         dif<atom>, parenthetical<atom>, list<atom>, let<atom>, lambda<atom>, dstruct<atom>> {};
 
-    struct value : apply_expr<atom> {};
-
     // a pattern atom
-    struct pattom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol, var,
-        dif<pattom>, parenthetical<pattom>, list<pattom>, let<pattom>, lambda<pattom>, dstruct<atom>> {};
+    struct pattom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, var,
+        symbol,
+        dif<pattom>, parenthetical<pattom>, list<pattom>, let<pattom>, lambda<pattom>, dstruct<pattom>> {};
+
+    struct object : expression<atom> {};
+
+    struct pattern : expression<pattom> {};
 
     template <typename atom> struct element_expr;
     template <typename atom> struct element_op :
@@ -246,21 +259,11 @@ namespace tao_pegtl_grammar {
 
     struct type : intuitionistic_implies_expr<atom> {};
 
-    struct cast_op : seq<ws, one<':'>, ws, apply_expr<atom>> {};
-    template <typename atom> struct cast_expr : seq<type, opt<cast_op>> {};
-
-    template <typename atom> struct expression : cast_expr<atom> {};
-
-    struct object : expression<atom> {};
-
-    struct pattern : expression<pattom> {};
-
     struct such_that_expr;
-    struct such_that_op : seq<ws, string<'/',';'>, ws, such_that_expr> {};
+    struct such_that_op : seq<ws, string<'/',';'>, ws, type> {};
     struct such_that_expr : seq<pattern, opt<such_that_op>> {};
 
-    struct subject : such_that_expr {};
-
+    struct declaration : such_that_expr {};
 
 }
 

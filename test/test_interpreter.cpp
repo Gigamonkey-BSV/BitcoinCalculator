@@ -191,6 +191,17 @@ namespace Diophant {
 
         test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
         test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
+
+        test_eval (R"({x -> 3, y -> 5}.x)", make_secret (3));
+
+        test ("f");
+        test ("f;");
+        test ("f _a;");
+        test ("f _a", false);
+        test ("f _a := x");
+        test ("f _a := x;");
+        test ("f _a := x; y");
+
 /*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5
         //
