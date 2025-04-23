@@ -5,16 +5,16 @@
 
 namespace Diophant {
 
-    Bitcoin::integer pubkey_equal (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
-    Bitcoin::integer pubkey_identical (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
-    Bitcoin::integer pubkey_unequal (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
+    bool pubkey_equal (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
+    bool pubkey_identical (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
+    bool pubkey_unequal (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
 
-    Bitcoin::integer pubkey_valid (const secp256k1::pubkey &x);
+    bool pubkey_valid (const secp256k1::pubkey &x);
 
-    secp256k1::pubkey secret_to_public (const uint256 &x, const Bitcoin::integer &);
+    secp256k1::pubkey secret_to_public (bool, const uint256 &x);
 
-    Bitcoin::integer pubkey_compressed (const secp256k1::pubkey &x);
-    Bitcoin::integer pubkey_uncompressed (const secp256k1::pubkey &x);
+    bool pubkey_compressed (const secp256k1::pubkey &x);
+    bool pubkey_uncompressed (const secp256k1::pubkey &x);
 
     secp256k1::pubkey pubkey_compress (const secp256k1::pubkey &x);
     secp256k1::pubkey pubkey_decompress (const secp256k1::pubkey &x);

@@ -22,24 +22,24 @@ namespace Diophant {
 
     Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const uint256 &y);
 
-    Bitcoin::integer coord_equal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer coord_unequal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer coord_greater_equal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer coord_less_equal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer coord_greater (const uint256 &x, const uint256 &y);
-    Bitcoin::integer coord_less (const uint256 &x, const uint256 &y);
+    bool coord_equal (const uint256 &x, const uint256 &y);
+    bool coord_unequal (const uint256 &x, const uint256 &y);
+    bool coord_greater_equal (const uint256 &x, const uint256 &y);
+    bool coord_less_equal (const uint256 &x, const uint256 &y);
+    bool coord_greater (const uint256 &x, const uint256 &y);
+    bool coord_less (const uint256 &x, const uint256 &y);
 
     uint256 coord_negate (const uint256 &x);
     uint256 coord_plus (const uint256 &x, const uint256 &y);
     uint256 coord_minus (const uint256 &x, const uint256 &y);
     uint256 coord_times (const uint256 &x, const uint256 &y);
 
-    Bitcoin::integer secret_equal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer secret_unequal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer secret_greater_equal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer secret_less_equal (const uint256 &x, const uint256 &y);
-    Bitcoin::integer secret_greater (const uint256 &x, const uint256 &y);
-    Bitcoin::integer secret_less (const uint256 &x, const uint256 &y);
+    bool secret_equal (const uint256 &x, const uint256 &y);
+    bool secret_unequal (const uint256 &x, const uint256 &y);
+    bool secret_greater_equal (const uint256 &x, const uint256 &y);
+    bool secret_less_equal (const uint256 &x, const uint256 &y);
+    bool secret_greater (const uint256 &x, const uint256 &y);
+    bool secret_less (const uint256 &x, const uint256 &y);
 
     uint256 secret_negate (const uint256 &x);
     uint256 secret_plus (const uint256 &x, const uint256 &y);
@@ -56,8 +56,8 @@ namespace Diophant {
 
     uint256 coord_power (const uint256 &x, const uint256 &y);
 
-    Bitcoin::integer secret_valid (const uint256 &x);
-    Bitcoin::integer coord_valid (const uint256 &x);
+    bool secret_valid (const uint256 &x);
+    bool coord_valid (const uint256 &x);
 
 }
 

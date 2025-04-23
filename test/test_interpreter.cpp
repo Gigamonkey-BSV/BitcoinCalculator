@@ -22,6 +22,7 @@ namespace Diophant {
     // test whether the expression evaluates to the given expression or throws an error.
     void test_eval (std::string input, expression expect_eval);
     void test_eval (std::string input, bool expect_eval);
+    void test_eval (std::string input, std::string expect_eval);
 
     expression make_secret (uint256 u) {
         return secret::make (secp256k1::secret {uint256 {u}});
@@ -41,11 +42,11 @@ namespace Diophant {
     }
 
     expression True () {
-        return scriptnum::make (1);
+        return boolean::make (true);
     }
 
     expression False () {
-        return scriptnum::make (0);
+        return boolean::make (false);
     }
 
     expression And (expression a, expression b) {
@@ -165,6 +166,7 @@ namespace Diophant {
         test_eval (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
 
         // scriptnum cat
+        // TODO
 
         // arithmetic with secrets
         test ("-1", unary ('-', make_secret (1)),
@@ -201,6 +203,9 @@ namespace Diophant {
         test ("f _a := x");
         test ("f _a := x;");
         test ("f _a := x; y");
+
+        // coordinates
+        test_eval ("coord 1 + coord 2", std::string {"coord 3"});
 
 /*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5
@@ -319,6 +324,10 @@ namespace Diophant {
     void test_eval (std::string input, expression expect_eval) {
         expression ex = m.evaluate (read_line (input));
         EXPECT_EQ (ex, expect_eval) << "expected " << input << " to evaluate to " << expect_eval;
+    }
+
+    void test_eval (std::string input, std::string expect_eval) {
+        EXPECT_EQ (m.evaluate (read_line (input)), read_line (expect_eval)) << "expected " << input << " to evaluate to " << expect_eval;
     }
 
 }

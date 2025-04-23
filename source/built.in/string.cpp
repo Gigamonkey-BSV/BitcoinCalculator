@@ -2,12 +2,12 @@
 
 namespace Diophant {
 
-    Bitcoin::integer string_equal (const data::string &x, const data::string &y) {
-        return Bitcoin::integer {x == y};
+    bool string_equal (const data::string &x, const data::string &y) {
+        return x == y;
     }
 
-    Bitcoin::integer string_unequal (const data::string &x, const data::string &y) {
-        return Bitcoin::integer {x != y};
+    bool string_unequal (const data::string &x, const data::string &y) {
+        return x != y;
     }
 
     data::string string_cat (const data::string &x, const data::string &y) {

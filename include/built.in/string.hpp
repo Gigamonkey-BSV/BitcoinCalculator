@@ -16,11 +16,11 @@ namespace Diophant {
     std::tuple<data::string, data::string> string_split (const data::string &x, const Bitcoin::integer &y);
     std::tuple<data::string, data::string> string_split (const data::string &x, const uint256 &y);
 
-    Bitcoin::integer string_equal (const data::string &x, const data::string &y);
-    Bitcoin::integer string_unequal (const data::string &x, const data::string &y);
+    bool string_equal (const data::string &x, const data::string &y);
+    bool string_unequal (const data::string &x, const data::string &y);
 
     // size operations
-    data::string string_size (const data::string &x);
+    data::N string_size (const data::string &x);
 
 }
 

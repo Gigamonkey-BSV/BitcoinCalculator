@@ -209,7 +209,6 @@ namespace Diophant {
         template <typename atom> struct read_expression<tao_pegtl_grammar::call_op<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                std::cout << " parser reads call op " << in.string () << std::endl;
                 eval.call ();
             }
         };

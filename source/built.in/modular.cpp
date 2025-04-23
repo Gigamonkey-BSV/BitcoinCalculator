@@ -34,84 +34,84 @@ namespace Diophant {
     uint256 secp256k1_prime {"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"};
     uint256 secp256k1_order {"0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"};
 
-    Bitcoin::integer secret_valid (const uint256 &x) {
-        return Bitcoin::integer {x > 0 && x < secp256k1_order};
+    bool secret_valid (const uint256 &x) {
+        return x > 0 && x < secp256k1_order;
     }
 
-    Bitcoin::integer coord_valid (const uint256 &x) {
-        return Bitcoin::integer {x > 0 && x < secp256k1_prime};
+    bool coord_valid (const uint256 &x) {
+        return x > 0 && x < secp256k1_prime;
     }
 
-    Bitcoin::integer secret_equal (const uint256 &x, const uint256 &y) {
+    bool secret_equal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return Bitcoin::integer {x == y};
+        return x == y;
     }
 
-    Bitcoin::integer secret_unequal (const uint256 &x, const uint256 &y) {
+    bool secret_unequal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return Bitcoin::integer {x != y};
+        return x != y;
     }
 
-    Bitcoin::integer secret_greater_equal (const uint256 &x, const uint256 &y) {
+    bool secret_greater_equal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return Bitcoin::integer {x >= y};
+        return x >= y;
     }
 
-    Bitcoin::integer secret_less_equal (const uint256 &x, const uint256 &y) {
+    bool secret_less_equal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return Bitcoin::integer {x <= y};
+        return x <= y;
     }
 
-    Bitcoin::integer secret_greater (const uint256 &x, const uint256 &y) {
+    bool secret_greater (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return Bitcoin::integer {x > y};
+        return x > y;
     }
 
-    Bitcoin::integer secret_less (const uint256 &x, const uint256 &y) {
+    bool secret_less (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;
-        return Bitcoin::integer {x < y};
+        return x < y;
     }
 
-    Bitcoin::integer coord_equal (const uint256 &x, const uint256 &y) {
+    bool coord_equal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
         if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return Bitcoin::integer {x == y};
+        return x == y;
     }
 
-    Bitcoin::integer coord_unequal (const uint256 &x, const uint256 &y) {
+    bool coord_unequal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
         if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return Bitcoin::integer {x != y};
+        return x != y;
     }
 
-    Bitcoin::integer coord_greater_equal (const uint256 &x, const uint256 &y) {
+    bool coord_greater_equal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
         if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return Bitcoin::integer {x >= y};
+        return x >= y;
     }
 
-    Bitcoin::integer coord_less_equal (const uint256 &x, const uint256 &y) {
+    bool coord_less_equal (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
         if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return Bitcoin::integer {x <= y};
+        return x <= y;
     }
 
-    Bitcoin::integer coord_greater (const uint256 &x, const uint256 &y) {
+    bool coord_greater (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
         if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return Bitcoin::integer {x > y};
+        return x > y;
     }
 
-    Bitcoin::integer coord_less (const uint256 &x, const uint256 &y) {
+    bool coord_less (const uint256 &x, const uint256 &y) {
         if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
         if (y > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << y;
-        return Bitcoin::integer {x < y};
+        return x < y;
     }
 
     uint256 secret_negate (const uint256 &x) {

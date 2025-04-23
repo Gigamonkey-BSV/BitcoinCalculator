@@ -2,27 +2,27 @@
 
 namespace Diophant {
 
-    Bitcoin::integer pubkey_equal (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
+    bool pubkey_equal (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
         return x == y;
     }
 
-    Bitcoin::integer pubkey_identical (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
+    bool pubkey_identical (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
         return x != y;
     }
 
-    Bitcoin::integer pubkey_unequal (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
+    bool pubkey_unequal (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
         return static_cast<const data::bytes &> (x) == static_cast<const data::bytes &> (y);
     }
 
-    Bitcoin::integer pubkey_valid (const secp256k1::pubkey &x) {
-        return Bitcoin::integer {x.valid ()};
+    bool pubkey_valid (const secp256k1::pubkey &x) {
+        return x.valid ();
     }
 
-    secp256k1::pubkey secret_to_public (const uint256 &x, const Bitcoin::integer &y) {
+    secp256k1::pubkey secret_to_public (bool y, const uint256 &x) {
         secp256k1::secret z {x};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";
 
-        return z.to_public (bool (y));
+        return z.to_public (y);
     }
 
     secp256k1::pubkey pubkey_negate (const secp256k1::pubkey &x) {
@@ -30,14 +30,14 @@ namespace Diophant {
         return -x;
     }
 
-    Bitcoin::integer pubkey_compressed (const secp256k1::pubkey &x) {
+    bool pubkey_compressed (const secp256k1::pubkey &x) {
         if (!x.valid ()) throw data::exception {} << "invalid public key";
-        return Bitcoin::integer {x.compressed ()};
+        return x.compressed ();
     }
 
-    Bitcoin::integer pubkey_uncompressed (const secp256k1::pubkey &x) {
+    bool pubkey_uncompressed (const secp256k1::pubkey &x) {
         if (!x.valid ()) throw data::exception {} << "invalid public key";
-        return Bitcoin::integer {!x.compressed ()};
+        return !x.compressed ();
     }
 
     secp256k1::pubkey pubkey_compress (const secp256k1::pubkey &x) {

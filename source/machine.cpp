@@ -296,6 +296,10 @@ namespace Diophant {
             return changed ? unop::make (u.Operand, body) : expression {};
         }
 
+        // the strategy here is to evaluate the head of the expression first, then
+        // evaluate all function calls. We evaluate arguments lazily, enough to
+        // determine their types if needed. Once there are no more function calls
+        // we can evaluate, we evaluate each of the arguments.
         expression evaluate_call (const machine &m, const call &c) {
             // first we evaluate function.
             bool changed = false;
@@ -312,8 +316,6 @@ namespace Diophant {
 
                 int min_args = 1;
 
-                // this only happens once because any further nested calls would
-                // have been flattened when the function was evaluated above.
                 if (const call *fx = dynamic_cast<const call *> (p); fx != nullptr) {
                     // we will skip the definitions that have as many args as
                     // in the inner call or fewer, since these would
@@ -391,32 +393,37 @@ namespace Diophant {
 
                 if (const value *v = dynamic_cast<const value *> (p); v != nullptr) {
                     expression next = (*v) (args);
-                    if (next == expression {}) break;
-                    return next;
+                    if (next != expression {}) return next;
                 }
-
-                // evaluate all arguments.
-                data::stack<expression> new_args {};
-                for (Expression ex : args) {
-                    expression next = m.evaluate (ex);
-                    new_args <<= next;
-                    if (next != ex) changed = true;
-                }
-
-                args = data::reverse (new_args);
 
                 break;
             }
 
             done:
+
+            // evaluate all arguments.
+            data::stack<expression> new_args {};
+            for (Expression ex : args) {
+                expression next = m.evaluate (ex);
+                new_args <<= next;
+                if (next != ex) changed = true;
+            }
+
+            args = data::reverse (new_args);
+
             return changed ? call::make (fun, args) : expression {};
         }
 
         expression evaluate_if (const machine &m, const dif &df) {
             auto If = m.evaluate (df.If);
+
+            if (const boolean *xx = dynamic_cast<const boolean *> (If.get ()); xx != nullptr)
+                return xx->Value ? df.Then : df.Else;
+
             if (const scriptnum *xx = dynamic_cast<const scriptnum *> (If.get ()); xx != nullptr)
                 return Bitcoin::nonzero (xx->Value) ? df.Then : df.Else;
-            else return {};
+
+            return {};
         }
 
         expression evaluate_let (const machine &m, const let &l) {

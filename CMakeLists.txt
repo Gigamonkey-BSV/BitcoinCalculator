@@ -73,6 +73,7 @@ add_library (calc
     source/nodes.cpp
     source/type.cpp
     source/pattern.cpp
+    source/built.in/bool.cpp
     source/built.in/scriptnum.cpp
     source/built.in/modular.cpp
     source/built.in/pubkey.cpp
