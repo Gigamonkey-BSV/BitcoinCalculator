@@ -10,8 +10,16 @@
 #include <gigamonkey/numbers.hpp>
 #include <data/io/wait_for_enter.hpp>
 
+namespace tao_pegtl_grammar {
+    struct read_definition : seq<ws, definition, ws, eof> {};
+    struct read_declaration : seq<ws, declaration, ws, eof> {};
+    struct read_expression : seq<opt<seq<ws, expression<atom>>>, ws, eof> {};
+}
+
 namespace Diophant {
     struct parser {
+        program complete () const;
+
         void push (Expression);
 
         void call ();
@@ -35,14 +43,19 @@ namespace Diophant {
         void unary (unary_operand op);
         void binary (binary_operand op);
 
+        void declare ();
+        void define ();
+
         bool valid ();
 
-        expression top ();
+    private:
 
         data::stack<expression> Exp;
         data::stack<data::stack<expression>> Back;
 
         data::stack<data::stack<symbol>> Symbols;
+
+        program Final;
 
     };
 
@@ -388,28 +401,29 @@ namespace Diophant {
             }
         };
 
-        template <> struct read_expression<tao_pegtl_grammar::definition> {
+        template <> struct read_expression<tao_pegtl_grammar::clause> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.binary (binary_operand::define);
+                eval.define ();
             }
         };
 
         template <> struct read_expression<tao_pegtl_grammar::declaration> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                std::cout << " we do not know how to handle a declaration yet"<< std::endl;
+                eval.declare ();
             }
         };
 
     }
 
-    expression read_line (const data::string &input) {
+    template <typename expr>
+    program read (const data::string &input) {
         parser p;
         tao::pegtl::memory_input<> in {input, "expression"};
 
         try {
-            if (!tao::pegtl::parse<tao_pegtl_grammar::program, rules::read_expression> (in, p)) {
+            if (!tao::pegtl::parse<expr, rules::read_expression> (in, p)) {
                 std::stringstream ss;
                 ss << input;
                 throw parse_error {ss.str ()};
@@ -421,7 +435,23 @@ namespace Diophant {
             throw parse_error {ss.str ()};
         }
 
-        return p.top ();
+        return p.complete ();
+    }
+
+    expression read_expression (const data::string &input) {
+        return read<tao_pegtl_grammar::read_expression> (input).first ().Predicate;
+    }
+
+    statement read_definition (const data::string &input) {
+        return read<tao_pegtl_grammar::read_definition> (input).first ();
+    }
+
+    pattern read_declaration (const data::string &input) {
+        return *read<tao_pegtl_grammar::read_declaration> (input).first ().Subject;
+    }
+
+    program read_line (const data::string &input) {
+        return read<tao_pegtl_grammar::program> (input);
     }
 
     void inline parser::call () {
@@ -433,9 +463,17 @@ namespace Diophant {
         Exp <<= x;
     }
 
-    expression inline parser::top () {
-        if (Exp.size () == 0) return nil::make ();
-        return Exp.first ();
+    program inline parser::complete () const {
+
+        if (Exp.size () > 1) throw data::exception {} << "parsing error: stack is " << Exp;
+
+        if (Final.size () == 0) {
+            if (Exp.size () == 0) return program {statement {nil::make ()}};
+            return program {statement {data::first (Exp)}};
+        }
+
+        if (Exp.size () == 0) return data::reverse (Final);
+        return data::reverse (Final << statement {Exp.first ()});
     }
 
     void parser::unary (unary_operand op) {
@@ -517,6 +555,17 @@ namespace Diophant {
         }, first (Symbols), data::rest (Exp))), data::first (Exp)));
         Symbols = rest (Symbols);
         Back = data::rest (Back);
+    }
+
+    // top entry on stack should be a declaration.
+    void parser::declare () {
+        Final <<= statement {pattern {data::first (Exp)}};
+        Exp = data::rest (Exp);
+    }
+
+    void parser::define () {
+        Final <<= statement {pattern {data::first (data::rest (Exp))}, data::first (Exp)};
+        Exp = data::rest (data::rest (Exp));
     }
 
 }

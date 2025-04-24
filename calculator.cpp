@@ -28,8 +28,10 @@ int main (int args, char **arg) {
             // for each input line, attempt to construct an expression
             // out of it and then evaluate it.
             try {
-                auto ee = Diophant::read_line (*input);
-                std::cout << "\n result: " << machine.evaluate (ee) << std::endl;
+                auto ee = machine.evaluate (Diophant::read_line (*input));
+                if (ee.Expression != Diophant::expression {})
+                    std::cout << "\n result: " << ee.Expression << std::endl;
+                machine = ee.Machine;
             } catch (Diophant::parse_error &e) {
                 std::cout << "Parse error: " << e.what () << "!" << std::endl;
             } catch (data::exception &e) {

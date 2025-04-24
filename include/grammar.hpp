@@ -17,24 +17,33 @@ namespace tao_pegtl_grammar {
     // the overall structure of a program.
     struct definition;
     struct declaration;
-    struct statement : seq<sor<definition, declaration>, ws, one<';'>> {};
+    struct statement : sor<definition, declaration> {};
+
+    struct subject;
+    struct declaration : seq<subject, ws, one<';'>> {};
+
+    // like a predicate except it has the subject and 'is'.
+    struct postdicate : seq<subject, ws, string<':', '='>> {};
+
+    struct clause;
+    struct definition : seq<clause, ws, one<';'>> {};
 
     struct object;
-
-    struct subject : seq<declaration, ws, string<':', '='>> {};
-    struct definition : seq<at<subject>, subject, ws, object> {};
+    struct clause : seq<at<postdicate>, postdicate, ws, object> {};
 
     struct program : seq<ws, // the minimal program is empty
         opt<seq<
+            // programs may have any number of declarations or definitions.
             star<seq<at<statement>, statement, ws>>,
+            // optionally may end with a definition or expression without a ; at the end.
             opt<seq<
-                sor<definition, object>, ws
+                sor<clause, object>, ws
             >>
         >>
         , eof> {};
 
     // a decimal lit is 0 by itself or the digits 1 through 9 followed by digits.
-    struct dec_lit : sor<one<'0'>, seq<range<'1', '9'>, star<digit>>> {};
+    struct dec_lit : seq<sor<one<'0'>, seq<range<'1', '9'>, star<digit>>>, not_at<one<'_'>>> {};
 
     struct hex_digit : seq<xdigit, xdigit> {};
 
@@ -45,7 +54,14 @@ namespace tao_pegtl_grammar {
     struct thirty_two_hex_digits : seq<sixteen_hex_digits, sixteen_hex_digits> {};
     struct sixty_four_hex_digits : seq<thirty_two_hex_digits, thirty_two_hex_digits> {};
 
-    struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>> {};
+    struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>, not_at<one<'_'>>> {};
+
+    struct number_lit : sor<dec_lit, hex_lit> {};
+
+    struct number_suffix : seq<one<'_'>, opt<one<'u'>>, number_lit, opt<sor<one<'l'>, one<'b'>>>> {};
+
+    struct fixed_number_lit : seq<number_lit, number_suffix> {};
+
     struct pubkey_lit : seq<one<'0'>,
         sor<seq<sor<one<'2'>, one<'3'>>, thirty_two_hex_digits>,
         seq<one<'4'>, sixty_four_hex_digits>>> {};
@@ -263,7 +279,7 @@ namespace tao_pegtl_grammar {
     struct such_that_op : seq<ws, string<'/',';'>, ws, type> {};
     struct such_that_expr : seq<pattern, opt<such_that_op>> {};
 
-    struct declaration : such_that_expr {};
+    struct subject : such_that_expr {};
 
 }
 

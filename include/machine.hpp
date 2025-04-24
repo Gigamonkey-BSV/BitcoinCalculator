@@ -7,6 +7,18 @@
 
 namespace Diophant {
 
+    struct statement {
+        data::maybe<pattern> Subject;
+        expression Predicate;
+        statement (Pattern subject) : Subject {subject}, Predicate {} {}
+        statement (Expression predicate): Subject {}, Predicate {predicate} {}
+        statement (Pattern subject, Expression predicate): Subject {subject}, Predicate {predicate} {}
+    };
+
+    std::ostream &operator << (std::ostream &, const statement &);
+
+    using program = data::stack<statement>;
+
     struct casted final : node {
         type Cast;
 
@@ -68,6 +80,11 @@ namespace Diophant {
 
         expression evaluate (Expression) const;
 
+        struct result;
+
+        result evaluate (const statement &) const;
+        result evaluate (program) const;
+
         bool operator == (const machine &) const;
 
         match_result match (data::stack<pattern>, data::stack<expression>) const;
@@ -86,6 +103,11 @@ namespace Diophant {
             SymbolDefinitions {xd}, UnaryDefinitions {ud}, BinaryDefinitions {bd} {}
         machine () {}
 
+    };
+
+    struct machine::result {
+        machine Machine;
+        expression Expression;
     };
 
     machine initialize ();
@@ -140,6 +162,13 @@ namespace Diophant {
 
     std::ostream inline &operator << (std::ostream &o, const transformation &tf) {
         return o << tf.Arguments << " -> " << tf.Value;
+    }
+
+    std::ostream inline &operator << (std::ostream &o, const statement &x) {
+        if (!bool (x.Subject)) return o << x.Predicate;
+        o << *x.Subject;
+        if (x.Predicate != expression {}) o << " := " << x.Predicate;
+        return o << ";";
     }
 
 }

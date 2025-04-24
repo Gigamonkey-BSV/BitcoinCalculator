@@ -1,7 +1,7 @@
 #ifndef BITCOIN_CALCULATOR_PARSE
 #define BITCOIN_CALCULATOR_PARSE
 
-#include <expression.hpp>
+#include <machine.hpp>
 
 namespace Diophant {
 
@@ -11,7 +11,13 @@ namespace Diophant {
             std::logic_error {std::string {} + "could not parse input: " + line} {};
     };
 
-    expression read_line (const data::string &in);
+    expression read_expression (const data::string &in);
+
+    pattern read_declaration (const data::string &in);
+
+    statement read_definition (const data::string &in);
+
+    program read_line (const data::string &in);
 
 }
 

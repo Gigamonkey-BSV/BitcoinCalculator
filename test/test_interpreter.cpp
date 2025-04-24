@@ -287,7 +287,7 @@ namespace Diophant {
 
     expression test_parse (std::string input, expression expect_read) {
         expression ex;
-        EXPECT_NO_THROW (ex = read_line (input)) << "testing input " << input;
+        EXPECT_NO_THROW (ex = read_line (input).first ().Predicate) << "testing input " << input;
         EXPECT_EQ (ex, expect_read) << "testing input " << input;
         return ex;
     }
@@ -313,21 +313,21 @@ namespace Diophant {
     }
 
     void test_eval (std::string input, bool expect_eval) {
-        expression ex = read_line (input);
+        auto n = read_line (input);
         if (expect_eval) {
-            EXPECT_NO_THROW (m.evaluate (ex));
+            EXPECT_NO_THROW (m.evaluate (n));
         } else {
-            EXPECT_THROW (m.evaluate (ex), data::exception);
+            EXPECT_THROW (m.evaluate (n), data::exception);
         }
     }
 
     void test_eval (std::string input, expression expect_eval) {
-        expression ex = m.evaluate (read_line (input));
+        auto [mm, ex] = m.evaluate (read_line (input));
         EXPECT_EQ (ex, expect_eval) << "expected " << input << " to evaluate to " << expect_eval;
     }
 
     void test_eval (std::string input, std::string expect_eval) {
-        EXPECT_EQ (m.evaluate (read_line (input)), read_line (expect_eval)) << "expected " << input << " to evaluate to " << expect_eval;
+        EXPECT_EQ (m.evaluate (read_line (input)).Expression, read_expression (expect_eval)) << "expected " << input << " to evaluate to " << expect_eval;
     }
 
 }

@@ -9,8 +9,6 @@ namespace Diophant {
 
     using Type = const type &;
 
-    using statement = type;
-
     enum class impartial_ordering : data::byte {
         equal = 1,
         disjoint = 2,

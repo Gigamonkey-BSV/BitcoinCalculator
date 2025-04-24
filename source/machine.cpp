@@ -5,6 +5,92 @@
 #include <values/leaf.hpp>
 
 namespace Diophant {
+
+    machine::result machine::evaluate (program p) const {
+        machine::result r {*this, expression {}};
+        program pp = p;
+
+        while (!data::empty (pp)) {
+            r = r.Machine.evaluate (data::first (pp));
+            pp = data::rest (pp);
+        }
+
+        return r;
+    }
+
+    machine::result machine::evaluate (const statement &x) const {
+        if (!bool (x.Subject)) return {*this, evaluate (x.Predicate)};
+
+        type of {};
+        expression as = x.Predicate;
+
+        const form *e = x.Predicate.get ();
+        if (e != nullptr) {
+            const node *nn = dynamic_cast<const node *> (e);
+            if (nn == nullptr) throw data::exception {} << "invalid definition";
+
+            const casted *xx = dynamic_cast<const casted *> (nn);
+            if (xx != nullptr) {
+                of = xx->Cast;
+                as = xx->Def;
+            }
+        }
+
+        const form *q = x.Subject->get ();
+
+        const node *n = dynamic_cast<const node *> (q);
+        if (n == nullptr) throw data::exception {} << "invalid definition";
+
+        if (const symbol *p = dynamic_cast<const symbol *> (n); n != nullptr) {
+            return {define (*p, of, as), expression {}};
+        }
+
+        if (const call *fx = dynamic_cast<const call *> (n); fx != nullptr) {
+            expression fun;
+            data::stack<data::stack<expression>> args;
+
+            while (true) {
+                fun = fx->Fun;
+                args <<= fx->Args;
+
+                const node *fn = dynamic_cast<const node *> (fun.get ());
+
+                if (fn == nullptr) throw data::exception {} << "invalid definition";
+
+                const symbol *z = dynamic_cast<const symbol *> (fn);
+
+                if (z != nullptr) {
+                    data::stack<pattern> drgs;
+
+                    while (!data::empty (args)) {
+                        drgs = drgs + data::stack<pattern> (data::reverse (data::first (args)));
+                        args = data::rest (args);
+                    }
+
+                    drgs = data::reverse (drgs);
+
+                    return {define (*z, of, drgs, as), expression {}};
+                }
+
+                fx = dynamic_cast<const call *> (fn);
+
+                if (fx == nullptr) throw data::exception {} << "invalid definition";
+            }
+        }
+
+        if (const unop *u = dynamic_cast<const unop *> (n); u != nullptr) {
+            return {define (u->Operand, of, u->Body, as), expression {}};
+        }
+
+        if (const binop *b = dynamic_cast<const binop *> (n); b != nullptr) {
+            if (b->Body.size () != 2) throw data::exception {} << "invalid definition";
+
+            return {define (b->Operand, of, b->Body[0], b->Body[1], as), expression {}};
+        }
+
+        throw data::exception {} << "invalid definition";
+    }
+
     namespace {
         machine::symbol_defs def (machine::symbol_defs, symbol x, type of, expression as);
         machine::symbol_defs def (Machine, machine::symbol_defs, symbol x, type of, data::stack<pattern> arg, expression as);
@@ -230,6 +316,12 @@ namespace Diophant {
             // first we evaluate function and args individually.
             bool changed = false;
 
+            if (b.Operand == binary_operand::define)
+                throw data::exception {} << "define operator found in expression. This is not allowed!";
+
+            if (b.Operand == binary_operand::apply)
+                return call::make (first (b.Body), rest (b.Body));
+
             data::list<expression> body;
             for (Expression old_arg : data::stack<expression> (b.Body)) {
                 expression new_arg = m.evaluate (old_arg);
@@ -238,13 +330,6 @@ namespace Diophant {
             }
 
             if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
-
-            if (b.Operand == binary_operand::define) {
-                throw data::exception {} << "we don't know how to make a user definition yet";
-            }
-
-            if (b.Operand == binary_operand::apply)
-                return call::make (first (body), rest (body));
 
             if (b.Operand == binary_operand::dot) {
                 auto fst = first (body);
