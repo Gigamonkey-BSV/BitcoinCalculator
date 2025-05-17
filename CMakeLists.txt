@@ -64,7 +64,7 @@ find_package (data CONFIG REQUIRED)
 
 find_package (gigamonkey CONFIG REQUIRED)
 
-add_library (calc
+add_library (bitcoin_calculator
     source/initialize.cpp
     source/machine.cpp
     source/replace.cpp
@@ -74,6 +74,7 @@ add_library (calc
     source/type.cpp
     source/pattern.cpp
     source/built.in/bool.cpp
+    source/built.in/numbers.cpp
     source/built.in/scriptnum.cpp
     source/built.in/modular.cpp
     source/built.in/pubkey.cpp
@@ -83,22 +84,22 @@ add_library (calc
     source/values/list.cpp
 )
 
-target_link_libraries (calc PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
-target_include_directories (calc PUBLIC include)
+target_link_libraries (bitcoin_calculator PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
+target_include_directories (bitcoin_calculator PUBLIC include)
 
-target_compile_features (calc PUBLIC cxx_std_20)
-set_target_properties (calc PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features (bitcoin_calculator PUBLIC cxx_std_20)
+set_target_properties (bitcoin_calculator PROPERTIES CXX_EXTENSIONS OFF)
 
 add_executable (BitcoinCalc calculator.cpp)
 
-target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh calc Gigamonkey::gigamonkey Data::data)
+target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh bitcoin_calculator Gigamonkey::gigamonkey Data::data)
 target_include_directories (BitcoinCalc PUBLIC include)
 
 target_compile_features (BitcoinCalc PUBLIC cxx_std_20)
 set_target_properties (BitcoinCalc PROPERTIES CXX_EXTENSIONS OFF)
 
 install (DIRECTORY include/ DESTINATION include)
-install (TARGETS BitcoinCalc)
+install (TARGETS bitcoin_calculator)
 
 # Check if GTests is installed. If not, install it
 option (PACKAGE_TESTS "Build the tests" ON)
@@ -118,3 +119,13 @@ if (PACKAGE_TESTS)
   add_subdirectory (test)
 endif ()
 
+# Default to Debug if no build type is specified
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set (CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif ()
+
+# Optional: Show message
+message (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+set (CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set (CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")

@@ -20,6 +20,7 @@ namespace Diophant {
 
     machine::result machine::evaluate (const statement &x) const {
         if (!bool (x.Subject)) return {*this, evaluate (x.Predicate)};
+        std::cout << "evaluate statement: " << *x.Subject << " := " << x.Predicate << std::endl;
 
         type of {};
         expression as = x.Predicate;
@@ -41,7 +42,7 @@ namespace Diophant {
         const node *n = dynamic_cast<const node *> (q);
         if (n == nullptr) throw data::exception {} << "invalid definition";
 
-        if (const symbol *p = dynamic_cast<const symbol *> (n); n != nullptr) {
+        if (const symbol *p = dynamic_cast<const symbol *> (n); p != nullptr) {
             return {define (*p, of, as), expression {}};
         }
 
@@ -504,9 +505,6 @@ namespace Diophant {
 
             if (const boolean *xx = dynamic_cast<const boolean *> (If.get ()); xx != nullptr)
                 return xx->Value ? df.Then : df.Else;
-
-            if (const scriptnum *xx = dynamic_cast<const scriptnum *> (If.get ()); xx != nullptr)
-                return Bitcoin::nonzero (xx->Value) ? df.Then : df.Else;
 
             return {};
         }

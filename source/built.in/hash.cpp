@@ -1,42 +1,29 @@
-#include <built.in/base58.hpp>
+#include <built.in/hash.hpp>
 #include <gigamonkey/hash.hpp>
 
 namespace Diophant {
-
-    uint256 SHA2_256 (const Bitcoin::integer &key) {
-        return data::crypto::SHA2_256 (key);
+    data::uint128_little SHA1_256 (const data::bytes &m) {
+        return data::crypto::SHA1 (m);
     }
 
-    uint256 SHA2_256 (const data::string &key) {
-        return data::crypto::SHA2_256 (key);
+    data::uint256_little SHA2_256 (const data::bytes &m) {
+        return data::crypto::SHA2_256 (m);
     }
 
-    uint256 SHA3_256 (const Bitcoin::integer &key) {
-        return data::crypto::SHA3_256 (key);
+    data::uint256_little SHA3_256 (const data::bytes &m) {
+        return data::crypto::SHA3_256 (m);
     }
 
-    uint256 SHA3_256 (const data::string &key) {
-        return data::crypto::SHA3_256 (key);
+    data::uint160_little RIPMD160 (const data::bytes &m) {
+        return data::crypto::RIPEMD_160 (m);
     }
 
-    uint256 Hash256 (const Bitcoin::integer &key) {
-        return data::crypto::Bitcoin_256 (key);
+    data::uint256_little Hash256 (const data::bytes &m) {
+        return data::crypto::Bitcoin_256 (m);
     }
 
-    uint256 Hash256 (const data::string &key) {
-        return data::crypto::Bitcoin_256 (key);
-    }
-
-    Bitcoin::integer Hash160 (const Bitcoin::integer &key) {
-        return Bitcoin::integer::read (data::crypto::Bitcoin_160 (key));
-    }
-
-    Bitcoin::integer Hash160 (const data::string &key) {
-        return Bitcoin::integer::read (data::crypto::Bitcoin_160 (key));
-    }
-
-    Bitcoin::integer Hash160 (const secp256k1::pubkey &key) {
-        return Bitcoin::integer::read (data::crypto::Bitcoin_160 (key));
+    data::uint160_little Hash160 (const data::bytes &m) {
+        return data::crypto::Bitcoin_160 (m);
     }
 
 }

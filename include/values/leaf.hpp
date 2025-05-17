@@ -7,8 +7,6 @@
 namespace Diophant {
 
     namespace secp256k1 = Gigamonkey::secp256k1;
-    using uint256 = data::uint256_little;
-    using uint512 = data::uint512_little;
 
     template <typename T> struct leaf final : value {
         T Value;
@@ -36,15 +34,107 @@ namespace Diophant {
 
     using natural = leaf<data::N>;
     using integer = leaf<data::Z>;
-    using rational = leaf<data::Q>;
+
+    using uint8 = leaf<uint8_t>;
+    using int8 = leaf<int8_t>;
+    using uint8_little = leaf<uint8_t>;
+    using int8_little = leaf<int8_t>;
+    using uint8_big = leaf<uint8_t>;
+    using int8_big = leaf<int8_t>;
+
+    using uint16 = leaf<data::uint16>;
+    using int16 = leaf<data::int16>;
+    using uint16_little = leaf<data::uint16_little>;
+    using int16_little = leaf<data::int16_little>;
+    using uint16_big = leaf<data::uint16_big>;
+    using int16_big = leaf<data::int16_big>;
+
+    using uint24 = leaf<data::uint24_little>;
+    using int24 = leaf<data::int24_little>;
+    using uint24_little = leaf<data::uint24_little>;
+    using int24_little = leaf<data::int24_little>;
+    using uint24_big = leaf<data::uint24_big>;
+    using int24_big = leaf<data::int24_big>;
+
+    using uint32 = leaf<data::uint32>;
+    using int32 = leaf<data::int32>;
+    using uint32_little = leaf<data::uint32_little>;
+    using int32_little = leaf<data::int32_little>;
+    using uint32_big = leaf<data::uint32_big>;
+    using int32_big = leaf<data::int32_big>;
+
+    using uint64 = leaf<data::uint64>;
+    using int64 = leaf<data::int64>;
+    using uint64_little = leaf<data::uint64_little>;
+    using int64_little = leaf<data::int64_little>;
+    using uint64_big = leaf<data::uint64_big>;
+    using int64_big = leaf<data::int64_big>;
+
+    using uint80 = leaf<data::uint80>;
+    using int80 = leaf<data::int80>;
+    using uint80_little = leaf<data::uint80_little>;
+    using int80_little = leaf<data::int80_little>;
+    using uint80_big = leaf<data::uint80_big>;
+    using int80_big = leaf<data::int80_big>;
+
+    using uint128 = leaf<data::uint128>;
+    using int128 = leaf<data::int128>;
+    using uint128_little = leaf<data::uint128_little>;
+    using int128_little = leaf<data::int128_little>;
+    using uint128_big = leaf<data::uint128_big>;
+    using int128_big = leaf<data::int128_big>;
+
+    using uint160 = leaf<data::uint160>;
+    using int160 = leaf<data::int160>;
+    using uint160_little = leaf<data::uint160_little>;
+    using int160_little = leaf<data::int160_little>;
+    using uint160_big = leaf<data::uint160_big>;
+    using int160_big = leaf<data::int160_big>;
+
+    using uint224 = leaf<data::uint224>;
+    using int224 = leaf<data::int224>;
+    using uint224_little = leaf<data::uint224_little>;
+    using int224_little = leaf<data::int224_little>;
+    using uint224_big = leaf<data::uint224_big>;
+    using int224_big = leaf<data::int224_big>;
+
+    using uint256 = leaf<data::uint256>;
+    using int256 = leaf<data::int256>;
+    using uint256_little = leaf<data::uint256_little>;
+    using int256_little = leaf<data::int256_little>;
+    using uint256_big = leaf<data::uint256_big>;
+    using int256_big = leaf<data::int256_big>;
+
+    using uint320 = leaf<data::uint320>;
+    using int320 = leaf<data::int320>;
+    using uint320_little = leaf<data::uint320_little>;
+    using int320_little = leaf<data::int320_little>;
+    using uint320_big = leaf<data::uint320_big>;
+    using int320_big = leaf<data::int320_big>;
+
+    using uint448 = leaf<data::uint448>;
+    using int448 = leaf<data::int448>;
+    using uint448_little = leaf<data::uint448_little>;
+    using int448_little = leaf<data::int448_little>;
+    using uint448_big = leaf<data::uint448_big>;
+    using int448_big = leaf<data::int448_big>;
+
+    using uint512 = leaf<data::uint512>;
+    using int512 = leaf<data::int512>;
+    using uint512_little = leaf<data::uint512_little>;
+    using int512_little = leaf<data::int512_little>;
+    using uint512_big = leaf<data::uint512_big>;
+    using int512_big = leaf<data::int512_big>;
+
+    template <typename Z> using rational = leaf<data::math::fraction<Z>>;
 
     using boolean = leaf<bool>;
     using byte = leaf<data::byte>;
+    using bytes = leaf<data::bytes>;
     using string = leaf<data::string>;
-    using scriptnum = leaf<Bitcoin::integer>;
     using pubkey = leaf<secp256k1::pubkey>;
-    using secret = leaf<uint256>;
     using sat = leaf<Bitcoin::satoshi>;
+    using scriptnum = leaf<Bitcoin::integer>;
     template <typename... X> using tuple = leaf<std::tuple<X...>>;
     template <typename X> using stack = leaf<data::stack<X>>;
     template <typename Y, typename ... X> using built_in_func = leaf<Y (*)(X...)>;
@@ -58,7 +148,7 @@ namespace Diophant {
 
         template <> struct base_type<bool> {
             type operator () () {
-                return symbol::make ("boolean");
+                return symbol::make ("bool");
             }
         };
 
@@ -68,9 +158,157 @@ namespace Diophant {
             }
         };
 
+        template <> struct base_type<data::int8> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (8))});
+            }
+        };
+
+        template <> struct base_type<data::uint16> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (16))});
+            }
+        };
+
+        template <> struct base_type<data::int16> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (16))});
+            }
+        };
+
+        template <> struct base_type<data::uint32> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (32))});
+            }
+        };
+
+        template <> struct base_type<data::int32> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (32))});
+            }
+        };
+
+        template <> struct base_type<data::uint64> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (64))});
+            }
+        };
+
+        template <> struct base_type<data::int64> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (64))});
+            }
+        };
+
+        template <std::size_t bytes>
+        struct base_type<data::endian_integral<false, data::endian::order::little, bytes>> {
+            type operator () () {
+                return call::make (symbol::make ("uint_little"), {natural::make (data::N (bytes * 8))});
+            }
+        };
+
+        template <std::size_t bytes>
+        struct base_type<data::endian_integral<true, data::endian::order::little, bytes>> {
+            type operator () () {
+                return call::make (symbol::make ("int_little"), {natural::make (data::N (bytes * 8))});
+            }
+        };
+
+        template <std::size_t bytes>
+        struct base_type<data::endian_integral<false, data::endian::order::big, bytes>> {
+            type operator () () {
+                return call::make (symbol::make ("uint_big"), {natural::make (data::N (bytes * 8))});
+            }
+        };
+
+        template <std::size_t bytes>
+        struct base_type<data::endian_integral<true, data::endian::order::big, bytes>> {
+            type operator () () {
+                return call::make (symbol::make ("int_big"), {natural::make (data::N (bytes * 8))});
+            }
+        };
+
+        template <size_t size> struct base_type<data::uint_little<size>> {
+            type operator () () {
+                return call::make (symbol::make ("uint_little"), {natural::make (data::N (size * 8))});
+            }
+        };
+
+        template <size_t size> struct base_type<data::int_little<size>> {
+            type operator () () {
+                return call::make (symbol::make ("int_little"), {natural::make (data::N (size * 8))});
+            }
+        };
+
+        template <size_t size> struct base_type<data::uint_big<size>> {
+            type operator () () {
+                return call::make (symbol::make ("uint_big"), {natural::make (data::N (size * 8))});
+            }
+        };
+
+        template <size_t size> struct base_type<data::int_big<size>> {
+            type operator () () {
+                return call::make (symbol::make ("int_big"), {natural::make (data::N (size * 8))});
+            }
+        };
+
+        template <> struct base_type<data::uint128> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (128))});
+            }
+        };
+
+        template <> struct base_type<data::int128> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (128))});
+            }
+        };
+
+        template <> struct base_type<data::uint160> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (160))});
+            }
+        };
+
+        template <> struct base_type<data::int160> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (160))});
+            }
+        };
+
+        template <> struct base_type<data::uint256> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (256))});
+            }
+        };
+
+        template <> struct base_type<data::int256> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (256))});
+            }
+        };
+
+        template <> struct base_type<data::uint512> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (512))});
+            }
+        };
+
+        template <> struct base_type<data::int512> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (512))});
+            }
+        };
+
         template <> struct base_type<data::string> {
             type operator () () {
                 return symbol::make ("string");
+            }
+        };
+
+        template <> struct base_type<data::bytes> {
+            type operator () () {
+                return symbol::make ("bytes");
             }
         };
 
@@ -86,12 +324,6 @@ namespace Diophant {
             }
         };
 
-        template <> struct base_type<uint256> {
-            type operator () () {
-                return symbol::make ("secret");
-            }
-        };
-
         template <> struct base_type<data::N> {
             type operator () () {
                 return symbol::make ("natural");
@@ -101,12 +333,6 @@ namespace Diophant {
         template <> struct base_type<data::Z> {
             type operator () () {
                 return symbol::make ("integer");
-            }
-        };
-
-        template <> struct base_type<data::Q> {
-            type operator () () {
-                return symbol::make ("rational");
             }
         };
 
@@ -130,28 +356,28 @@ namespace Diophant {
         template <typename Y, typename X> struct base_type<Y (*)(const X &)> {
             type operator () () {
                 return binop::make (binary_operand::intuitionistic_implies,
-                                    base_type<X> {} (), base_type<Y> {} ());
+                    base_type<X> {} (), base_type<Y> {} ());
             }
         };
 
         template <typename Y, typename X> struct base_type<Y (*)(X)> {
             type operator () () {
                 return binop::make (binary_operand::intuitionistic_implies,
-                                    base_type<X> {} (), base_type<Y> {} ());
+                    base_type<X> {} (), base_type<Y> {} ());
             }
         };
 
         template <typename Z, typename X, typename ... Y> struct base_type<Z (*)(const X &, Y...)> {
             type operator () () {
                 return binop::make (binary_operand::intuitionistic_implies,
-                                    base_type<X> {} (), base_type<Z (*)(Y...)> {} ());
+                    base_type<X> {} (), base_type<Z (*)(Y...)> {} ());
             }
         };
 
         template <typename Z, typename X, typename ... Y> struct base_type<Z (*)(X, Y...)> {
             type operator () () {
                 return binop::make (binary_operand::intuitionistic_implies,
-                                    base_type<X> {} (), base_type<Z (*)(Y...)> {} ());
+                    base_type<X> {} (), base_type<Z (*)(Y...)> {} ());
             }
         };
 
@@ -178,9 +404,9 @@ namespace Diophant {
             }
         };
 
-        template <> struct write_leaf<uint256> {
-            std::ostream &operator () (std::ostream &o, const uint256 &t) {
-                return o << std::dec << t;
+        template <> struct write_leaf<bool> {
+            std::ostream &operator () (std::ostream &o, bool b) {
+                return o << std::boolalpha << b;
             }
         };
 
@@ -190,9 +416,39 @@ namespace Diophant {
             }
         };
 
-        template <> struct write_leaf<bool> {
-            std::ostream &operator () (std::ostream &o, bool b) {
-                return o << std::boolalpha << b;
+        template <> struct write_leaf<data::int8> {
+            std::ostream &operator () (std::ostream &o, const data::byte &t) {
+                return o << t;
+            }
+        };
+
+        template <std::integral X> struct write_leaf<X> {
+            std::ostream &operator () (std::ostream &o, X x) {
+                return o << std::dec << x;
+            }
+        };
+
+        template <> struct write_leaf<data::uint256_little> {
+            std::ostream &operator () (std::ostream &o, const data::uint256_little &n) {
+                return o << std::dec << n;
+            }
+        };
+
+        template <> struct write_leaf<data::uint160_little> {
+            std::ostream &operator () (std::ostream &o, const data::uint160_little &n) {
+                return o << std::dec << n;
+            }
+        };
+
+        template <> struct write_leaf<data::N> {
+            std::ostream &operator () (std::ostream &o, const data::N &n) {
+                return o << std::dec << n;
+            }
+        };
+
+        template <> struct write_leaf<data::Z> {
+            std::ostream &operator () (std::ostream &o, const data::Z &n) {
+                return o << std::dec << n;
             }
         };
 

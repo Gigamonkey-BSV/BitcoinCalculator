@@ -4,6 +4,43 @@
 
 namespace Diophant {
 
+    data::bytes scriptnum_size (const data::bytes &x) {
+        return Bitcoin::integer {x.size ()};
+    }
+
+    bool scriptnum_minimal (const data::bytes &x) {
+        return Bitcoin::is_minimal_number (x);
+    }
+
+    data::bytes scriptnum_minimal_size (const data::bytes &x) {
+        return Bitcoin::integer {Bitcoin::minimal_number_size (x)};
+    }
+
+    data::bytes scriptnum_minimize (const data::bytes &x) {
+        auto num = x;
+        Bitcoin::trim_number (num);
+        return num;
+    }
+
+    data::bytes scriptnum_resize (const data::bytes &x, const data::bytes &y) {
+        Bitcoin::integer size = Bitcoin::integer::read (y);
+        Bitcoin::integer minimal_size {Bitcoin::minimal_number_size (x)};
+        if (size < minimal_size) throw data::exception {} << "attempt to trim number below minimal size";
+        auto num = x;
+        Bitcoin::extend_number (num, static_cast<size_t> (data::int64 (size)));
+        return num;
+    }
+
+    data::bytes scriptnum_resize (const data::bytes &x, const data::N &y) {
+        size_t size = static_cast<size_t> (data::uint64 (y));
+        size_t minimal_size {Bitcoin::minimal_number_size (x)};
+        if (size < minimal_size) throw data::exception {} << "attempt to trim number below minimal size";
+        auto num = x;
+        Bitcoin::extend_number (num, size);
+        return num;
+    }
+
+
     Bitcoin::integer scriptnum_bool_not (const Bitcoin::integer &x) {
         return !x;
     }
@@ -99,57 +136,16 @@ namespace Diophant {
         return x % y;
     }
 
-    Bitcoin::integer scriptnum_size (const Bitcoin::integer &x) {
-        return Bitcoin::integer {x.size ()};
-    }
-
-    Bitcoin::integer scriptnum_is_minimal (const Bitcoin::integer &x) {
-        return Bitcoin::integer {is_minimal (x)};
-    }
-
-    Bitcoin::integer scriptnum_minimal_size (const Bitcoin::integer &x) {
-        return Bitcoin::integer {minimal_size (x)};
-    }
-
-    Bitcoin::integer scriptnum_minimal (const Bitcoin::integer &x) {
-        return Bitcoin::integer {trim (x)};
-    }
-
-    Bitcoin::integer scriptnum_resize (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return Bitcoin::integer {extend (x, static_cast<size_t> (data::int64 (y)))};
-    }
-
-    Bitcoin::integer scriptnum_cat (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return Bitcoin::cat (x, y);
-    }
-
-    Bitcoin::integer scriptnum_left (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return Bitcoin::integer {Bitcoin::left (x, static_cast<size_t> (data::int64 (y)))};
-    }
-
-    Bitcoin::integer scriptnum_right (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return Bitcoin::integer {Bitcoin::right (x, static_cast<size_t> (data::int64 (y)))};
-    }
-
-    Bitcoin::integer scriptnum_left_shift (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return Bitcoin::left_shift (x, static_cast<size_t> (data::int64 (y)));
-    }
-
-    Bitcoin::integer scriptnum_right_shift (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return Bitcoin::right_shift (x, static_cast<size_t> (data::int64 (y)));
-    }
-
     Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const Bitcoin::integer &y) {
         return data::pow (x, y);
     }
 
-    std::tuple<Bitcoin::integer, Bitcoin::integer> scriptnum_split (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        auto sp = Bitcoin::split (x, static_cast<size_t> (data::int64 (y)));
-        return {Bitcoin::integer::read (sp.first), Bitcoin::integer::read (sp.second)};
+    Bitcoin::integer scriptnum_abs (const Bitcoin::integer &x) {
+        return data::abs (x);
     }
 
-    Bitcoin::integer bitcoin_checksum (const Bitcoin::integer &x) {
-        return Bitcoin::integer::read (bitcoin_checksum (x));
+    Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const data::N &y) {
+        return data::pow (x, y);
     }
 
 }

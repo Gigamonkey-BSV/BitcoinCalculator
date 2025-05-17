@@ -56,11 +56,15 @@ namespace tao_pegtl_grammar {
 
     struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>, not_at<one<'_'>>> {};
 
-    struct number_lit : sor<dec_lit, hex_lit> {};
+    struct dec_or_hex : sor<dec_lit, hex_lit> {};
 
-    struct number_suffix : seq<one<'_'>, opt<one<'u'>>, number_lit, opt<sor<one<'l'>, one<'b'>>>> {};
+    struct unsigned_flag : one<'u'> {};
+    struct fixed_size_flag : dec_or_hex {};
+    struct big_endian_flag : one<'b'> {};
+    struct little_endian_flag : one<'l'> {};
+    struct number_suffix : seq<one<'_'>, opt<unsigned_flag>, opt<fixed_size_flag>, opt<sor<big_endian_flag, little_endian_flag>>> {};
 
-    struct fixed_number_lit : seq<number_lit, number_suffix> {};
+    struct number_lit : seq<dec_or_hex, number_suffix> {};
 
     struct pubkey_lit : seq<one<'0'>,
         sor<seq<sor<one<'2'>, one<'3'>>, thirty_two_hex_digits>,
@@ -143,7 +147,7 @@ namespace tao_pegtl_grammar {
     struct close_struct : one<'}'> {};
     template <typename atom> struct dstruct : seq<open_struct, empty_sequence<rule<atom>>, close_struct> {};
 
-    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'$'>> {};
+    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'`'>> {};
     struct right_unary_operand : sor<one<'!'>> {};
 
     template <typename atom> struct call_op : seq<plus<white>, atom> {};

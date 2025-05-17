@@ -6,8 +6,8 @@
 namespace Diophant {
 
     // base 58
-    uint256 decode_base_58 (const data::string &x);
-    data::string encode_base_58 (const uint256 &x);
+    data::uint256_little decode_base_58 (const data::string &x);
+    data::string encode_base_58 (const data::uint256_little &x);
 
     std::tuple<data::byte, Bitcoin::integer> decode_base_58_check (const data::string &x);
     data::string encode_base_58_check (const data::byte &, const Bitcoin::integer &);

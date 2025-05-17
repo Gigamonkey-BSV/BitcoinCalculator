@@ -18,7 +18,7 @@ namespace Diophant {
         return x.valid ();
     }
 
-    secp256k1::pubkey secret_to_public (bool y, const uint256 &x) {
+    secp256k1::pubkey secret_to_public (bool y, const data::uint256_little &x) {
         secp256k1::secret z {x};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";
 
@@ -56,14 +56,14 @@ namespace Diophant {
         return x + y;
     }
 
-    secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const uint256 &y) {
+    secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const data::uint256_little &y) {
         if (!x.valid ()) throw data::exception {} << "invalid public key";
         secp256k1::secret z {y};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";
         return x * z;
     }
 
-    secp256k1::pubkey pubkey_times (const uint256 &x, const secp256k1::pubkey &y) {
+    secp256k1::pubkey pubkey_times (const data::uint256_little &x, const secp256k1::pubkey &y) {
         if (!y.valid ()) throw data::exception {} << "invalid public key";
         secp256k1::secret z {x};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";

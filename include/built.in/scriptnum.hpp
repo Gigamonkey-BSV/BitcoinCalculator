@@ -7,16 +7,18 @@ namespace Diophant {
 
     namespace Bitcoin = Gigamonkey::Bitcoin;
 
-    Bitcoin::integer scriptnum_cat (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_left (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_right (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    // return the size of a scriptnum as a scriptnum
+    data::bytes scriptnum_size (const data::bytes &x);
 
-    Bitcoin::integer scriptnum_left_shift (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_right_shift (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    bool scriptnum_minimal (const data::bytes &x);
 
-    std::tuple<Bitcoin::integer, Bitcoin::integer> scriptnum_split (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    // return the minimal size of a scriptnum as a scriptnum.
+    data::bytes scriptnum_minimal_size (const data::bytes &x);
 
-    Bitcoin::integer bitcoin_checksum (const Bitcoin::integer &x);
+    // trim the scriptnum to minimal size.
+    data::bytes scriptnum_minimize (const data::bytes &x);
+    data::bytes scriptnum_resize (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_resize (const data::bytes &x, const data::N &y);
 
     // bool operations
     Bitcoin::integer scriptnum_bool_not (const Bitcoin::integer &x);
@@ -38,12 +40,6 @@ namespace Diophant {
     Bitcoin::integer scriptnum_greater (const Bitcoin::integer &x, const Bitcoin::integer &y);
     Bitcoin::integer scriptnum_less (const Bitcoin::integer &x, const Bitcoin::integer &y);
 
-    Bitcoin::integer scriptnum_size (const Bitcoin::integer &x);
-    Bitcoin::integer scriptnum_minimal_size (const Bitcoin::integer &x);
-    Bitcoin::integer scriptnum_minimal (const Bitcoin::integer &x);
-    Bitcoin::integer scriptnum_is_minimal (const Bitcoin::integer &x);
-    Bitcoin::integer scriptnum_resize (const Bitcoin::integer &x, const Bitcoin::integer &y);
-
     // arithmetic
     Bitcoin::integer scriptnum_negate (const Bitcoin::integer &x);
     Bitcoin::integer scriptnum_plus (const Bitcoin::integer &x, const Bitcoin::integer &y);
@@ -52,9 +48,9 @@ namespace Diophant {
     Bitcoin::integer scriptnum_divide (const Bitcoin::integer &x, const Bitcoin::integer &y);
     Bitcoin::integer scriptnum_mod (const Bitcoin::integer &x, const Bitcoin::integer &y);
 
-    Bitcoin::integer scriptnum_abs (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_abs (const Bitcoin::integer &x);
 
-    Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const data::N &y);
 
 }
 

@@ -59,22 +59,77 @@ namespace Diophant {
 
     };
 
+    struct number_parser {
+        std::string Value {};
+        data::maybe<std::string> Fixed {};
+        bool UnsignedFlag {false};
+        data::maybe<data::endian::order> Endian;
+        expression result ();
+    };
+
     namespace rules {
         namespace pegtl = tao::pegtl;
 
+        template <typename Rule> struct read_number : pegtl::nothing<Rule> {};
+
+        template <> struct read_number<tao_pegtl_grammar::number_lit> {
+            template <typename Input>
+            static void apply (const Input &in, number_parser &eval) {
+                eval.Value = in.string ();
+            }
+        };
+
+        template <> struct read_number<tao_pegtl_grammar::fixed_size_flag> {
+            template <typename Input>
+            static void apply (const Input &in, number_parser &eval) {
+                eval.Fixed = in.string ();
+            }
+        };
+
+        template <> struct read_number<tao_pegtl_grammar::unsigned_flag> {
+            template <typename Input>
+            static void apply (const Input &in, number_parser &eval) {
+                eval.UnsignedFlag = true;
+            }
+        };
+
+        template <> struct read_number<tao_pegtl_grammar::big_endian_flag> {
+            template <typename Input>
+            static void apply (const Input &in, number_parser &eval) {
+                eval.Endian = data::endian::big;
+            }
+        };
+
+        template <> struct read_number<tao_pegtl_grammar::little_endian_flag> {
+            template <typename Input>
+            static void apply (const Input &in, number_parser &eval) {
+                eval.Endian = data::endian::little;
+            }
+        };
+
         template <typename Rule> struct read_expression : pegtl::nothing<Rule> {};
+
+        template <> struct read_expression<tao_pegtl_grammar::number_lit> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                tao::pegtl::memory_input<> num {in.string (), "expression"};
+                number_parser p {};
+                tao::pegtl::parse<tao_pegtl_grammar::number_lit, read_number> (num, p);
+                eval.push (p.result ());
+            }
+        };
 
         template <> struct read_expression<tao_pegtl_grammar::dec_lit> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.push (secret::make (secp256k1::secret {uint256 {in.string_view ()}}));
+                eval.push (natural::make (data::N {in.string_view ()}));
             }
         };
 
         template <> struct read_expression<tao_pegtl_grammar::hex_lit> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.push (scriptnum::make (Bitcoin::integer {in.string_view ()}));
+                eval.push (call::make (symbol::make ("scriptnum"), {bytes::make (Bitcoin::integer::read (in.string_view ()))}));
             }
         };
 

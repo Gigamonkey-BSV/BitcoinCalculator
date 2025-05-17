@@ -12,5 +12,5 @@ add_executable (unit_tests
 )
 
 target_link_libraries (unit_tests
-  PRIVATE gigamonkey calc Gigamonkey::gigamonkey Data::data gtest_main gmock)
+  PRIVATE gigamonkey bitcoin_calculator Gigamonkey::gigamonkey Data::data gtest_main gmock)
 gtest_discover_tests (unit_tests)

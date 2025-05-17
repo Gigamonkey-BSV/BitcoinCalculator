@@ -24,8 +24,16 @@ namespace Diophant {
     void test_eval (std::string input, bool expect_eval);
     void test_eval (std::string input, std::string expect_eval);
 
-    expression make_secret (uint256 u) {
-        return secret::make (secp256k1::secret {uint256 {u}});
+    expression make_natural (data::N n) {
+        return natural::make (n);
+    }
+
+    expression make_integer (data::Z n) {
+        return integer::make (n);
+    }
+
+    expression make_secret (data::uint256 u) {
+        return call::make (symbol::make ("secret"), {uint256::make (u)});
     }
 
     expression make_scriptnum (const std::string &x) {
@@ -110,8 +118,8 @@ namespace Diophant {
         test ("false || true", Or (symbol::make ("false"), symbol::make ("true")), True ());
 
         // number formats.
-        test ("0", make_secret (0), make_secret (0));
-        test ("9876543", make_secret (9876543), make_secret (9876543));
+        test ("0", make_natural (0), make_natural (0));
+        test ("9876543", make_natural (9876543), make_natural (9876543));
 
         // invalid dec number
         test ("0923", false);
@@ -145,10 +153,10 @@ namespace Diophant {
         test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
 
         // unary operators
-        test ("-0", unary ('-', make_secret (0)), make_secret (0));
-        test ("- 0", unary ('-', make_secret (0)), make_secret (0));
+        test ("-0", unary ('-', make_integer (0)), make_integer (0));
+        test ("- 0", unary ('-', make_integer (0)), make_integer (0));
 
-        test ("!8", unary ('!', make_secret (8)));
+        test ("!8", unary ('!', make_natural (8)));
         test ("8+", false);
         test ("8-", false);
 
@@ -169,13 +177,13 @@ namespace Diophant {
         // TODO
 
         // arithmetic with secrets
-        test ("-1", unary ('-', make_secret (1)),
-            make_secret (uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
+        test ("-secret 1", unary ('-', make_secret (1)),
+            make_secret (data::uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
         test ("0 + 0");
         test ("1 + 0");
         test ("1 + 1");
 
-        test ("123 + 234", binary (binary_operand::plus, make_secret (123), make_secret (234)), make_secret (357));
+        test ("123 + 234", binary (binary_operand::plus, make_natural (123), make_natural (234)), make_natural (357));
 
         // these should both have a divide by zero error on evaluation.
         test ("1 / 0");
@@ -187,14 +195,14 @@ namespace Diophant {
 
         // base 58
         test_eval ("base58_encode 1234", string::make ("NH"));
-        test_eval (R"(base58_decode "NH")", make_secret (1234));
+        test_eval (R"(base58_decode "NH")", make_natural (1234));
 
-        test_eval (R"(verify (to_public false 123) (SHA2_256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
+        test_eval (R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") 0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
 
         test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
         test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
 
-        test_eval (R"({x -> 3, y -> 5}.x)", make_secret (3));
+        test_eval (R"({x -> 3, y -> 5}.x)", make_natural (3));
 
         test ("f");
         test ("f;");

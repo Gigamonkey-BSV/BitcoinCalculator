@@ -3,14 +3,14 @@
 
 namespace Diophant {
 
-    uint256 decode_base_58 (const data::string &x) {
-        data::maybe<uint256> result = data::encoding::base58::decode<uint256> (x);
+    data::uint256_little decode_base_58 (const data::string &x) {
+        data::maybe<data::uint256_little> result = data::encoding::base58::decode<data::uint256_little> (x);
         if (!bool (result)) throw data::exception {} << "invalid base 58 string";
         return *result;
     }
 
-    data::string encode_base_58 (const uint256 &x) {
-        return data::encoding::base58::encode<uint256> (x);
+    data::string encode_base_58 (const data::uint256_little &x) {
+        return data::encoding::base58::encode<data::uint256_little> (x);
     }
 
     data::string encode_base_58_check (const data::byte &b, const Bitcoin::integer &z) {

@@ -4,17 +4,17 @@
 #include <built.in/pubkey.hpp>
 
 namespace Diophant {
+    data::uint128_little SHA1_256 (const data::bytes &m);
 
-    uint256 SHA2_256 (const Bitcoin::integer &key);
-    uint256 SHA2_256 (const data::string &key);
-    uint256 SHA3_256 (const Bitcoin::integer &key);
-    uint256 SHA3_256 (const data::string &key);
-    uint256 Hash256 (const Bitcoin::integer &key);
-    uint256 Hash256 (const data::string &key);
+    data::uint256_little SHA2_256 (const data::bytes &m);
 
-    Bitcoin::integer Hash160 (const Bitcoin::integer &key);
-    Bitcoin::integer Hash160 (const data::string &key);
-    Bitcoin::integer Hash160 (const secp256k1::pubkey &);
+    data::uint256_little SHA3_256 (const data::bytes &m);
+
+    data::uint160_little RIPMD160 (const data::bytes &m);
+
+    data::uint256_little Hash256 (const data::bytes &m);
+
+    data::uint160_little Hash160 (const data::bytes &m);
 
 }
 
