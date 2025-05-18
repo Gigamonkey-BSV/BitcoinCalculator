@@ -11,7 +11,11 @@ endif ()
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake" CACHE STRING "Modules for CMake" FORCE)
 
-project (BitcoinCalc CXX)
+project (
+  BitcoinCalc
+  VERSION 0.0.2
+  LANGUAGES CXX
+)
 
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -64,7 +68,8 @@ find_package (data CONFIG REQUIRED)
 
 find_package (gigamonkey CONFIG REQUIRED)
 
-add_library (bitcoin_calculator
+add_library (
+    diophant
     source/Diophant/initialize.cpp
     source/Diophant/machine.cpp
     source/Diophant/replace.cpp
@@ -84,22 +89,65 @@ add_library (bitcoin_calculator
     source/Diophant/values/list.cpp
 )
 
-target_link_libraries (bitcoin_calculator PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
-target_include_directories (bitcoin_calculator PUBLIC include)
+target_link_libraries (diophant PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
 
-target_compile_features (bitcoin_calculator PUBLIC cxx_std_20)
-set_target_properties (bitcoin_calculator PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories (diophant
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+target_compile_features (diophant PUBLIC cxx_std_20)
+set_target_properties (diophant PROPERTIES CXX_EXTENSIONS OFF)
 
 add_executable (BitcoinCalc calculator.cpp)
 
-target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh bitcoin_calculator Gigamonkey::gigamonkey Data::data)
+target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh diophant Gigamonkey::gigamonkey Data::data)
 target_include_directories (BitcoinCalc PUBLIC include)
 
 target_compile_features (BitcoinCalc PUBLIC cxx_std_20)
 set_target_properties (BitcoinCalc PROPERTIES CXX_EXTENSIONS OFF)
 
-install (DIRECTORY include/ DESTINATION include)
-install (TARGETS bitcoin_calculator)
+# copy include directory into install destination
+install (
+  DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install (
+  TARGETS diophant nlohmann_json argh
+  EXPORT diophantTargets
+  ARCHIVE
+)
+
+install (
+  EXPORT diophantTargets
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/diophant
+  FILE diophantTargets.cmake
+  NAMESPACE diophant::
+)
+
+include (CMakePackageConfigHelpers)
+
+# generate the config file that includes the exports
+configure_package_config_file (
+  ${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/diophantConfig.cmake"
+  INSTALL_DESTINATION "lib/cmake/diophant"
+  NO_SET_AND_CHECK_MACRO
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+write_basic_package_version_file (
+  "${CMAKE_CURRENT_BINARY_DIR}/diophantConfigVersion.cmake"
+  COMPATIBILITY AnyNewerVersion
+)
+
+install (FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/diophantConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/diophantConfigVersion.cmake
+  DESTINATION lib/cmake/diophant
+)
 
 # Check if GTests is installed. If not, install it
 option (PACKAGE_TESTS "Build the tests" ON)

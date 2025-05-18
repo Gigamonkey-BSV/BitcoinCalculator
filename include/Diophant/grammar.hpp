@@ -12,7 +12,7 @@ namespace tao_pegtl_grammar {
         seq<string<'/','/'>, star<seq<not_at<one<'\n'>>, ascii::print>>, one<'\n'>>> {};
 
     struct white : sor<one<' '>, one<'\t'>, one<'\n'>, comment> {};
-    struct ws : star<sor<white, comment>> {};
+    struct ws : star<white> {};
 
     // the overall structure of a program.
     struct definition;
@@ -65,6 +65,15 @@ namespace tao_pegtl_grammar {
     struct number_suffix : seq<one<'_'>, opt<unsigned_flag>, opt<fixed_size_flag>, opt<sor<big_endian_flag, little_endian_flag>>> {};
 
     struct number_lit : seq<dec_or_hex, number_suffix> {};
+
+    struct base58_char : sor<
+        ranges<'1', '9'>,                       // 1-9
+        ranges<'A', 'H'>,                       // A-H
+        ranges<'J', 'N'>,                       // J-N
+        ranges<'P', 'Z'>,                       // P-Z
+        ranges<'a', 'k'>,                       // a-k
+        ranges<'m', 'z'>                        // m-z
+    > {};
 
     struct pubkey_lit : seq<one<'0'>,
         sor<seq<sor<one<'2'>, one<'3'>>, thirty_two_hex_digits>,
