@@ -1,6 +1,6 @@
-#include <parse.hpp>
-#include <values/leaf.hpp>
-#include <values/lambda.hpp>
+#include <Diophant/parse.hpp>
+#include <Diophant/values/leaf.hpp>
+#include <Diophant/values/lambda.hpp>
 #include "gtest/gtest.h"
 
 namespace Diophant {

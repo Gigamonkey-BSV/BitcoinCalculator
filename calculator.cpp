@@ -1,7 +1,7 @@
 
-#include <replace.hpp>
-#include <machine.hpp>
-#include <parse.hpp>
+#include <Diophant/replace.hpp>
+#include <Diophant/machine.hpp>
+#include <Diophant/parse.hpp>
 
 using namespace data;
 

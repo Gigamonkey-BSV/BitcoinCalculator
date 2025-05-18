@@ -65,23 +65,23 @@ find_package (data CONFIG REQUIRED)
 find_package (gigamonkey CONFIG REQUIRED)
 
 add_library (bitcoin_calculator
-    source/initialize.cpp
-    source/machine.cpp
-    source/replace.cpp
-    source/parse.cpp
-    source/expression.cpp
-    source/nodes.cpp
-    source/type.cpp
-    source/pattern.cpp
-    source/built.in/bool.cpp
-    source/built.in/numbers.cpp
-    source/built.in/scriptnum.cpp
-    source/built.in/modular.cpp
-    source/built.in/pubkey.cpp
-    source/built.in/string.cpp
-    source/built.in/base58.cpp
-    source/built.in/hash.cpp
-    source/values/list.cpp
+    source/Diophant/initialize.cpp
+    source/Diophant/machine.cpp
+    source/Diophant/replace.cpp
+    source/Diophant/parse.cpp
+    source/Diophant/expression.cpp
+    source/Diophant/nodes.cpp
+    source/Diophant/type.cpp
+    source/Diophant/pattern.cpp
+    source/Diophant/built.in/bool.cpp
+    source/Diophant/built.in/numbers.cpp
+    source/Diophant/built.in/scriptnum.cpp
+    source/Diophant/built.in/modular.cpp
+    source/Diophant/built.in/pubkey.cpp
+    source/Diophant/built.in/string.cpp
+    source/Diophant/built.in/base58.cpp
+    source/Diophant/built.in/hash.cpp
+    source/Diophant/values/list.cpp
 )
 
 target_link_libraries (bitcoin_calculator PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
