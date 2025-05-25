@@ -15,9 +15,13 @@ namespace Diophant {
         // a nil expression
         expression ();
         expression (data::ptr<form> x);
+
         operator bool () const {
             return this->get () != nullptr;
         }
+
+        expression (const std::string &);
+        explicit operator std::string () const;
     };
 
     using Expression = const expression &;
@@ -25,6 +29,8 @@ namespace Diophant {
     bool operator == (Expression, Expression);
 
     std::ostream &operator << (std::ostream &, Expression);
+
+    std::string write (Expression);
 
     // includes patterns and symbols as well as concrete expressions.
     struct form {
@@ -49,6 +55,10 @@ namespace Diophant {
 
     inline expression::expression (): data::ptr<form> {} {}
     inline expression::expression (data::ptr<form> x): data::ptr<form> {x} {}
+
+    inline expression::operator std::string () const {
+        return write (*this);
+    }
 
 }
 

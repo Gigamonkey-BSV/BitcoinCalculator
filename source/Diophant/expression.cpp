@@ -2,8 +2,19 @@
 #include <Diophant/values/struct.hpp>
 #include <Diophant/nodes.hpp>
 #include <Diophant/pattern.hpp>
+#include <Diophant/parse.hpp>
 
 namespace Diophant {
+
+    expression::expression (const std::string &x) {
+        *this = read_expression (x);
+    }
+
+    std::string write (Expression ex) {
+        std::stringstream ss;
+        ss << ex;
+        return ss.str ();
+    }
 
     bool operator == (Expression A, Expression B) {
 
