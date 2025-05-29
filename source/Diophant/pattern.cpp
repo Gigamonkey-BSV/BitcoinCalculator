@@ -7,6 +7,7 @@ namespace Diophant {
     impartial_ordering pattern_compare (Machine m, Expression A, Expression B);
 
     impartial_ordering pattern_compare (Machine m, const node *a, const node *b) {
+
         if (const value *v = dynamic_cast<const value *> (a); v != nullptr) {
             const value *w = dynamic_cast<const value *> (b);
             if (w == nullptr) return impartial_ordering::disjoint;
@@ -59,7 +60,29 @@ namespace Diophant {
             return compare;
         }
 
-        throw data::exception {} << "incomplete method: pattern <=> ";
+        if (const call *fx = dynamic_cast<const call *> (a); fx != nullptr) {
+            const call *gx = dynamic_cast<const call *> (b);
+
+            if (gx == nullptr) return impartial_ordering::disjoint;
+            if (data::size (fx->Args) != data::size (gx->Args)) return impartial_ordering::disjoint;
+
+            data::stack<expression> j = fx->Args;
+            data::stack<expression> k = gx->Args;
+
+            impartial_ordering compare = pattern_compare (m, fx->Fun, gx->Fun);
+
+            while (!data::empty (j)) {
+                if (compare == impartial_ordering::disjoint) return impartial_ordering::disjoint;
+                compare = compare && pattern_compare (m, j.first (), k.first ());
+                j = data::rest (j);
+                k = data::rest (k);
+            }
+
+            return compare;
+
+        }
+
+        throw data::exception {} << "incomplete method: pattern " << a << " <=> " << b;
     }
 
     impartial_ordering pattern_compare (Machine m, const form *a, const node *b) {
@@ -76,7 +99,7 @@ namespace Diophant {
             return impartial_ordering::disjoint;
         }
 
-        throw data::exception {} << "incomplete method: pattern <=> ";
+        throw data::exception {} << "incomplete method: pattern " << a << " <=> " << b;
     }
 
     impartial_ordering pattern_compare (Machine m, Expression A, Expression B) {

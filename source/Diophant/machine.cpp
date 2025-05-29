@@ -6,6 +6,8 @@
 
 namespace Diophant {
 
+    LogStream cout {};
+
     machine::result machine::evaluate (program p) const {
         machine::result r {*this, expression {}};
         program pp = p;
@@ -20,7 +22,6 @@ namespace Diophant {
 
     machine::result machine::evaluate (const statement &x) const {
         if (!bool (x.Subject)) return {*this, evaluate (x.Predicate)};
-        std::cout << "evaluate statement: " << *x.Subject << " := " << x.Predicate << std::endl;
 
         type of {};
         expression as = x.Predicate;
@@ -571,26 +572,30 @@ namespace Diophant {
         }
 
         // we need to find a matching definition or add one in if it doesn't exist.
-        // if we find an equal definition we can stop. If we find a subset we can stop.
-        // if we find something incompatible we throw an error.
+        // if we find an equal definition we can stop. If we find a subset we can stop
+        // and insert the new definition there. If we find something incompatible we
+        // throw an error.
         data::stack<mtf> insert_def_into_stack (Machine m, data::exception excp, const data::stack<mtf> old, const mtf new_def) {
-            data::stack<mtf> z = old;
+            data::stack<mtf> defs = old;
+
+            // store definitions here which we have checked
+            // already and which should come before the new one.
             data::stack<mtf> back;
 
             const type &of = new_def.Value.Cast;
             const data::stack<pattern> args = new_def.Arguments;
 
             while (true) {
-                if (data::empty (z)) {
-                    z <<= new_def;
+                if (data::empty (defs)) {
+                    defs <<= new_def;
                     break;
                 }
 
-                const mtf &current = data::first (z);
+                const mtf &current = data::first (defs);
                 data::stack<pattern> old_args = current.Arguments;
 
                 if (data::size (current.Arguments) > data::size (args)) {
-                    z <<= new_def;
+                    defs <<= new_def;
                     break;
                 }
 
@@ -617,7 +622,7 @@ namespace Diophant {
                     if (comparison == impartial_ordering::nonempty_complements) throw excp;
 
                     if (comparison == impartial_ordering::subset || comparison == impartial_ordering::disjoint) {
-                        z <<= new_def;
+                        defs <<= new_def;
                         break;
                     }
 
@@ -627,16 +632,17 @@ namespace Diophant {
                     }
                 }
 
-                back <<= data::first (z);
-                z = data::rest (z);
+                back <<= data::first (defs);
+                defs = data::rest (defs);
             }
 
+            // put the ealier definitions back onto the stack.
             while (!data::empty (back)) {
-                z <<= data::first (back);
+                defs <<= data::first (back);
                 back = data::rest (back);
             }
 
-            return z;
+            return defs;
         }
 
     }

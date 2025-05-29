@@ -230,17 +230,20 @@ namespace Diophant {
     bool uint32_big_unequal (data::uint32_big x, data::uint32_big y) {return x != y;}
 
     bool uint32_big_greater_equal (data::uint32_big x, data::uint32_big y) {
-        return x >= y;}
+        return x >= y;
+    }
 
     bool uint32_big_less_equal (data::uint32_big x, data::uint32_big y) {return x <= y;}
 
     bool uint32_big_greater (data::uint32_big x, data::uint32_big y) {
-        return x > y;}
+        return x > y;
+    }
 
     bool uint32_big_less (data::uint32_big x, data::uint32_big y) {return x < y;}
 
     bool int32_big_equal (data::int32_big x, data::int32_big y) {
-        return x == y;}
+        return x == y;
+    }
 
     bool int32_big_unequal (data::int32_big x, data::int32_big y) {return x != y;}
 
@@ -474,5 +477,125 @@ namespace Diophant {
 
     data::Z integer_power (const data::Z &x, const data::N &y) {
         return data::pow (x, y);
+    }
+
+    data::byte uint8_negate (data::byte x) {
+        return -x;
+    }
+
+    data::int8 int8_negate (data::int8 x) {
+        return -x;
+    }
+
+    data::int8 int8_abs (data::int8 x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint16 uint16_negate (data::uint16 x) {
+        return -x;
+    }
+
+    data::int16 int16_negate (data::int16 x) {
+        return -x;
+    }
+
+    data::int16 int16_abs (data::int16 x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint32 uint32_negate (data::uint32 x) {
+        return -x;
+    }
+
+    data::int32 int32_negate (data::int32 x) {
+        return -x;
+    }
+
+    data::int32 int32_abs (data::int32 x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint64 uint64_negate (data::uint64 x) {
+        return -x;
+    }
+
+    data::int64 int64_negate (data::int64 x) {
+        return -x;
+    }
+
+    data::int64 int64_abs (data::int64 x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint16_little uint16_little_negate (data::uint16_little x) {
+        return -data::uint16 (x);
+    }
+
+    data::int16_little int16_little_negate (data::int16_little x) {
+        return -x;
+    }
+
+    data::int16_little int16_little_abs (data::int16_little x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint32_little uint32_little_negate (data::uint32_little x) {
+        return -data::uint32 (x);
+    }
+
+    data::int32_little int32_little_negate (data::int32_little x) {
+        return -x;
+    }
+
+    data::int32_little int32_little_abs (data::int32_little x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint64_little uint64_little_negate (data::uint64_little x) {
+        return -data::uint64 (x);
+    }
+
+    data::int64_little int64_little_negate (data::int64_little x) {
+        return -x;
+    }
+
+    data::int64_little int64_little_abs (data::int64_little x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint16_big uint16_big_negate (data::uint16_big x) {
+        return -data::uint16 (x);
+    }
+
+    data::int16_big int16_big_negate (data::int16_big x) {
+        return -x;
+    }
+
+    data::int16_big int16_big_abs (data::int16_big x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint32_big uint32_big_negate (data::uint32_big x) {
+        return -data::uint32 (x);
+    }
+
+    data::int32_big int32_big_negate (data::int32_big x) {
+        return -x;
+    }
+
+    data::int32_big int32_big_abs (data::int32_big x) {
+        return x < 0 ? -x : x;
+    }
+
+    data::uint64_big uint64_big_negate (data::uint64_big x) {
+        return -data::uint64 (x);
+    }
+
+    data::int64_big int64_big_negate (data::int64_big x) {
+        return -x;
+    }
+
+    data::int64_big int64_big_abs (data::int64_big x) {
+        return x < 0 ? -x : x;
     }
 }

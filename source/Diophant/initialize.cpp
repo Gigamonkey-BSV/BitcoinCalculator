@@ -1309,7 +1309,7 @@ namespace Diophant {
         m = m.define (binary_operand::cat, bytes_type, {bytes_type, x}, {bytes_type, y},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (&bytes_cat), {X, Y}));
-
+/*
         m = m.define (symbol {"left"}, bytes_type,
             {{bytes_type, x}, {bytes_type, y}},
             call::make (built_in_func<data::bytes,
@@ -1464,8 +1464,8 @@ namespace Diophant {
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_mod), {X, Y})}));
-
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_mod), {X, Y})}));*/
+/*
         // modular arithmetic
         m = m.define (binary_operand::mod, natural_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<data::N, const data::N &, const data::N &>::make (natural_mod), {X, Y}));
@@ -1496,7 +1496,7 @@ namespace Diophant {
 
         m = m.define (symbol {"times_mod"}, natural_type, {{integer_type, x}, {integer_type, y}, {natural_type, z}},
             call::make (built_in_func<data::N, const data::Z &, const data::Z &, const data::N &>::make (integer_times_mod), {X, Y, Z}));
-
+*/
         // TODO invert_mod?
 
         // plus_mod, minus_mod, times_mod, and invert_mod for scriptnum
@@ -1506,7 +1506,6 @@ namespace Diophant {
         // these are commented out because these don't work right in data
         // and I need to fix that first.
 
-        /*
         m = m.define (symbol ("abs"), uint8_type, {{uint8_type, x}}, X);
 
         m = m.define (symbol ("negate"), int8_type, {{uint8_type, x}},
@@ -1573,7 +1572,7 @@ namespace Diophant {
             call::make (built_in_func<data::int64, data::int64>::make (int64_negate), {X}));
 
         m = m.define (unary_operand::negate, int64_type, {int64_type, x},
-            call::make (built_in_func<data::int64, data::int64>::make (int64_negate), {X}));*/
+            call::make (built_in_func<data::int64, data::int64>::make (int64_negate), {X}));
 
         m = m.define (symbol ("abs"), natural_type, {{natural_type, x}}, X);
 
@@ -1821,7 +1820,7 @@ namespace Diophant {
         m = m.define (symbol {"push"}, scriptnum_type, {pubkey_type, x},
             call::make (built_in_func<Bitcoin::integer,
                 const secp256k1::pubkey &>::make (&push), {X}));
-
+/*
         // hash functions
         m = m.define (symbol {"SHA2_256"}, uint256_little_type, {{bytes_type, x}},
             call::make (built_in_func<data::uint256_little, const data::bytes &>::make (&SHA2_256), {X}));
@@ -1834,7 +1833,7 @@ namespace Diophant {
 
         m = m.define (symbol {"SHA3_256"}, uint160_little_type, {{string_type, x}},
             call::make (built_in_func<data::uint160_little, const data::bytes &>::make (&Hash160), {X}));
-
+*/
         // crypto
         m = m.define (symbol {"sign"}, scriptnum_type, {{secret_type, x}, {secret_type, y}},
             call::make (built_in_func<Bitcoin::integer,
