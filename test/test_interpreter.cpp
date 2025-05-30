@@ -37,7 +37,8 @@ namespace Diophant {
     }
 
     expression make_scriptnum (const std::string &x) {
-        return scriptnum::make (Bitcoin::integer {x});
+        return call::make (symbol::make ("scriptnum"),
+            {bytes::make (Bitcoin::integer::read (x))});
     }
 
     expression unary (char x, expression e) {
@@ -104,6 +105,10 @@ namespace Diophant {
         test ("x", symbol::make ("x"), symbol::make ("x"));
         test ("x123");
 
+        // call that doesn't evaluate to anything
+        test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
+        test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
+
         // boolean
         test ("true", symbol::make ("true"), True ());
         test ("false", symbol::make ("false"), False ());
@@ -120,7 +125,7 @@ namespace Diophant {
         // number formats.
         test ("0", make_natural (0), make_natural (0));
         test ("9876543", make_natural (9876543), make_natural (9876543));
-/*
+
         // invalid dec number
         test ("0923", false);
 
@@ -136,8 +141,11 @@ namespace Diophant {
         test ("045678", false);
 
         // hex strings
-        test ("'abcdef000001'");
+        test ("'abcdef000001'", bytes::make (*data::encoding::hex::read ("abcdef000001")));
         test ("'abcdef00001'", false);
+
+        // invalid hex number.
+        test ("0x0", false);
 
         // hex numbers
         test ("0x", make_scriptnum ("0x"));
@@ -145,36 +153,29 @@ namespace Diophant {
         test ("0x80", make_scriptnum ("0x80"));
         test ("0x01", make_scriptnum ("0x01"));
 
-        // invalid hex number.
-        test ("0x0", false);
-
-        // call that doesn't evaluate to anything
-        test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
-        test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
-
-        // unary operators
-        test ("-0", unary ('-', make_integer (0)), make_integer (0));
-        test ("- 0", unary ('-', make_integer (0)), make_integer (0));*/
-/*
-        test ("!8", unary ('!', make_natural (8)));
-        test ("8+", false);
-        test ("8-", false);
-
         // lists
         test (R"([])", list::make ({}), list::make ({}));
         test (R"([x, 21, "hi"])");
+
+        // string operations.
+
+        // cat
+        test_eval (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
+        test_eval (R"('00ff' <> 'abab')", bytes::make (*data::encoding::hex::read ("00ffabab")));
+
+        // unary operators
+        test ("-0", unary ('-', make_integer (0)), make_integer (0));
+        test ("- 0", unary ('-', make_integer (0)), make_integer (0));
+
+        test ("!8", unary ('!', make_natural (8)));
+        test ("8+", false);
+        test ("8-", false);
 
         // negative zero
         test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
         test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
 
         // bitnot
-
-        // string cat
-        test_eval (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
-
-        // scriptnum cat
-        // TODO
 
         // arithmetic with secrets
         test ("-secret 1", unary ('-', make_secret (1)),
@@ -215,7 +216,7 @@ namespace Diophant {
         test ("f _a := x; y");
 
         // coordinates
-        test_eval ("coord 1 + coord 2", std::string {"coord 3"});*/
+        test_eval ("coord 1 + coord 2", std::string {"coord 3"});
 
         // addresses
 
@@ -304,7 +305,7 @@ namespace Diophant {
     expression test_parse (std::string input, expression expect_read) {
         expression ex;
         EXPECT_NO_THROW (ex = read_line (input).first ().Predicate) << "testing input " << input;
-        EXPECT_EQ (ex, expect_read) << "testing input " << input;
+        EXPECT_EQ (ex, expect_read) << "testing input " << input << "; expected " << ex << " == " << expect_read;
         return ex;
     }
 

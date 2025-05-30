@@ -282,7 +282,7 @@ namespace Diophant {
                 data::int32, data::int32>::make (int32_less), {X, Y}));
 
         // we do not have a char type right now. A char type would
-        // naturally be based on an int32, as strings will be unicode.
+        // naturally be based on a uint32, as strings will be unicode.
         type bytes_type {symbol::make ("bytes")};
         type string_type {symbol::make ("string")};
 
@@ -1309,64 +1309,64 @@ namespace Diophant {
         m = m.define (binary_operand::cat, bytes_type, {bytes_type, x}, {bytes_type, y},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (&bytes_cat), {X, Y}));
-/*
+
         m = m.define (symbol {"left"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const Bitcoin::integer &>::make (&bytes_left), {X, Y}));
 
         m = m.define (symbol {"left"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {integer_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::N &>::make (&bytes_left), {X, Y}));
 
         m = m.define (symbol {"left"}, string_type,
-            {{string_type, x}, {bytes_type, y}},
+            {{string_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<data::string,
                 const data::string &, const Bitcoin::integer &>::make (&string_left), {X, Y}));
 
         m = m.define (symbol {"left"}, string_type,
-            {{string_type, x}, {bytes_type, y}},
+            {{string_type, x}, {integer_type, y}},
             call::make (built_in_func<data::string,
                 const data::string &, const data::N &>::make (&string_left), {X, Y}));
 
         m = m.define (symbol {"right"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const Bitcoin::integer &>::make (&bytes_right), {X, Y}));
 
         m = m.define (symbol {"right"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {integer_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::N &>::make (&bytes_right), {X, Y}));
 
         m = m.define (symbol {"right"}, string_type,
-            {{string_type, x}, {bytes_type, y}},
+            {{string_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<data::string,
                 const data::string &, const Bitcoin::integer &>::make (&string_right), {X, Y}));
 
         m = m.define (symbol {"right"}, string_type,
-            {{string_type, x}, {bytes_type, y}},
+            {{string_type, x}, {integer_type, y}},
             call::make (built_in_func<data::string,
                 const data::string &, const data::N &>::make (&string_right), {X, Y}));
 
         m = m.define (symbol {"split"}, list::make ({bytes_type, bytes_type}),
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {integer_type, y}},
             call::make (built_in_func<std::tuple<data::bytes, data::bytes>,
                 const data::bytes &, const Bitcoin::integer &>::make (&bytes_split), {X, Y}));
 
         m = m.define (symbol {"split"}, list::make ({bytes_type, bytes_type}),
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<std::tuple<data::bytes, data::bytes>,
                 const data::bytes &, const data::N &>::make (&bytes_split), {X, Y}));
 
         m = m.define (symbol {"split"}, list::make ({string_type, string_type}),
-            {{string_type, x}, {bytes_type, y}},
+            {{string_type, x}, {integer_type, y}},
             call::make (built_in_func<std::tuple<data::string, data::string>,
                 const data::string &, const Bitcoin::integer &>::make (&string_split), {X, Y}));
 
         m = m.define (symbol {"split"}, list::make ({string_type, string_type}),
-            {{string_type, x}, {bytes_type, y}},
+            {{string_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<std::tuple<data::string, data::string>,
                 const data::string &, const data::N &>::make (&string_split), {X, Y}));
 
@@ -1390,25 +1390,27 @@ namespace Diophant {
                 const data::bytes &, const Bitcoin::integer &>::make (&bytes_right), {X, Y})}));
 
         // TODO: scriptnum split. Not sure how to do this one yet.
+        m = m.declare (symbol {"split"}, list::make ({scriptnum_type, scriptnum_type}),
+            {{scriptnum_type, x}, {scriptnum_type, y}});
 
         // bit shifts
         m = m.define (symbol {"right_shift"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const Bitcoin::integer &>::make (&bytes_right_shift), {X, Y}));
 
         m = m.define (symbol {"left_shift"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const Bitcoin::integer &>::make (&bytes_left_shift), {X, Y}));
 
         m = m.define (symbol {"right_shift"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {integer_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::N &>::make (&bytes_right_shift), {X, Y}));
 
         m = m.define (symbol {"left_shift"}, bytes_type,
-            {{bytes_type, x}, {bytes_type, y}},
+            {{bytes_type, x}, {integer_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::N &>::make (&bytes_left_shift), {X, Y}));
 
@@ -1464,8 +1466,8 @@ namespace Diophant {
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_mod), {X, Y})}));*/
-/*
+                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_mod), {X, Y})}));
+
         // modular arithmetic
         m = m.define (binary_operand::mod, natural_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<data::N, const data::N &, const data::N &>::make (natural_mod), {X, Y}));
@@ -1496,7 +1498,7 @@ namespace Diophant {
 
         m = m.define (symbol {"times_mod"}, natural_type, {{integer_type, x}, {integer_type, y}, {natural_type, z}},
             call::make (built_in_func<data::N, const data::Z &, const data::Z &, const data::N &>::make (integer_times_mod), {X, Y, Z}));
-*/
+
         // TODO invert_mod?
 
         // plus_mod, minus_mod, times_mod, and invert_mod for scriptnum

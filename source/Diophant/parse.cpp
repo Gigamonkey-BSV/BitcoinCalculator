@@ -129,7 +129,8 @@ namespace Diophant {
         template <> struct read_expression<tao_pegtl_grammar::hex_lit> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
-                eval.push (call::make (symbol::make ("scriptnum"), {bytes::make (Bitcoin::integer::read (in.string_view ()))}));
+                eval.push (call::make (symbol::make ("scriptnum"),
+                    {bytes::make (Bitcoin::integer::read (in.string_view ()))}));
             }
         };
 
