@@ -326,13 +326,13 @@ namespace Diophant {
 
         template <> struct base_type<data::N> {
             type operator () () {
-                return symbol::make ("natural");
+                return symbol::make ("N");
             }
         };
 
         template <> struct base_type<data::Z> {
             type operator () () {
-                return symbol::make ("integer");
+                return symbol::make ("Z");
             }
         };
 

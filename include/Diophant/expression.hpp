@@ -60,16 +60,17 @@ namespace Diophant {
         return write (*this);
     }
 
+    // some basic logging.
     class LogStream {
     public:
-        LogStream (std::ostream& out = std::cout, int indentWidth = 2)
-        : out (out), indentLevel(0), indentWidth(indentWidth), atLineStart(true) {}
+        LogStream (std::ostream &out = std::cout, int indentWidth = 2)
+        : out (out), indentLevel (0), indentWidth(indentWidth), atLineStart (true) {}
 
         // Stream-style interface
         template<typename T>
-        LogStream &operator<<(const T& value) {
+        LogStream &operator << (const T& value) {
             if (atLineStart) {
-                out << std::string(indentLevel * indentWidth, ' ');
+                out << std::string (indentLevel * indentWidth, ' ');
                 atLineStart = false;
             }
 
@@ -78,13 +79,11 @@ namespace Diophant {
         }
 
         // Specialization for endl to reset line start
-        LogStream &operator<<(std::ostream& (*manip)(std::ostream&)) {
-            if (manip == static_cast<std::ostream& (*)(std::ostream&)>(std::endl)) {
+        LogStream &operator<<(std::ostream &(*manip) (std::ostream &)) {
+            if (manip == static_cast<std::ostream &(*) (std::ostream &)> (std::endl)) {
                 out << std::endl;
                 atLineStart = true;
-            } else {
-                manip(out);
-            }
+            } else manip (out);
             return *this;
         }
 
@@ -99,7 +98,7 @@ namespace Diophant {
         }
 
     private:
-        std::ostream& out;
+        std::ostream &out;
         int indentLevel;
         int indentWidth;
         bool atLineStart;
