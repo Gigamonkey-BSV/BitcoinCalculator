@@ -1510,10 +1510,10 @@ namespace Diophant {
 
         m = m.define (symbol ("abs"), uint8_type, {{uint8_type, x}}, X);
 
-        m = m.define (symbol ("negate"), int8_type, {{uint8_type, x}},
+        m = m.define (symbol ("negate"), uint8_type, {{uint8_type, x}},
             call::make (built_in_func<data::byte, data::byte>::make (uint8_negate), {X}));
 
-        m = m.define (unary_operand::negate, int8_type, {uint8_type, x},
+        m = m.define (unary_operand::negate, uint8_type, {uint8_type, x},
             call::make (built_in_func<data::byte, data::byte>::make (uint8_negate), {X}));
 
         m = m.define (symbol ("abs"), uint8_type, {{int8_type, x}},
@@ -1527,10 +1527,10 @@ namespace Diophant {
 
         m = m.define (symbol ("abs"), uint16_type, {{uint16_type, x}}, X);
 
-        m = m.define (symbol ("negate"), int16_type, {{uint16_type, x}},
+        m = m.define (symbol ("negate"), uint16_type, {{uint16_type, x}},
             call::make (built_in_func<data::uint16, data::uint16>::make (uint16_negate), {X}));
 
-        m = m.define (unary_operand::negate, int16_type, {uint16_type, x},
+        m = m.define (unary_operand::negate, uint16_type, {uint16_type, x},
             call::make (built_in_func<data::uint16, data::uint16>::make (uint16_negate), {X}));
 
         m = m.define (symbol ("abs"), uint16_type, {{int16_type, x}},
@@ -1544,10 +1544,10 @@ namespace Diophant {
 
         m = m.define (symbol ("abs"), uint32_type, {{uint32_type, x}}, X);
 
-        m = m.define (symbol ("negate"), int32_type, {{uint32_type, x}},
+        m = m.define (symbol ("negate"), uint32_type, {{uint32_type, x}},
             call::make (built_in_func<data::uint32, data::uint32>::make (uint32_negate), {X}));
 
-        m = m.define (unary_operand::negate, int32_type, {uint32_type, x},
+        m = m.define (unary_operand::negate, uint32_type, {uint32_type, x},
             call::make (built_in_func<data::uint32, data::uint32>::make (uint32_negate), {X}));
 
         m = m.define (symbol ("abs"), int32_type, {{int32_type, x}},
@@ -1561,10 +1561,10 @@ namespace Diophant {
 
         m = m.define (symbol ("abs"), uint64_type, {{uint64_type, x}}, X);
 
-        m = m.define (symbol ("negate"), int64_type, {{uint64_type, x}},
+        m = m.define (symbol ("negate"), uint64_type, {{uint64_type, x}},
             call::make (built_in_func<data::uint64, data::uint64>::make (uint64_negate), {X}));
 
-        m = m.define (unary_operand::negate, int64_type, {uint64_type, x},
+        m = m.define (unary_operand::negate, uint64_type, {uint64_type, x},
             call::make (built_in_func<data::uint64, data::uint64>::make (uint64_negate), {X}));
 
         m = m.define (symbol ("abs"), uint64_type, {{int64_type, x}},

@@ -154,11 +154,7 @@ namespace Diophant {
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();
                 // this must be valid because it woludn't be here if the parser didn't read it.
-                data::maybe<data::bytes> decoded = data::encoding::hex::read (x.substr (1, x.size () - 2));
-                Bitcoin::integer i {};
-                i.resize (decoded->size ());
-                std::copy (decoded->begin (), decoded->end (), i.begin ());
-                eval.push (scriptnum::make (i));
+                eval.push (bytes::make (*data::encoding::hex::read (x.substr (1, x.size () - 2))));
             }
         };
 
