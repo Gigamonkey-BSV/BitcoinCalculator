@@ -248,7 +248,11 @@ namespace Diophant {
 
         // TODO we need an option for a set of automatic replacements.
         data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
+
+            // we store a potential match here but continue searching to
+            // ensure that we do not match twice.
             data::maybe<candidate> matched {};
+
             while (!data::empty (tfs)) {
 
                 auto &tf = data::first (tfs);
@@ -261,9 +265,7 @@ namespace Diophant {
                 if (intuit (r) == yes) {
                     if (bool (matched)) throw data::exception {} << "no unique match";
                     matched = {{*r, tf.Value, data::drop (args, data::size (tf.Arguments))}};
-                }
-
-                if (intuit (r) == unknown) {
+                } else if (intuit (r) == unknown) {
                     throw data::exception {} << "we need to ensure that evaluation does not continue at this point";
                 }
 
@@ -548,7 +550,7 @@ namespace Diophant {
             return defs.insert (x, machine::definition {data::stack<mtf> {mtf {arg, casted {of, as}}}},
                 [m, x] (const machine::definition &prev, const machine::definition &next) {
                     data::exception excp {};
-                    excp << "symbol " << x << " is already defined D";
+                    excp << "symbol " << x << " is already defined";
                     // if it's not a stack then it's an incompatible definition.
                     if (!std::holds_alternative<data::stack<mtf>> (prev)) throw excp;
                     const data::stack<mtf> ps = std::get<data::stack<mtf>> (prev);

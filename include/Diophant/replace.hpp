@@ -18,10 +18,10 @@ namespace Diophant {
 
     std::ostream &operator << (std::ostream &o, intuit i);
 
-    // if the pattern can match, we may return
-    // replacement rules for symbols. We also need
-    // a case where we say that we cannot tell if the
-    // pattern matches.
+    // if the pattern matches, we may return replacement
+    // rules for symbols. We also need a case where we
+    // say that we cannot tell if the pattern matches, so
+    // we use intuits as well.
     struct match_result : data::either<replacements, intuit> {
         match_result (intuit i): data::either<replacements, intuit> {i} {}
         match_result (replacements r): data::either<replacements, intuit> {r} {}

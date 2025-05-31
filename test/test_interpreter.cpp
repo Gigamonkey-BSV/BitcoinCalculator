@@ -176,14 +176,21 @@ namespace Diophant {
         test ("8+", false);
         test ("8-", false);
 
+        // bitnot
+        test_eval ("~''", "''");
+        test_eval ("~'00'", "'ff'");
+        test_eval ("~'80'", "'7f'");
+
+        test_eval ("~0x", "0x");
+        test_eval ("~0x00", "0xff");
+        test_eval ("~0x80", "0x7f");
+
         // negative zero
         test ("-0", unary ('-', make_natural (0)), make_integer (0));
         test ("- 0", unary ('-', make_natural (0)), make_integer (0));
 
         test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
         test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
-
-        // bitnot
 
         // arithmetic with secrets
         test ("-secret 1", unary ('-', make_secret (1)),
@@ -199,8 +206,8 @@ namespace Diophant {
         test ("1 % 0");
 
         // valid and invalid secret keys
-        test_eval ("valid 1", True ());
-        test_eval ("valid 0", False ());
+        test_eval ("valid (secret 1)", True ());
+        test_eval ("valid (secret 0)", False ());
 
         // base 58
         test_eval ("base58_encode 1234", string::make ("NH"));
@@ -223,7 +230,6 @@ namespace Diophant {
         // WIFs
 
         // HD
-
 /*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5
         //

@@ -972,132 +972,134 @@ namespace Diophant {
         // scriptnum bit operations
         m = m.define (unary_operand::tilda, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
-            call::make (symbol::make ("scriptnum"), {built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &>::make (scriptnum_bit_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
+                const data::bytes &>::make (scriptnum_bit_not), {X}}));
 
         m = m.define (symbol {"bit_not"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}})},
-            call::make (symbol::make ("scriptnum"), {built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &>::make (scriptnum_bit_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
+                const data::bytes &>::make (scriptnum_bit_not), {X}}));
 
         m = m.define (binary_operand::bit_and, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bit_and), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bit_and), {X, Y})}));
 
         m = m.define (symbol {"bit_and"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
                 call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}})},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bit_and), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bit_and), {X, Y})}));
 
         m = m.define (binary_operand::bit_or, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bit_or), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bit_or), {X, Y})}));
 
         m = m.define (symbol {"bit_or"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
                 call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}})},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bit_or), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bit_or), {X, Y})}));
 
         m = m.define (binary_operand::bit_xor, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bit_xor), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bit_xor), {X, Y})}));
 
         m = m.define (symbol {"bit_xor"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
                 call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}})},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bit_xor), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bit_xor), {X, Y})}));
 
         // scriptnum boolean operations
         m = m.define (unary_operand::bool_not, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
-            call::make (symbol::make ("scriptnum"), {built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &>::make (scriptnum_bool_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
+                const data::bytes &>::make (scriptnum_bool_not), {X}}));
 
         m = m.define (symbol {"not"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}})},
-            call::make (symbol::make ("scriptnum"), {built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &>::make (scriptnum_bool_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
+                const data::bytes &>::make (scriptnum_bool_not), {X}}));
 
         m = m.define (binary_operand::bool_and, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bool_and), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bool_and), {X, Y})}));
 
-        m = m.define (symbol {"and"}, scriptnum_type, {{scriptnum_type, x}, {scriptnum_type, y}},
-            call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bool_and), {X, Y}));
+        m = m.define (symbol {"and"}, scriptnum_type,
+            {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
+                call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}})},
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bool_and), {X, Y})}));
 
         m = m.define (binary_operand::bool_or, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bool_or), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bool_or), {X, Y})}));
 
         m = m.define (symbol {"or"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
                 call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}})},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_bool_or), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_bool_or), {X, Y})}));
 
         // identical
         m = m.define (binary_operand::identical, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_identical), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_identical), {X, Y})}));
 
         m = m.define (symbol {"identical"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
                 call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}})},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_identical), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_identical), {X, Y})}));
 
         // comparisons
         m = m.define (binary_operand::bool_equal, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_equal), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_equal), {X, Y})}));
 
         m = m.define (binary_operand::bool_unequal, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_unequal), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_unequal), {X, Y})}));
 
         m = m.define (binary_operand::greater_equal, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_greater_equal), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_greater_equal), {X, Y})}));
 
         m = m.define (binary_operand::less_equal, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_less_equal), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_less_equal), {X, Y})}));
 
         m = m.define (binary_operand::greater, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_greater), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_greater), {X, Y})}));
 
         m = m.define (binary_operand::less, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_less), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_less), {X, Y})}));
 
         // we also have secret and coord, two modular number types that are used in the
         // Bitcoin elliptic curve.
@@ -1258,6 +1260,57 @@ namespace Diophant {
                 const data::uint256_little &, const Bitcoin::integer &>::make (get), {X, Y}));
 
         // Size operations
+        m = m.define (symbol {"size"}, natural_type, {uint8_type}, natural::make (1));
+        m = m.define (symbol {"size"}, natural_type, {int8_type}, natural::make (1));
+        m = m.define (symbol {"size"}, natural_type, {uint16_type}, natural::make (2));
+        m = m.define (symbol {"size"}, natural_type, {int16_type}, natural::make (2));
+        m = m.define (symbol {"size"}, natural_type, {uint16_little_type}, natural::make (2));
+        m = m.define (symbol {"size"}, natural_type, {int16_little_type}, natural::make (2));
+        m = m.define (symbol {"size"}, natural_type, {uint16_big_type}, natural::make (2));
+        m = m.define (symbol {"size"}, natural_type, {int16_big_type}, natural::make (2));
+        m = m.define (symbol {"size"}, natural_type, {uint24_type}, natural::make (3));
+        m = m.define (symbol {"size"}, natural_type, {int24_type}, natural::make (3));
+        m = m.define (symbol {"size"}, natural_type, {uint24_little_type}, natural::make (3));
+        m = m.define (symbol {"size"}, natural_type, {int24_little_type}, natural::make (3));
+        m = m.define (symbol {"size"}, natural_type, {uint24_big_type}, natural::make (3));
+        m = m.define (symbol {"size"}, natural_type, {int24_big_type}, natural::make (3));
+        m = m.define (symbol {"size"}, natural_type, {uint32_type}, natural::make (4));
+        m = m.define (symbol {"size"}, natural_type, {int32_type}, natural::make (4));
+        m = m.define (symbol {"size"}, natural_type, {uint32_little_type}, natural::make (4));
+        m = m.define (symbol {"size"}, natural_type, {int32_little_type}, natural::make (4));
+        m = m.define (symbol {"size"}, natural_type, {uint32_big_type}, natural::make (4));
+        m = m.define (symbol {"size"}, natural_type, {int32_big_type}, natural::make (4));
+        m = m.define (symbol {"size"}, natural_type, {uint64_type}, natural::make (8));
+        m = m.define (symbol {"size"}, natural_type, {int64_type}, natural::make (8));
+        m = m.define (symbol {"size"}, natural_type, {uint64_little_type}, natural::make (8));
+        m = m.define (symbol {"size"}, natural_type, {int64_little_type}, natural::make (8));
+        m = m.define (symbol {"size"}, natural_type, {uint64_big_type}, natural::make (8));
+        m = m.define (symbol {"size"}, natural_type, {int64_big_type}, natural::make (8));
+        m = m.define (symbol {"size"}, natural_type, {uint128_type}, natural::make (16));
+        m = m.define (symbol {"size"}, natural_type, {int128_type}, natural::make (16));
+        m = m.define (symbol {"size"}, natural_type, {uint128_little_type}, natural::make (16));
+        m = m.define (symbol {"size"}, natural_type, {int128_little_type}, natural::make (16));
+        m = m.define (symbol {"size"}, natural_type, {uint128_big_type}, natural::make (16));
+        m = m.define (symbol {"size"}, natural_type, {int128_big_type}, natural::make (16));
+        m = m.define (symbol {"size"}, natural_type, {uint160_type}, natural::make (20));
+        m = m.define (symbol {"size"}, natural_type, {int160_type}, natural::make (20));
+        m = m.define (symbol {"size"}, natural_type, {uint160_little_type}, natural::make (20));
+        m = m.define (symbol {"size"}, natural_type, {int160_little_type}, natural::make (20));
+        m = m.define (symbol {"size"}, natural_type, {uint160_big_type}, natural::make (20));
+        m = m.define (symbol {"size"}, natural_type, {int160_big_type}, natural::make (20));
+        m = m.define (symbol {"size"}, natural_type, {uint256_type}, natural::make (32));
+        m = m.define (symbol {"size"}, natural_type, {int256_type}, natural::make (32));
+        m = m.define (symbol {"size"}, natural_type, {uint256_little_type}, natural::make (32));
+        m = m.define (symbol {"size"}, natural_type, {int256_little_type}, natural::make (32));
+        m = m.define (symbol {"size"}, natural_type, {uint256_big_type}, natural::make (32));
+        m = m.define (symbol {"size"}, natural_type, {int256_big_type}, natural::make (32));
+        m = m.define (symbol {"size"}, natural_type, {uint512_type}, natural::make (64));
+        m = m.define (symbol {"size"}, natural_type, {int512_type}, natural::make (64));
+        m = m.define (symbol {"size"}, natural_type, {uint512_little_type}, natural::make (64));
+        m = m.define (symbol {"size"}, natural_type, {int512_little_type}, natural::make (64));
+        m = m.define (symbol {"size"}, natural_type, {uint512_big_type}, natural::make (64));
+        m = m.define (symbol {"size"}, natural_type, {int512_big_type}, natural::make (64));
+
         m = m.define (symbol {"size"}, natural_type, {{bytes_type, x}},
             call::make (built_in_func<data::N,
                 const data::bytes &>::make (&bytes_size), {X}));
@@ -1265,8 +1318,6 @@ namespace Diophant {
         m = m.define (symbol {"size"}, natural_type, {{string_type, x}},
             call::make (built_in_func<data::N,
                 const data::string &>::make (&string_size), {X}));
-
-        // TODO size operations for the rest of the number types.
 
         // size operations for scriptnum
         m = m.define (symbol {"size"}, scriptnum_type,
@@ -1441,32 +1492,32 @@ namespace Diophant {
         m = m.define (binary_operand::plus, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_plus), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_plus), {X, Y})}));
 
         m = m.define (binary_operand::minus, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_minus), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_minus), {X, Y})}));
 
         m = m.define (binary_operand::times, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_times), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_times), {X, Y})}));
 
         m = m.define (binary_operand::divide, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_divide), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_divide), {X, Y})}));
 
         m = m.define (binary_operand::mod, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const Bitcoin::integer &>::make (scriptnum_mod), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::bytes &>::make (scriptnum_mod), {X, Y})}));
 
         // modular arithmetic
         m = m.define (binary_operand::mod, natural_type, {natural_type, x}, {natural_type, y},
@@ -1596,13 +1647,13 @@ namespace Diophant {
         // abs and negate for scriptnum.
         m = m.define (symbol ("abs"), scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}})},
-            call::make (symbol::make ("scriptnum"), {built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &>::make (scriptnum_abs), {X}}));
+            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
+                const data::bytes &>::make (scriptnum_abs), {X}}));
 
         m = m.define (unary_operand::negate, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
-            call::make (symbol::make ("scriptnum"), {built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &>::make (scriptnum_negate), {X}}));
+            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
+                const data::bytes &>::make (scriptnum_negate), {X}}));
 
         // abs and negate for coordinate and secret.
         m = m.define (symbol ("abs"), secret_type, {
@@ -1703,14 +1754,14 @@ namespace Diophant {
         m = m.define (binary_operand::power, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             {natural_type, y},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const data::N &>::make (&scriptnum_power), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::N &>::make (&scriptnum_power), {X, Y})}));
 
         m = m.define (symbol {"power"}, scriptnum_type, {
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             pattern {natural_type, y}},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<Bitcoin::integer,
-                const Bitcoin::integer &, const data::N &>::make (&scriptnum_power), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
+                const data::bytes &, const data::N &>::make (&scriptnum_power), {X, Y})}));
 
         m = m.define (binary_operand::power, coord_type,
             call::make (symbol::make ("coord"), {pattern {secret_type, x}}), {integer_type, y},

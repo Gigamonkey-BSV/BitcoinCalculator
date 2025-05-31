@@ -40,112 +40,99 @@ namespace Diophant {
         return num;
     }
 
-
-    Bitcoin::integer scriptnum_bool_not (const Bitcoin::integer &x) {
-        return !x;
+    data::bytes scriptnum_bool_not (const data::bytes &x) {
+        return Bitcoin::integer {Bitcoin::bool_not (x)};
     }
 
-    Bitcoin::integer scriptnum_bool_and (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x && y;
+    data::bytes scriptnum_bool_and (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::bool_and (x, y)};
     }
 
-    Bitcoin::integer scriptnum_bool_or (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x || y;
+    data::bytes scriptnum_bool_or (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::bool_or (x, y)};
     }
 
-    Bitcoin::integer scriptnum_bit_not (const Bitcoin::integer &x) {
-        Bitcoin::integer z;
-        z.resize (x.size ());
-        for (int i = 0; i < z.size (); i++) z[i] = ~x[i];
-        return z;
+    data::bytes scriptnum_bit_not (const data::bytes &x) {
+        return Bitcoin::bit_not (x);
     }
 
-    Bitcoin::integer scriptnum_bit_and (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        if (x.size () != y.size ()) throw data::exception {"BitAnd called on strings of different sizes"};
-        Bitcoin::integer z;
-        z.resize (x.size ());
-        for (int i = 0; i < z.size (); i++) z[i] = x[i] & y[i];
-        return z;
+    data::bytes scriptnum_bit_and (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::bit_and (x, y);
     }
 
-    Bitcoin::integer scriptnum_bit_xor (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        if (x.size () != y.size ()) throw data::exception {"BitAnd called on strings of different sizes"};
-        Bitcoin::integer z;
-        z.resize (x.size ());
-        for (int i = 0; i < z.size (); i++) z[i] = x[i] ^ y[i];
-        return z;
+    data::bytes scriptnum_bit_xor (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::bit_xor (x, y);
     }
 
-    Bitcoin::integer scriptnum_bit_or (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        if (x.size () != y.size ()) throw data::exception {"BitAnd called on strings of different sizes"};
-        Bitcoin::integer z;
-        z.resize (x.size ());
-        for (int i = 0; i < z.size (); i++) z[i] = x[i] | y[i];
-        return z;
+    data::bytes scriptnum_bit_or (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::bit_or (x, y);
     }
 
-    Bitcoin::integer scriptnum_identical (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return Bitcoin::integer {data::identical (x, y)};
+    data::bytes scriptnum_identical (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {x == y};
     }
 
-    Bitcoin::integer scriptnum_equal (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x == y;
+    data::bytes scriptnum_equal (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::num_equal (x, y)};
     }
 
-    Bitcoin::integer scriptnum_unequal (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x != y;
+    data::bytes scriptnum_unequal (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::num_not_equal (x, y)};
     }
 
-    Bitcoin::integer scriptnum_greater_equal (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x >= y;
+    data::bytes scriptnum_greater_equal (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::greater_equal (x, y)};
     }
 
-    Bitcoin::integer scriptnum_less_equal (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x <= y;
+    data::bytes scriptnum_less_equal (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::less_equal (x, y)};
     }
 
-    Bitcoin::integer scriptnum_greater (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x > y;
+    data::bytes scriptnum_greater (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::greater (x, y)};
     }
 
-    Bitcoin::integer scriptnum_less (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x < y;
+    data::bytes scriptnum_less (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::integer {Bitcoin::less (x, y)};
     }
 
-    Bitcoin::integer scriptnum_negate (const Bitcoin::integer &x) {
-        return -x;
+    data::bytes scriptnum_negate (const data::bytes &x) {
+        return Bitcoin::negate (x);
     }
 
-    Bitcoin::integer scriptnum_plus (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x + y;
+    data::bytes scriptnum_plus (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::plus (x, y);
     }
 
-    Bitcoin::integer scriptnum_minus (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x - y;
+    data::bytes scriptnum_minus (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::minus (x, y);
     }
 
-    Bitcoin::integer scriptnum_times (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x * y;
+    data::bytes scriptnum_times (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::times (x, y);
     }
 
-    Bitcoin::integer scriptnum_divide (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x / y;
+    data::bytes scriptnum_divide (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::divide (x, y);
     }
 
-    Bitcoin::integer scriptnum_mod (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return x % y;
+    data::bytes scriptnum_mod (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::mod (x, y);
     }
 
-    Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const Bitcoin::integer &y) {
-        return data::pow (x, y);
+    data::bytes scriptnum_abs (const data::bytes &x) {
+        return Bitcoin::abs (x);
     }
 
-    Bitcoin::integer scriptnum_abs (const Bitcoin::integer &x) {
-        return data::abs (x);
+    data::bytes scriptnum_power (const data::bytes &x, const data::bytes &y) {
+        data::bytes a = x;
+        data::bytes b = y;
+        return data::pow (Bitcoin::integer {std::move (a)}, Bitcoin::integer {std::move (b)});
     }
 
-    Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const data::N &y) {
-        return data::pow (x, y);
+    data::bytes scriptnum_power (const data::bytes &x, const data::N &y) {
+        data::bytes a = x;
+        return data::pow (Bitcoin::integer {std::move (a)}, Bitcoin::integer {y});
     }
 
 }

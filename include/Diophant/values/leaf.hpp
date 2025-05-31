@@ -134,7 +134,7 @@ namespace Diophant {
     using string = leaf<data::string>;
     using pubkey = leaf<secp256k1::pubkey>;
     using sat = leaf<Bitcoin::satoshi>;
-    using scriptnum = leaf<Bitcoin::integer>;
+    //using scriptnum = leaf<Bitcoin::integer>;
     template <typename... X> using tuple = leaf<std::tuple<X...>>;
     template <typename X> using stack = leaf<data::stack<X>>;
     template <typename Y, typename ... X> using built_in_func = leaf<Y (*)(X...)>;
@@ -314,7 +314,7 @@ namespace Diophant {
 
         template <> struct base_type<Bitcoin::integer> {
             type operator () () {
-                return symbol::make ("scriptnum");
+                return symbol::make ("ScriptNum");
             }
         };
 
@@ -425,6 +425,12 @@ namespace Diophant {
         template <std::integral X> struct write_leaf<X> {
             std::ostream &operator () (std::ostream &o, X x) {
                 return o << std::dec << x;
+            }
+        };
+
+        template <> struct write_leaf<data::bytes> {
+            std::ostream &operator () (std::ostream &o, const data::bytes &t) {
+                return data::encoding::hex::write (o << '\'', t) << '\'';
             }
         };
 

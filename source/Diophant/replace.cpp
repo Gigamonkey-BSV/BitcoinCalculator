@@ -170,7 +170,11 @@ namespace Diophant {
         // note here we check the expression first .
         if (const symbol *x = dynamic_cast<const symbol *> (n); x != nullptr) {
             const symbol *y = dynamic_cast<const symbol *> (z);
-            return y != nullptr && *x == *y ? yes : unknown;
+            // note: previously we had yes : unknown here because it would be
+            // possible for an unevaluated symbol to be equal to a different one.
+            // However, this turned out to be unfeasable. We have to make sure that
+            // the expression is fully evaluated before we check casts.
+            return y != nullptr && *x == *y ? yes : no;
         }
 
         if (const unop *u = dynamic_cast<const unop *> (z); u != nullptr) {

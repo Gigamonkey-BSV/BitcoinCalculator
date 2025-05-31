@@ -132,6 +132,8 @@ namespace Diophant {
             const call *ct = dynamic_cast<const call *> (&t);
             if (ct == nullptr) return no;
 
+            if (ct->Fun != c.Fun) return no;
+
             auto targ = ct->Args;
             auto carg = c.Args;
             if (data::size (targ) != data::size (carg)) return no;
@@ -142,7 +144,7 @@ namespace Diophant {
                 carg = data::rest (carg);
             }
 
-            return type {ct->Fun}.castable (m, c.Fun);
+            return yes;
         }
 
         intuit cast_binop (const machine &, const node &t, const binop &E) {

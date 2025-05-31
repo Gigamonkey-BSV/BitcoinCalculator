@@ -21,36 +21,36 @@ namespace Diophant {
     data::bytes scriptnum_resize (const data::bytes &x, const data::N &y);
 
     // bool operations
-    Bitcoin::integer scriptnum_bool_not (const Bitcoin::integer &x);
-    Bitcoin::integer scriptnum_bool_and (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_bool_or (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    data::bytes scriptnum_bool_not (const data::bytes &x);
+    data::bytes scriptnum_bool_and (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_bool_or (const data::bytes &x, const data::bytes &y);
 
     // bit operations
-    Bitcoin::integer scriptnum_bit_not (const Bitcoin::integer &x);
-    Bitcoin::integer scriptnum_bit_and (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_bit_xor (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_bit_or (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_identical (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    data::bytes scriptnum_bit_not (const data::bytes &x);
+    data::bytes scriptnum_bit_and (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_bit_xor (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_bit_or (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_identical (const data::bytes &x, const data::bytes &y);
 
     // comparisons
-    Bitcoin::integer scriptnum_equal (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_unequal (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_greater_equal (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_less_equal (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_greater (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_less (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    data::bytes scriptnum_equal (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_unequal (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_greater_equal (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_less_equal (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_greater (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_less (const data::bytes &x, const data::bytes &y);
 
     // arithmetic
-    Bitcoin::integer scriptnum_negate (const Bitcoin::integer &x);
-    Bitcoin::integer scriptnum_plus (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_minus (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_times (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_divide (const Bitcoin::integer &x, const Bitcoin::integer &y);
-    Bitcoin::integer scriptnum_mod (const Bitcoin::integer &x, const Bitcoin::integer &y);
+    data::bytes scriptnum_negate (const data::bytes &x);
+    data::bytes scriptnum_plus (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_minus (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_times (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_divide (const data::bytes &x, const data::bytes &y);
+    data::bytes scriptnum_mod (const data::bytes &x, const data::bytes &y);
 
-    Bitcoin::integer scriptnum_abs (const Bitcoin::integer &x);
+    data::bytes scriptnum_abs (const data::bytes &x);
 
-    Bitcoin::integer scriptnum_power (const Bitcoin::integer &x, const data::N &y);
+    data::bytes scriptnum_power (const data::bytes &x, const data::N &y);
 
 }
 
