@@ -972,13 +972,15 @@ namespace Diophant {
         // scriptnum bit operations
         m = m.define (unary_operand::tilda, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
-            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
-                const data::bytes &>::make (scriptnum_bit_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (scriptnum_bit_not), {X})}));
 
         m = m.define (symbol {"bit_not"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}})},
-            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
-                const data::bytes &>::make (scriptnum_bit_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (scriptnum_bit_not), {X})}));
 
         m = m.define (binary_operand::bit_and, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
@@ -1019,19 +1021,22 @@ namespace Diophant {
         // scriptnum boolean operations
         m = m.define (unary_operand::bool_not, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
-            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
-                const data::bytes &>::make (scriptnum_bool_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (scriptnum_bool_not), {X})}));
 
         m = m.define (symbol {"not"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}})},
-            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
-                const data::bytes &>::make (scriptnum_bool_not), {X}}));
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (scriptnum_bool_not), {X})}));
 
         m = m.define (binary_operand::bool_and, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, y}}),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
-                const data::bytes &, const data::bytes &>::make (scriptnum_bool_and), {X, Y})}));
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &, const data::bytes &>::make (scriptnum_bool_and), {X, Y})}));
 
         m = m.define (symbol {"and"}, scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
@@ -1647,13 +1652,15 @@ namespace Diophant {
         // abs and negate for scriptnum.
         m = m.define (symbol ("abs"), scriptnum_type,
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}})},
-            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
-                const data::bytes &>::make (scriptnum_abs), {X}}));
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (scriptnum_abs), {X})}));
 
         m = m.define (unary_operand::negate, scriptnum_type,
             call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
-            call::make (symbol::make ("scriptnum"), {built_in_func<data::bytes,
-                const data::bytes &>::make (scriptnum_negate), {X}}));
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (scriptnum_negate), {X})}));
 
         // abs and negate for coordinate and secret.
         m = m.define (symbol ("abs"), secret_type, {

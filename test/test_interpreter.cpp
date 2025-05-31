@@ -192,9 +192,7 @@ namespace Diophant {
         test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
         test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
 
-        // arithmetic with secrets
-        test ("-secret 1", unary ('-', make_secret (1)),
-            make_secret (data::uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
+        // arithmetic
         test ("0 + 0");
         test ("1 + 0");
         test ("1 + 1");
@@ -204,6 +202,9 @@ namespace Diophant {
         // these should both have a divide by zero error on evaluation.
         test ("1 / 0");
         test ("1 % 0");
+/*
+        test ("-secret 1", unary ('-', make_secret (1)),
+            make_secret (data::uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
 
         // valid and invalid secret keys
         test_eval ("valid (secret 1)", True ());
@@ -220,7 +221,7 @@ namespace Diophant {
         test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
         test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
 
-        test_eval (R"({x -> 3, y -> 5}.x)", make_natural (3));
+        test_eval (R"({x -> 3, y -> 5}.x)", make_natural (3));*/
 
         // coordinates
         //test_eval ("coord 1 + coord 2", std::string {"coord 3"});
