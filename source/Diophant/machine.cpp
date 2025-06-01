@@ -248,7 +248,6 @@ namespace Diophant {
 
         // TODO we need an option for a set of automatic replacements.
         data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
-
             // we store a potential match here but continue searching to
             // ensure that we do not match twice.
             data::maybe<candidate> matched {};
@@ -256,7 +255,6 @@ namespace Diophant {
             while (!data::empty (tfs)) {
 
                 auto &tf = data::first (tfs);
-
                 if (data::size (tf.Arguments) > data::size (args)) return {};
 
                 auto match_args = data::take (args, data::size (tf.Arguments));
@@ -442,7 +440,6 @@ namespace Diophant {
                     if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) break;
 
                     data::stack<mtf> tfs = std::get<data::stack<mtf>> (*v);
-
                     while (true) {
                         if (data::empty (tfs)) goto done;
                         if (data::size (data::first (tfs).Arguments) >= min_args) break;

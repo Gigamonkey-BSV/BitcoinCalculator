@@ -440,6 +440,12 @@ namespace Diophant {
             }
         };
 
+        template <> struct write_leaf<data::uint256> {
+            std::ostream &operator () (std::ostream &o, const data::uint256 &n) {
+                return o << std::dec << n;
+            }
+        };
+
         template <> struct write_leaf<data::uint160_little> {
             std::ostream &operator () (std::ostream &o, const data::uint160_little &n) {
                 return o << std::dec << n;

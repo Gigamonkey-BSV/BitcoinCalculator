@@ -16,7 +16,7 @@ namespace Diophant {
 
     // crypto
     Bitcoin::integer sign (const data::uint256_little &key, const data::uint256_little &digest);
-    bool verify (const secp256k1::pubkey &x, const data::uint256_little &digest, const Bitcoin::integer &sig);
+    bool verify (const secp256k1::pubkey &x, const data::uint256_little &digest, const data::bytes &sig);
 
     machine initialize () {
 
@@ -1115,13 +1115,11 @@ namespace Diophant {
         m = m.define (symbol {"Coordinate"}, expression {coord_type});
         m = m.define (symbol {"Secret"}, expression {secret_type});
 
-        m = m.define (symbol {"secret"}, secret_type,
-            {call::make (symbol::make ("secret"), {pattern {natural_type, x}})},
+        m = m.define (symbol {"secret"}, secret_type, {{natural_type, x}},
             call::make (symbol::make ("secret"), {call::make (
                 built_in_func<data::uint256, const data::N &>::make (cast_natural_to_uint256), {X})}));
 
-        m = m.define (symbol {"coord"}, coord_type,
-            {call::make (symbol::make ("coord"), {pattern {natural_type, x}})},
+        m = m.define (symbol {"coord"}, coord_type, {{natural_type, x}},
             call::make (symbol::make ("coord"), {call::make (
                 built_in_func<data::uint256, const data::N &>::make (cast_natural_to_uint256), {X})}));
 
@@ -1899,47 +1897,71 @@ namespace Diophant {
         m = m.define (symbol {"push"}, scriptnum_type, {pubkey_type, x},
             call::make (built_in_func<Bitcoin::integer,
                 const secp256k1::pubkey &>::make (&push), {X}));
-/*
+
         // hash functions
+        m = m.define (symbol {"SHA1_128"}, uint128_little_type, {{bytes_type, x}},
+            call::make (built_in_func<data::uint128_little, const data::bytes &>::make (&SHA1_128), {X}));
+
+        m = m.define (symbol {"SHA1_128"}, uint128_little_type, {{string_type, x}},
+            call::make (built_in_func<data::uint128_little, const data::string &>::make (&SHA1_128), {X}));
+
+        m = m.define (symbol {"RIPEMD_160"}, uint160_little_type, {{bytes_type, x}},
+            call::make (built_in_func<data::uint160_little, const data::bytes &>::make (&RIPEMD_160), {X}));
+
+        m = m.define (symbol {"RIPEMD_160"}, uint160_little_type, {{string_type, x}},
+            call::make (built_in_func<data::uint160_little, const data::string &>::make (&RIPEMD_160), {X}));
+
         m = m.define (symbol {"SHA2_256"}, uint256_little_type, {{bytes_type, x}},
             call::make (built_in_func<data::uint256_little, const data::bytes &>::make (&SHA2_256), {X}));
 
-        m = m.define (symbol {"SHA2_256"}, uint256_little_type, {{bytes_type, x}},
-            call::make (built_in_func<data::uint256_little, const data::bytes &>::make (&SHA3_256), {X}));;
-
         m = m.define (symbol {"SHA2_256"}, uint256_little_type, {{string_type, x}},
+            call::make (built_in_func<data::uint256_little, const data::string &>::make (&SHA2_256), {X}));
+
+        m = m.define (symbol {"SHA3_256"}, uint256_little_type, {{bytes_type, x}},
+            call::make (built_in_func<data::uint256_little, const data::bytes &>::make (&SHA3_256), {X}));
+
+        m = m.define (symbol {"SHA3_256"}, uint256_little_type, {{string_type, x}},
+            call::make (built_in_func<data::uint256_little, const data::string &>::make (&SHA3_256), {X}));
+
+        m = m.define (symbol {"Hash160"}, uint160_little_type, {{bytes_type, x}},
+            call::make (built_in_func<data::uint160_little, const data::bytes &>::make (&Hash160), {X}));
+
+        m = m.define (symbol {"Hash160"}, uint160_little_type, {{string_type, x}},
+            call::make (built_in_func<data::uint160_little, const data::string &>::make (&Hash160), {X}));
+
+        m = m.define (symbol {"Hash256"}, uint256_little_type, {{bytes_type, x}},
             call::make (built_in_func<data::uint256_little, const data::bytes &>::make (&Hash256), {X}));
 
-        m = m.define (symbol {"SHA3_256"}, uint160_little_type, {{string_type, x}},
-            call::make (built_in_func<data::uint160_little, const data::bytes &>::make (&Hash160), {X}));
-*/
+        m = m.define (symbol {"Hash256"}, uint256_little_type, {{string_type, x}},
+            call::make (built_in_func<data::uint256_little, const data::string &>::make (&Hash256), {X}));
+
         // crypto
         m = m.define (symbol {"sign"}, scriptnum_type, {{secret_type, x}, {secret_type, y}},
             call::make (built_in_func<Bitcoin::integer,
                 const data::uint256_little &, const data::uint256_little &>::make (&sign), {X, Y}));
 
-        m = m.define (symbol {"verify"}, bool_type, {{pubkey_type, x}, {secret_type, y}, {scriptnum_type, z}},
+        m = m.define (symbol {"verify"}, bool_type, {{pubkey_type, x}, {uint256_little_type, y}, {bytes_type, z}},
             call::make (built_in_func<bool,
-                const secp256k1::pubkey &, const data::uint256_little &, const Bitcoin::integer &>::make (&verify), {X, Y, Z}));
+                const secp256k1::pubkey &, const data::uint256_little &, const data::bytes &>::make (&verify), {X, Y, Z}));
 
         // base 58
-        m = m.define (symbol {"base58_decode"}, secret_type, {{string_type, x}},
-            call::make (built_in_func<data::uint256_little,
+        m = m.define (symbol {"base58_decode"}, integer_type, {{string_type, x}},
+            call::make (built_in_func<data::N,
                 const data::string &>::make (&decode_base_58), {X}));
 
-        m = m.define (symbol {"base58_encode"}, string_type, {{secret_type, x}},
+        m = m.define (symbol {"base58_encode"}, string_type, {{integer_type, x}},
             call::make (built_in_func<data::string,
-                const data::uint256_little &>::make (&encode_base_58), {X}));
+                const data::N &>::make (&encode_base_58), {X}));
 
-        m = m.define (symbol {"base58_check_decode"}, list::make ({uint8_type, scriptnum_type}),
+        m = m.define (symbol {"base58_check_decode"}, list::make ({uint8_type, bytes_type}),
             {pattern {string_type, x}},
-            call::make (built_in_func<std::tuple<data::byte, Bitcoin::integer>,
+            call::make (built_in_func<std::tuple<data::byte, data::bytes>,
                 const data::string &>::make (&decode_base_58_check), {X}));
 
         m = m.define (symbol {"base58_check_encode"}, string_type,
             {list::make ({pattern {uint8_type, x}, pattern {scriptnum_type, y}})},
             call::make (built_in_func<data::string,
-                const data::byte &, const Bitcoin::integer &>::make (&encode_base_58_check), {X, Y}));
+                const data::byte &, const data::bytes &>::make (&encode_base_58_check), {X, Y}));
 
         type sats_type {symbol::make ("satoshi")};
 
@@ -1976,7 +1998,7 @@ namespace Diophant {
         return Bitcoin::integer {secp256k1::secret {key}.sign (digest)};
     }
 
-    bool verify (const secp256k1::pubkey &x, const data::uint256_little &digest, const Bitcoin::integer &sig) {
+    bool verify (const secp256k1::pubkey &x, const data::uint256_little &digest, const data::bytes &sig) {
         return x.verify (digest, secp256k1::signature {sig});
     }
 

@@ -203,28 +203,30 @@ namespace Diophant {
         test ("1 / 0");
         test ("1 % 0");
 
-        test ("-secret 1", unary ('-', make_secret (1)),
-            make_secret (data::uint256::read ("115792089237316195423570985008687907852837564279074904382605163141518161494336")));
+        // coordinates and secrets
+        test_eval ("-secret 1", "secret 115792089237316195423570985008687907852837564279074904382605163141518161494336");
+
+        test_eval ("-coord 1", "coord 115792089237316195423570985008687907853269984665640564039457584007908834671662");
+
+        test_eval ("coord 1 + coord 2", "coord 3");
+        test_eval ("secret 1 + secret 2", "secret 3");
 
         // valid and invalid secret keys
         test_eval ("valid (secret 1)", True ());
         test_eval ("valid (secret 0)", False ());
 
         // base 58
-        test_eval ("base58_encode 1234", string::make ("NH"));
+        test_eval ("base58_encode 1234", R"("NH")");
         test_eval (R"(base58_decode "NH")", make_natural (1234));
-
-        test_eval (
-            R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") )"
-            R"(0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
 
         test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
         test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
 
         test_eval (R"({x -> 3, y -> 5}.x)", make_natural (3));
 
-        // coordinates
-        //test_eval ("coord 1 + coord 2", std::string {"coord 3"});
+        test_eval (
+            R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") )"
+            R"(0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
 
         // addresses
 
