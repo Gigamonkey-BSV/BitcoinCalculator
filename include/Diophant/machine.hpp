@@ -76,6 +76,8 @@ namespace Diophant {
         machine define (unary_operand op, pattern in, expression as) const;
         machine define (binary_operand op, pattern left, pattern right, expression as) const;
 
+        machine define_cast (type From, type To, expression fun);
+
         bool valid () const;
 
         expression evaluate (Expression) const;

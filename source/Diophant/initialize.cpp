@@ -1115,6 +1115,16 @@ namespace Diophant {
         m = m.define (symbol {"Coordinate"}, expression {coord_type});
         m = m.define (symbol {"Secret"}, expression {secret_type});
 
+        m = m.define (symbol {"secret"}, secret_type,
+            {call::make (symbol::make ("secret"), {pattern {natural_type, x}})},
+            call::make (symbol::make ("secret"), {call::make (
+                built_in_func<data::uint256, const data::N &>::make (cast_natural_to_uint256), {X})}));
+
+        m = m.define (symbol {"coord"}, coord_type,
+            {call::make (symbol::make ("coord"), {pattern {natural_type, x}})},
+            call::make (symbol::make ("coord"), {call::make (
+                built_in_func<data::uint256, const data::N &>::make (cast_natural_to_uint256), {X})}));
+
         // identical
         m = m.define (binary_operand::identical, bool_type,
             call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
@@ -1356,6 +1366,15 @@ namespace Diophant {
             {call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}), {natural_type, y}},
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::N &>::make (&scriptnum_resize), {X, Y})}));
+
+        // TODO Let's do some casts
+
+        // N can be cast to any other number type.
+        // Z can be cast to any other integer type.
+
+        // bool can be cast to scriptnum.
+
+        // bytes can be cast to scriptnum.
 
         // now let's talk about string operations.
         m = m.define (binary_operand::cat, string_type, {string_type, x}, {string_type, y},
