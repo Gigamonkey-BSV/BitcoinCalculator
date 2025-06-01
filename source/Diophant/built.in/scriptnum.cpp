@@ -4,6 +4,13 @@
 
 namespace Diophant {
 
+    data::bytes set_sign_bit (const data::bytes &b) {
+        if (b.size () == 0) return data::bytes {{0x80}};
+        data::bytes bb = b;
+        bb[-1] = (bb[-1] & 0x7f) | ((~bb[-1]) & 0x80);
+        return bb;
+    }
+
     data::bytes scriptnum_size (const data::bytes &x) {
         return Bitcoin::integer {x.size ()};
     }

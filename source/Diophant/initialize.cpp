@@ -903,68 +903,68 @@ namespace Diophant {
 
         m = m.define (binary_operand::bool_equal, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_equal), {X, Y}));
+                const data::N, const data::N>::make (natural_equal), {X, Y}));
 
         m = m.define (binary_operand::bool_unequal, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_unequal), {X, Y}));
+                const data::N, const data::N>::make (natural_unequal), {X, Y}));
 
         m = m.define (binary_operand::identical, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_equal), {X, Y}));
+                const data::N, const data::N>::make (natural_equal), {X, Y}));
 
         m = m.define (symbol {"identical"}, bool_type, {{natural_type, x}, {natural_type, y}},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_equal), {X, Y}));
+                const data::N, const data::N>::make (natural_equal), {X, Y}));
 
         m = m.define (binary_operand::bool_equal, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_equal), {X, Y}));
+                const data::Z, const data::Z>::make (integer_equal), {X, Y}));
 
         m = m.define (binary_operand::bool_unequal, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_unequal), {X, Y}));
+                const data::Z, const data::Z>::make (integer_unequal), {X, Y}));
 
         m = m.define (binary_operand::identical, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_equal), {X, Y}));
+                const data::Z, const data::Z>::make (integer_equal), {X, Y}));
 
         m = m.define (symbol {"identical"}, bool_type, {{integer_type, x}, {integer_type, y}},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_equal), {X, Y}));
+                const data::Z, const data::Z>::make (integer_equal), {X, Y}));
 
         // comparisons
         m = m.define (binary_operand::greater_equal, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_greater_equal), {X, Y}));
+                const data::N, const data::N>::make (natural_greater_equal), {X, Y}));
 
         m = m.define (binary_operand::less_equal, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_less_equal), {X, Y}));
+                const data::N, const data::N>::make (natural_less_equal), {X, Y}));
 
         m = m.define (binary_operand::greater, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_greater), {X, Y}));
+                const data::N, const data::N>::make (natural_greater), {X, Y}));
 
         m = m.define (binary_operand::less, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_less), {X, Y}));
+                const data::N, const data::N>::make (natural_less), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_greater_equal), {X, Y}));
+                const data::Z, const data::Z>::make (integer_greater_equal), {X, Y}));
 
         m = m.define (binary_operand::less_equal, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_less_equal), {X, Y}));
+                const data::Z, const data::Z>::make (integer_less_equal), {X, Y}));
 
         m = m.define (binary_operand::greater, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_greater), {X, Y}));
+                const data::Z, const data::Z>::make (integer_greater), {X, Y}));
 
         m = m.define (binary_operand::less, bool_type, {integer_type, x}, {integer_type, y},
             call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_less), {X, Y}));
+                const data::Z, const data::Z>::make (integer_less), {X, Y}));
 
         // scriptnum is the bitcoin number type used in scripts.
         type scriptnum_type {call::make (symbol::make ("scriptnum"), {bytes_type})};
@@ -1106,6 +1106,38 @@ namespace Diophant {
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_less), {X, Y})}));
 
+        // ` operator (used key derivations)
+
+        m = m.define (unary_operand::harden, uint8_type, {uint8_type, x},
+            call::make (built_in_func<data::byte, data::byte>::make (harden), {X}));
+
+        m = m.define (unary_operand::harden, uint16_type, {uint16_type, x},
+            call::make (built_in_func<data::uint16, data::uint16>::make (harden), {X}));
+
+        m = m.define (unary_operand::harden, uint32_type, {uint32_type, x},
+            call::make (built_in_func<data::uint32, data::uint32>::make (harden), {X}));
+
+        m = m.define (unary_operand::harden, uint64_type, {uint64_type, x},
+            call::make (built_in_func<data::uint64, data::uint64>::make (harden), {X}));
+
+        m = m.define (unary_operand::harden, uint128_type, {uint128_type, x},
+            call::make (built_in_func<data::uint128, const data::uint128 &>::make (harden), {X}));
+
+        m = m.define (unary_operand::harden, uint160_type, {uint160_type, x},
+            call::make (built_in_func<data::uint160, const data::uint160 &>::make (harden), {X}));
+
+        m = m.define (unary_operand::harden, uint256_type, {uint256_type, x},
+            call::make (built_in_func<data::uint256, const data::uint256 &>::make (harden), {X}));
+
+        m = m.define (unary_operand::harden, uint512_type, {uint512_type, x},
+            call::make (built_in_func<data::uint512, const data::uint512 &>::make (harden), {X}));
+
+        // set sign bit.
+        m = m.define (unary_operand::harden, scriptnum_type,
+            call::make (symbol::make ("scriptnum"), {pattern {bytes_type, x}}),
+            call::make (symbol::make ("scriptnum"), {
+                call::make (built_in_func<data::bytes, const data::bytes &>::make (set_sign_bit), {X})}));
+
         // we also have secret and coord, two modular number types that are used in the
         // Bitcoin elliptic curve.
 
@@ -1117,11 +1149,11 @@ namespace Diophant {
 
         m = m.define (symbol {"secret"}, secret_type, {{natural_type, x}},
             call::make (symbol::make ("secret"), {call::make (
-                built_in_func<data::uint256, const data::N &>::make (cast_natural_to_uint256), {X})}));
+                built_in_func<data::uint256, const data::N>::make (cast_natural_to_uint256), {X})}));
 
         m = m.define (symbol {"coord"}, coord_type, {{natural_type, x}},
             call::make (symbol::make ("coord"), {call::make (
-                built_in_func<data::uint256, const data::N &>::make (cast_natural_to_uint256), {X})}));
+                built_in_func<data::uint256, const data::N>::make (cast_natural_to_uint256), {X})}));
 
         // identical
         m = m.define (binary_operand::identical, bool_type,
@@ -1963,12 +1995,15 @@ namespace Diophant {
             call::make (built_in_func<data::string,
                 const data::byte &, const data::bytes &>::make (&encode_base_58_check), {X, Y}));
 
-        type sats_type {symbol::make ("satoshi")};
+
 
         m = m.define (symbol {"address_main"}, byte::make (data::byte (0x00)));
         m = m.define (symbol {"address_test"}, byte::make (data::byte (0x6f)));
         m = m.define (symbol {"WIF_main"}, byte::make (data::byte (0x80)));
         m = m.define (symbol {"WIF_test"}, byte::make (data::byte (0xef)));
+
+        type sats_type {symbol::make ("satoshi")};
+
         m = m.define (symbol {"sighash_all"}, byte::make (data::byte (1)));
         m = m.define (symbol {"sighash_none"}, byte::make (data::byte (2)));
         m = m.define (symbol {"sighash_single"}, byte::make (data::byte (3)));

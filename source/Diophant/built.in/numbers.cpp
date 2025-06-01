@@ -1,53 +1,53 @@
-#include <Diophant/built.in/modular.hpp>
+#include <Diophant/built.in/numbers.hpp>
 #include <data/power.hpp>
 
 namespace Diophant {
 
-    bool natural_equal (const data::N &x, const data::N &y) {
+    bool natural_equal (const data::N x, const data::N y) {
         return x == y;
     }
 
-    bool natural_unequal (const data::N &x, const data::N &y) {
+    bool natural_unequal (const data::N x, const data::N y) {
         return x != y;
     }
 
-    bool natural_greater_equal (const data::N &x, const data::N &y) {
+    bool natural_greater_equal (const data::N x, const data::N y) {
         return x >= y;
     }
 
-    bool natural_less_equal (const data::N &x, const data::N &y) {
+    bool natural_less_equal (const data::N x, const data::N y) {
         return x <= y;
     }
 
-    bool natural_greater (const data::N &x, const data::N &y) {
+    bool natural_greater (const data::N x, const data::N y) {
         return x > y;
     }
 
-    bool natural_less (const data::N &x, const data::N &y) {
+    bool natural_less (const data::N x, const data::N y) {
         return x < y;
     }
 
-    bool integer_equal (const data::Z &x, const data::Z &y) {
+    bool integer_equal (const data::Z x, const data::Z y) {
         return x == y;
     }
 
-    bool integer_unequal (const data::Z &x, const data::Z &y) {
+    bool integer_unequal (const data::Z x, const data::Z y) {
         return x != y;
     }
 
-    bool integer_greater_equal (const data::Z &x, const data::Z &y) {
+    bool integer_greater_equal (const data::Z x, const data::Z y) {
         return x >= y;
     }
 
-    bool integer_less_equal (const data::Z &x, const data::Z &y) {
+    bool integer_less_equal (const data::Z x, const data::Z y) {
         return x <= y;
     }
 
-    bool integer_greater (const data::Z &x, const data::Z &y) {
+    bool integer_greater (const data::Z x, const data::Z y) {
         return x > y;
     }
 
-    bool integer_less (const data::Z &x, const data::Z &y) {
+    bool integer_less (const data::Z x, const data::Z y) {
         return x < y;
     }
 
@@ -599,110 +599,222 @@ namespace Diophant {
         return x < 0 ? -x : x;
     }
 
-    using GMP_uint = data::math::number::GMP::gmp_uint;
-
-    static_assert (std::same_as<GMP_uint, data::uint64>);
-
-    data::byte cast_natural_to_byte (const data::N &n) {
-        if (n > std::numeric_limits<data::byte>::max ()) throw std::out_of_range {""};
-        return static_cast<data::byte> (*n.Value.begin ());
+    data::uint16_little harden_little (data::uint16_little x) {
+        return harden (data::uint16 (x));
     }
 
-    data::int8 cast_natural_to_int8 (const data::N &n) {
-        if (n > std::numeric_limits<data::int8>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int8> (*n.Value.begin ()) : static_cast<data::int8> (*n.Value.begin ());
+    data::uint32_little harden_little (data::uint32_little x) {
+        return harden (data::uint32 (x));
     }
 
-    data::uint16 cast_natural_to_uint16 (const data::N &n) {
-        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint16> (*n.Value.begin ());
+    data::uint64_little harden_little (data::uint64_little x) {
+        return harden (data::uint64 (x));
     }
 
-    data::int16 cast_natural_to_int16 (const data::N &n) {
-        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
+    data::uint16_big harden_big (data::uint16_big x) {
+        return harden (data::uint16 (x));
     }
 
-    data::uint16_little cast_natural_to_uint16_little (const data::N &n) {
-        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint16> (*n.Value.begin ());
+    data::uint32_big harden_big (data::uint32_big x) {
+        return harden (data::uint32 (x));
     }
 
-    data::int16_little cast_natural_to_int16_little (const data::N &n) {
-        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
+    data::uint64_big harden_big (data::uint64_big x) {
+        return harden (data::uint64 (x));
     }
 
-    data::uint16_big cast_natural_to_uint16_big (const data::N &n) {
-        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint16> (*n.Value.begin ());
+    data::byte harden (data::byte x) {
+        return (x & 0x7f) | ((~x) & 0x80);
     }
 
-    data::int16_big cast_natural_to_int16_big (const data::N &n) {
-        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
+    data::uint16 harden (data::uint16 x) {
+        return (x & 0x7fff) | ((~x) & 0x8000);
     }
 
-    data::uint32 cast_natural_to_uint32 (const data::N &n) {
-        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint32> (*n.Value.begin ());
+    data::uint32 harden (data::uint32 x) {
+        return (x & 0x7fffffff) | ((~x) & 0x80000000);
     }
 
-    data::int32 cast_natural_to_int32 (const data::N &n) {
-        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
-    }
-
-    data::uint32_little cast_natural_to_uint32_little (const data::N &n) {
-        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint32> (*n.Value.begin ());
-    }
-
-    data::int32_little cast_natural_to_int32_little (const data::N &n) {
-        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
-    }
-
-    data::uint32_big cast_natural_to_uint32_big (const data::N &n) {
-        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint32> (*n.Value.begin ());
-    }
-
-    data::int32_big cast_natural_to_int32_big (const data::N &n) {
-        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
-    }
-
-    data::uint64 cast_natural_to_uint64 (const data::N &n) {
-        return data::uint64 (n);
-    }
-
-    data::int64 cast_natural_to_int64 (const data::N &n) {
-        if (n > std::numeric_limits<data::int64>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
-    }
-
-    data::uint64_little cast_natural_to_uint64_little (const data::N &n) {
-        return data::uint64 (n);
-    }
-
-    data::int64_little cast_natural_to_int64_little (const data::N &n) {
-        if (n > std::numeric_limits<data::int64>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
-    }
-
-    data::uint64_big cast_natural_to_uint64_big (const data::N &n) {
-        return data::uint64 (n);
-    }
-
-    data::int64_big cast_natural_to_int64_big (const data::N &n) {
-        if (n > std::numeric_limits<data::uint64>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
+    data::uint64 harden (data::uint64 x) {
+        return (x & 0x7fffffffffffffff) | ((~x) & 0x8000000000000000);
     }
 
     static_assert (std::same_as<data::uint128, data::math::uint<data::endian::little, 4, data::uint32>>);
 
-    data::uint128 cast_natural_to_uint128 (const data::N &n) {
+    static_assert (std::same_as<data::uint160, data::math::uint<data::endian::little, 5, data::uint32>>);
+
+    static_assert (std::same_as<data::uint256, data::math::uint<data::endian::little, 8, data::uint32>>);
+
+    static_assert (std::same_as<data::uint512, data::math::uint<data::endian::little, 16, data::uint32>>);
+
+    data::uint128 harden (const data::uint128 &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7fffffff) | ((~y.words ()[-1]) & 0x80000000);
+        return y;
+    }
+
+    data::uint160 harden (const data::uint160 &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7fffffff) | ((~y.words ()[-1]) & 0x80000000);
+        return y;
+    }
+
+    data::uint256 harden (const data::uint256 &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7fffffff) | ((~y.words ()[-1]) & 0x80000000);
+        return y;
+    }
+
+    data::uint512 harden (const data::uint512 &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7fffffff) | ((~y.words ()[-1]) & 0x80000000);
+        return y;
+    }
+
+    data::uint160_little harden_little (const data::uint160_little &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
+        return y;
+    }
+
+    data::uint256_little harden_little (const data::uint256_little &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
+        return y;
+    }
+
+    data::uint512_little harden_little (const data::uint512_little &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
+        return y;
+    }
+
+    data::uint128_big harden_big (const data::uint128_big &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
+        return y;
+    }
+
+    data::uint160_big harden_big (const data::uint160_big &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
+        return y;
+    }
+
+    data::uint256_big harden_big (const data::uint256_big &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
+        return y;
+    }
+
+    data::uint512_big harden_big (const data::uint512_big &x) {
+        auto y = x;
+        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
+        return y;
+    }
+
+    using GMP_uint = data::math::number::GMP::gmp_uint;
+
+    static_assert (std::same_as<GMP_uint, data::uint64>);
+
+    data::byte cast_natural_to_byte (const data::N n) {
+        if (n > std::numeric_limits<data::byte>::max ()) throw std::out_of_range {""};
+        return static_cast<data::byte> (*n.Value.begin ());
+    }
+
+    data::int8 cast_natural_to_int8 (const data::N n) {
+        if (n > std::numeric_limits<data::int8>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int8> (*n.Value.begin ()) : static_cast<data::int8> (*n.Value.begin ());
+    }
+
+    data::uint16 cast_natural_to_uint16 (const data::N n) {
+        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
+        return static_cast<data::uint16> (*n.Value.begin ());
+    }
+
+    data::int16 cast_natural_to_int16 (const data::N n) {
+        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
+    }
+
+    data::uint16_little cast_natural_to_uint16_little (const data::N n) {
+        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
+        return static_cast<data::uint16> (*n.Value.begin ());
+    }
+
+    data::int16_little cast_natural_to_int16_little (const data::N n) {
+        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
+    }
+
+    data::uint16_big cast_natural_to_uint16_big (const data::N n) {
+        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
+        return static_cast<data::uint16> (*n.Value.begin ());
+    }
+
+    data::int16_big cast_natural_to_int16_big (const data::N n) {
+        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
+    }
+
+    data::uint32 cast_natural_to_uint32 (const data::N n) {
+        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
+        return static_cast<data::uint32> (*n.Value.begin ());
+    }
+
+    data::int32 cast_natural_to_int32 (const data::N n) {
+        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
+    }
+
+    data::uint32_little cast_natural_to_uint32_little (const data::N n) {
+        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
+        return static_cast<data::uint32> (*n.Value.begin ());
+    }
+
+    data::int32_little cast_natural_to_int32_little (const data::N n) {
+        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
+    }
+
+    data::uint32_big cast_natural_to_uint32_big (const data::N n) {
+        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
+        return static_cast<data::uint32> (*n.Value.begin ());
+    }
+
+    data::int32_big cast_natural_to_int32_big (const data::N n) {
+        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
+    }
+
+    data::uint64 cast_natural_to_uint64 (const data::N n) {
+        return data::uint64 (n);
+    }
+
+    data::int64 cast_natural_to_int64 (const data::N n) {
+        if (n > std::numeric_limits<data::int64>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
+    }
+
+    data::uint64_little cast_natural_to_uint64_little (const data::N n) {
+        return data::uint64 (n);
+    }
+
+    data::int64_little cast_natural_to_int64_little (const data::N n) {
+        if (n > std::numeric_limits<data::int64>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
+    }
+
+    data::uint64_big cast_natural_to_uint64_big (const data::N n) {
+        return data::uint64 (n);
+    }
+
+    data::int64_big cast_natural_to_int64_big (const data::N n) {
+        if (n > std::numeric_limits<data::uint64>::max ()) throw std::out_of_range {""};
+        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
+    }
+
+    data::uint128 cast_natural_to_uint128 (const data::N n) {
         if (n > data::uint128::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::uint128 u {};
@@ -710,7 +822,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int128 cast_natural_to_int128 (const data::N &n) {
+    data::int128 cast_natural_to_int128 (const data::N n) {
         if (n > data::int128::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::int128 u {};
@@ -718,7 +830,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint128_little cast_natural_to_uint128_little (const data::N &n) {
+    data::uint128_little cast_natural_to_uint128_little (const data::N n) {
         if (n > data::uint128::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::uint128_little u {};
@@ -726,7 +838,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int128_little cast_natural_to_int128_little (const data::N &n) {
+    data::int128_little cast_natural_to_int128_little (const data::N n) {
         if (n > data::int128::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int128_little u {};
@@ -734,7 +846,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint128_big cast_natural_to_uint128_big (const data::N &n) {
+    data::uint128_big cast_natural_to_uint128_big (const data::N n) {
         if (n > data::uint128::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::uint128_big u {};
@@ -742,7 +854,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int128_big cast_natural_to_int128_big (const data::N &n) {
+    data::int128_big cast_natural_to_int128_big (const data::N n) {
         if (n > data::int128::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int128_big u {};
@@ -750,9 +862,7 @@ namespace Diophant {
         return u;
     }
 
-    static_assert (std::same_as<data::uint160, data::math::uint<data::endian::little, 5, data::uint32>>);
-
-    data::uint160 cast_natural_to_uint160 (const data::N &n) {
+    data::uint160 cast_natural_to_uint160 (const data::N n) {
         if (n > data::uint160::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint16> nb (n);
         data::uint160 u {};
@@ -760,7 +870,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int160 cast_natural_to_int160 (const data::N &n) {
+    data::int160 cast_natural_to_int160 (const data::N n) {
         if (n > data::int160::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint16> nb (n);
         data::int160 u {};
@@ -768,7 +878,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint160_little cast_natural_to_uint160_little (const data::N &n) {
+    data::uint160_little cast_natural_to_uint160_little (const data::N n) {
         if (n > data::uint160::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::uint160_little u {};
@@ -776,7 +886,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int160_little cast_natural_to_int160_little (const data::N &n) {
+    data::int160_little cast_natural_to_int160_little (const data::N n) {
         if (n > data::int160::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int160_little u {};
@@ -784,7 +894,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint160_big cast_natural_to_uint160_big (const data::N &n) {
+    data::uint160_big cast_natural_to_uint160_big (const data::N n) {
         if (n > data::uint160::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::uint160_big u {};
@@ -792,7 +902,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int160_big cast_natural_to_int160_big (const data::N &n) {
+    data::int160_big cast_natural_to_int160_big (const data::N n) {
         if (n > data::int160::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int160_big u {};
@@ -800,9 +910,7 @@ namespace Diophant {
         return u;
     }
 
-    static_assert (std::same_as<data::uint256, data::math::uint<data::endian::little, 8, data::uint32>>);
-
-    data::uint256 cast_natural_to_uint256 (const data::N &n) {
+    data::uint256 cast_natural_to_uint256 (const data::N n) {
         if (n > data::uint256::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb {n};
         data::uint256 u {};
@@ -810,7 +918,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int256 cast_natural_to_int256 (const data::N &n) {
+    data::int256 cast_natural_to_int256 (const data::N n) {
         if (n > data::int256::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::int256 u {};
@@ -818,7 +926,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint256_little cast_natural_to_uint256_little (const data::N &n) {
+    data::uint256_little cast_natural_to_uint256_little (const data::N n) {
         if (n > data::uint256::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::uint256_little u {};
@@ -826,7 +934,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int256_little cast_natural_to_int256_little (const data::N &n) {
+    data::int256_little cast_natural_to_int256_little (const data::N n) {
         if (n > data::int256::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int256_little u {};
@@ -834,7 +942,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint256_big cast_natural_to_uint256_big (const data::N &n) {
+    data::uint256_big cast_natural_to_uint256_big (const data::N n) {
         if (n > data::uint256::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::uint256_big u {};
@@ -842,7 +950,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int256_big cast_natural_to_int256_big (const data::N &n) {
+    data::int256_big cast_natural_to_int256_big (const data::N n) {
         if (n > data::int256::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int256_big u {};
@@ -850,9 +958,7 @@ namespace Diophant {
         return u;
     }
 
-    static_assert (std::same_as<data::uint512, data::math::uint<data::endian::little, 16, data::uint32>>);
-
-    data::uint512 cast_natural_to_uint512 (const data::N &n) {
+    data::uint512 cast_natural_to_uint512 (const data::N n) {
         if (n > data::uint512::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::uint512 u {};
@@ -860,7 +966,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int512 cast_natural_to_int512 (const data::N &n) {
+    data::int512 cast_natural_to_int512 (const data::N n) {
         if (n > data::int512::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::int512 u {};
@@ -868,7 +974,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint512_little cast_natural_to_uint512_little (const data::N &n) {
+    data::uint512_little cast_natural_to_uint512_little (const data::N n) {
         if (n > data::uint512::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::uint512_little u {};
@@ -876,7 +982,7 @@ namespace Diophant {
         return u;
     }
 
-    data::int512_little cast_natural_to_int512_little (const data::N &n) {
+    data::int512_little cast_natural_to_int512_little (const data::N n) {
         if (n > data::uint512::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int512_little u {};
@@ -884,7 +990,7 @@ namespace Diophant {
         return u;
     }
 
-    data::uint512_big cast_natural_to_uint512_big (const data::N &n) {
+    data::uint512_big cast_natural_to_uint512_big (const data::N n) {
         if (n > data::int512::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::uint512_big u {};
@@ -892,199 +998,11 @@ namespace Diophant {
         return u;
     }
 
-    data::int512_big cast_natural_to_int512_big (const data::N &n) {
+    data::int512_big cast_natural_to_int512_big (const data::N n) {
         if (n > data::int512::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::byte> nb (n);
         data::int512_big u {};
         std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (64)), u.words ().begin ());
         return u;
     }
-/*
-    data::byte cast_integer_to_byte (const data::Z &n) {
-        if (n > std::numeric_limits<data::byte>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int8 cast_integer_to_int8 (const data::Z &n) {
-        if (n > std::numeric_limits<data::int8>::max () ||
-            n < std::numeric_limits<data::int8>::min ()) throw std::out_of_range {""};
-
-    }
-
-    data::uint16 cast_integer_to_uint16 (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint16>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int16 cast_integer_to_int16 (const data::Z &n) {
-
-    }
-
-    data::uint16_little cast_integer_to_uint16_little (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint16>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int16_little cast_integer_to_int16_little (const data::Z &n) {
-
-    }
-
-    data::uint16_big cast_integer_to_uint16_big (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint16>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int16_big cast_integer_to_int16_big (const data::Z &n) {
-
-    }
-
-    data::uint32 cast_integer_to_uint32 (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint32>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int32 cast_integer_to_int32 (const data::Z &n) {
-
-    }
-
-    data::uint32_little cast_integer_to_uint32_little (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint32>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int32_little cast_integer_to_int32_little (const data::Z &n) {
-
-    }
-
-    data::uint32_big cast_integer_to_uint32_big (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint32>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int32_big cast_integer_to_int32_big (const data::Z &n) {
-
-    }
-
-    data::uint64 cast_integer_to_uint64 (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint64>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int64 cast_integer_to_int64 (const data::Z &n) {
-
-    }
-
-    data::uint64_little cast_integer_to_uint64_little (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint64>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int64_little cast_integer_to_int64_little (const data::Z &n) {
-
-    }
-
-    data::uint64_big cast_integer_to_uint64_big (const data::Z &n) {
-        if (n > std::numeric_limits<data::uint64>::max () || n < 0) throw std::out_of_range {""};
-
-    }
-
-    data::int64_big cast_integer_to_int64_big (const data::Z &n) {
-
-    }
-
-    data::uint128 cast_integer_to_uint128 (const data::Z &n) {
-
-    }
-
-    data::int128 cast_integer_to_int128 (const data::Z &n) {
-
-    }
-
-    data::uint128_little cast_integer_to_uint128_little (const data::Z &n) {
-
-    }
-
-    data::int128_little cast_integer_to_int128_little (const data::Z &n) {
-
-    }
-
-    data::uint128_big cast_integer_to_uint128_big (const data::Z &n) {
-
-    }
-
-    data::int128_big cast_integer_to_int128_big (const data::Z &n) {
-
-    }
-
-    data::uint160 cast_integer_to_uint160 (const data::Z &n) {
-
-    }
-
-    data::int160 cast_integer_to_int160 (const data::Z &n) {
-
-    }
-
-    data::uint160_little cast_integer_to_uint160_little (const data::Z &n) {
-
-    }
-
-    data::int160_little cast_integer_to_int160_little (const data::Z &n) {
-
-    }
-
-    data::uint160_big cast_integer_to_uint160_big (const data::Z &n) {
-
-    }
-
-    data::int160_big cast_integer_to_int160_big (const data::Z &n) {
-
-    }
-
-    data::uint256 cast_integer_to_uint256 (const data::Z &n) {
-
-    }
-
-    data::int256 cast_integer_to_int256 (const data::Z &n) {
-
-    }
-
-    data::uint256_little cast_integer_to_uint256_little (const data::Z &n) {
-
-    }
-
-    data::int256_little cast_integer_to_int256_little (const data::Z &n) {
-
-    }
-
-    data::uint256_big cast_integer_to_uint256_big (const data::Z &n) {
-
-    }
-
-    data::int256_big cast_integer_to_int256_big (const data::Z &n) {
-
-    }
-
-    data::uint512 cast_integer_to_uint512 (const data::Z &n) {
-
-    }
-
-    data::int512 cast_integer_to_int512 (const data::Z &n) {
-
-    }
-
-    data::uint512_little cast_integer_to_uint512_little (const data::Z &n) {
-
-    }
-
-    data::int512_little cast_integer_to_int512_little (const data::Z &n) {
-
-    }
-
-    data::uint512_big cast_integer_to_uint512_big (const data::Z &n) {
-
-    }
-
-    data::int512_big cast_integer_to_int512_big (const data::Z &n) {
-
-    }*/
 }

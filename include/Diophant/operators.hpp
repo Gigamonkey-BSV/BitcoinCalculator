@@ -11,7 +11,8 @@ namespace Diophant {
         negate = '-',
         star = '*',
         ampersand = '&',
-        bool_not = '!'
+        bool_not = '!',
+        harden = '`'
     };
 
     enum class binary_operand : data::byte {

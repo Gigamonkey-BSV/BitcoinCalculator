@@ -52,6 +52,8 @@ namespace Diophant {
 
     data::bytes scriptnum_power (const data::bytes &x, const data::N &y);
 
+    data::bytes set_sign_bit (const data::bytes &);
+
 }
 
 #endif
