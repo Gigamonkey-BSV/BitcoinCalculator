@@ -232,12 +232,13 @@ namespace Diophant {
         test_eval ("base58.encode 1234", R"("NH")");
         test_eval (R"(base58.decode "NH")", make_natural (1234));
 
-        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));/*
+        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
         test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
 
         test_eval (
             R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") )"
-            R"(0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());*/
+            R"('3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
+            R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')", True ());
 
         // addresses
 

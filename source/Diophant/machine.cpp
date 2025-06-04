@@ -506,6 +506,19 @@ namespace Diophant {
             if (const boolean *xx = dynamic_cast<const boolean *> (If.get ()); xx != nullptr)
                 return xx->Value ? df.Then : df.Else;
 
+            if (const call *fx = dynamic_cast<const call *> (If.get ()); fx != nullptr) {
+                if (fx->Args.size () != 1) return {};
+
+                const symbol *f = dynamic_cast<const symbol *> (fx->Fun.get ());
+                if (f == nullptr) return {};
+                if (*f != symbol {"scriptnum"}) return {};
+
+                const bytes *x = dynamic_cast<const bytes *> (fx->Args.first ().get ());
+                if (x == nullptr) return {};
+
+                return Bitcoin::nonzero (x->Value) ? df.Then : df.Else;
+            }
+
             return {};
         }
 
