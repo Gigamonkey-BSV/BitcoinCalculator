@@ -87,6 +87,7 @@ add_library (
     source/Diophant/built.in/base58.cpp
     source/Diophant/built.in/hash.cpp
     source/Diophant/values/list.cpp
+    source/Diophant/values/struct.cpp
 )
 
 target_link_libraries (diophant PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)

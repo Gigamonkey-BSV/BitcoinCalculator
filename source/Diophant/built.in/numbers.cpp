@@ -639,13 +639,13 @@ namespace Diophant {
         return (x & 0x7fffffffffffffff) | ((~x) & 0x8000000000000000);
     }
 
-    static_assert (std::same_as<data::uint128, data::math::uint<data::endian::little, 4, data::uint32>>);
+    static_assert (std::same_as<data::uint128, data::math::uint<data::endian::little, 2, data::uint64>>);
 
     static_assert (std::same_as<data::uint160, data::math::uint<data::endian::little, 5, data::uint32>>);
 
-    static_assert (std::same_as<data::uint256, data::math::uint<data::endian::little, 8, data::uint32>>);
+    static_assert (std::same_as<data::uint256, data::math::uint<data::endian::little, 4, data::uint64>>);
 
-    static_assert (std::same_as<data::uint512, data::math::uint<data::endian::little, 16, data::uint32>>);
+    static_assert (std::same_as<data::uint512, data::math::uint<data::endian::little, 8, data::uint64>>);
 
     data::uint128 harden (const data::uint128 &x) {
         auto y = x;

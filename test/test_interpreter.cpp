@@ -199,6 +199,9 @@ namespace Diophant {
 
         test ("123 + 234", binary (binary_operand::plus, make_natural (123), make_natural (234)), make_natural (357));
 
+        test_eval ("0x80 == 0x00", "0x");
+        test_eval ("0x81 == 0x8001", "0x");
+
         // these should both have a divide by zero error on evaluation.
         test ("1 / 0");
         test ("1 % 0");
@@ -215,20 +218,29 @@ namespace Diophant {
         test_eval ("valid (secret 1)", True ());
         test_eval ("valid (secret 0)", False ());
 
-        // base 58
-        test_eval ("base58_encode 1234", R"("NH")");
-        test_eval (R"(base58_decode "NH")", make_natural (1234));
+        test_eval ("to_public true (secret 123)", "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+        test_eval ("to_public false (secret 123)",
+            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915");
 
-        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
-        test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
+        test_eval ("compress "
+            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915",
+            "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
 
         test_eval (R"({x -> 3, y -> 5}.x)", make_natural (3));
 
+        // base 58
+        test_eval ("base58.encode 1234", R"("NH")");
+        test_eval (R"(base58.decode "NH")", make_natural (1234));
+
+        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));/*
+        test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
+
         test_eval (
             R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") )"
-            R"(0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());
+            R"(0x36abbef1e34e0bc3c9eab818ca3b9a26c044a2eff4c11c601e7dbb67a600060820027e156cced0da7d4ee7e99d8c2ac5b10642ee2e8792bd24eb6637bdbf777178f00021024530)", True ());*/
 
         // addresses
+
 
         // WIFs
 

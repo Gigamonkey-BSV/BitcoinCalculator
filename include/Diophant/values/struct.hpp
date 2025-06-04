@@ -14,27 +14,11 @@ namespace Diophant {
         bool cast (const machine &, const node &) const final override;
         bool operator == (const node &) const final override;
 
-        std::ostream &write (std::ostream &o) const final override {
-            o << "{";
-            auto b = Values.begin ();
-            if (b != Values.end ()) {
-                o << b->Key << " -> " << b->Value;
-                while (true) {
-                    b++;
-                    if (b == Values.end ()) break;
-                    o << ", " << b->Key << " -> " << b->Value;
-                }
-            }
-            return o << "}";
-        }
+        std::ostream &write (std::ostream &o) const final override;
     };
 
     expression inline dstruct::make (data::stack<data::entry<symbol, expression>> v) {
         return expression {std::static_pointer_cast<form> (std::make_shared<dstruct> (v))};
-    }
-
-    bool inline dstruct::cast (const machine &, const node &) const {
-        throw data::exception {} << "incomplete method dstruct::cast";
     }
 
     bool inline dstruct::operator == (const node &v) const {

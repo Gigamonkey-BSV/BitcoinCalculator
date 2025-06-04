@@ -28,6 +28,8 @@ namespace Diophant {
 
     data::uint160_little Hash160 (const data::string &m);
 
+    data::uint160_little Hash160 (const secp256k1::pubkey &m);
+
 }
 
 #endif

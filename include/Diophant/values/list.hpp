@@ -20,10 +20,6 @@ namespace Diophant {
         return expression {std::static_pointer_cast<form> (std::make_shared<list> (x))};
     }
 
-    bool inline list::cast (const machine &, const node &) const {
-        throw data::exception {} << "we are not using lists right now";
-    }
-
     bool inline list::operator == (const node &v) const {
         if (const list *c = dynamic_cast<const list *> (&v); c != nullptr)
             return List == c->List;

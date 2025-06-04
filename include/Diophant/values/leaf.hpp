@@ -1,6 +1,7 @@
 #ifndef BITCOIN_CALCULATOR_VALUE_LEAF
 #define BITCOIN_CALCULATOR_VALUE_LEAF
 
+#include <data/types.hpp>
 #include <Diophant/value.hpp>
 #include <Diophant/values/list.hpp>
 
@@ -399,8 +400,8 @@ namespace Diophant {
 
     namespace {
         template <typename T> struct write_leaf {
-            std::ostream &operator () (std::ostream &o, const T &t) {
-                return o << t;
+            std::ostream &operator () (std::ostream &o, const T &x) {
+                return o << x;
             }
         };
 
@@ -534,35 +535,40 @@ namespace Diophant {
         template <typename ...X> struct expand_stack;
 
         template <> struct expand_stack<> {
-            template <typename Y, typename... Z>
-            auto expand (Y f, data::stack<expression> stack, Z... z) {
+            template <typename callable, typename... args>
+            auto expand (callable f, data::stack<expression> stack, args... z) {
                 return f (z...);
             }
         };
 
-        template <typename A, typename ...B> struct expand_stack<A, B...> {
-            template <typename Y, typename... Z>
-            auto expand (Y f, data::stack<expression> stack, Z... z) {
+        template <typename arg1, typename ...argtypes> struct expand_stack<arg1, argtypes...> {
+            // we go through the elements of the stack and add them to the function call, one by one.
+            template <typename callable, typename... Z>
+            auto expand (callable f, data::stack<expression> stack, Z... z) {
                 // this should not happen because we check earlier.
                 if (data::empty (stack)) throw data::exception {} << "try to expand empty argument list";
                 pattern first = data::first (stack);
 
-                using type = std::remove_const_t<std::remove_reference_t<A>>;
+                using type = std::remove_const_t<std::remove_reference_t<arg1>>;
 
                 const leaf<type> *v = dynamic_cast<const leaf<type> *> (first.get ());
                 // this should also not happen because we check earlier.
-                if (v == nullptr) throw data::exception {} << "built-in function called with invalid type.";
+                if (v == nullptr) {
+                    std::cout << "trying to cast " << first << std::endl;
+                    throw data::exception {} << "built-in function called with invalid type";
+                }
 
-                return expand_stack<B...> {}.template expand<Y, Z..., A> (f, data::rest (stack), z..., v->Value);
+                return expand_stack<argtypes...> {}.template expand<callable, Z..., arg1> (f, data::rest (stack), z..., v->Value);
             }
         };
     }
 
-    template <typename Y, typename ...X> expression leaf<Y (*)(X...)>::operator () (data::stack<expression> x) const {
-        if (data::size (x) < sizeof...(X)) return {};
-        expression result = leaf<Y>::make (expand_stack<X...> {}.template expand<Y (*)(X...)> (Value, x));
-        if (data::size (x) == sizeof...(X)) return result;
-        return call::make (result, data::drop (x, sizeof...(X)));
+    // we try to apply a stack of expressions to a built in functon.
+    template <typename return_type, typename ...args> expression leaf<return_type (*)(args...)>::operator () (data::stack<expression> x) const {
+        if (data::size (x) < sizeof...(args)) return {};
+        expression result = leaf<return_type>::make (expand_stack<args...> {}.template expand<return_type (*)(args...)> (Value, x));
+        if (data::size (x) == sizeof...(args)) return result;
+        return call::make (result, data::drop (x, sizeof...(args)));
     };
 }
 

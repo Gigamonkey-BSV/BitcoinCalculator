@@ -11,7 +11,7 @@ namespace Diophant {
 
     bool pubkey_valid (const secp256k1::pubkey &x);
 
-    secp256k1::pubkey secret_to_public (bool, const data::uint256_little &x);
+    secp256k1::pubkey secret_to_public (bool, const data::N x);
 
     bool pubkey_compressed (const secp256k1::pubkey &x);
     bool pubkey_uncompressed (const secp256k1::pubkey &x);
@@ -21,8 +21,8 @@ namespace Diophant {
 
     secp256k1::pubkey pubkey_negate (const secp256k1::pubkey &x);
     secp256k1::pubkey pubkey_plus (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
-    secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const data::uint256_little &y);
-    secp256k1::pubkey pubkey_times (const data::uint256_little &x, const secp256k1::pubkey &y);
+    secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const data::N y);
+    secp256k1::pubkey pubkey_times (const data::N x, const secp256k1::pubkey &y);
 
 }
 

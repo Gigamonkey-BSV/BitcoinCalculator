@@ -8,42 +8,42 @@ namespace Diophant {
 
     namespace secp256k1 = Gigamonkey::secp256k1;
 
-    bool coord_equal (const data::uint256 &x, const data::uint256 &y);
-    bool coord_unequal (const data::uint256 &x, const data::uint256 &y);
-    bool coord_greater_equal (const data::uint256 &x, const data::uint256 &y);
-    bool coord_less_equal (const data::uint256 &x, const data::uint256 &y);
-    bool coord_greater (const data::uint256 &x, const data::uint256 &y);
-    bool coord_less (const data::uint256 &x, const data::uint256 &y);
+    bool coord_equal (const data::N x, const data::N y);
+    bool coord_unequal (const data::N x, const data::N y);
+    bool coord_greater_equal (const data::N x, const data::N y);
+    bool coord_less_equal (const data::N x, const data::N y);
+    bool coord_greater (const data::N x, const data::N y);
+    bool coord_less (const data::N x, const data::N y);
 
-    data::uint256 coord_negate (const data::uint256 &x);
-    data::uint256 coord_plus (const data::uint256 &x, const data::uint256 &y);
-    data::uint256 coord_minus (const data::uint256 &x, const data::uint256 &y);
-    data::uint256 coord_times (const data::uint256 &x, const data::uint256 &y);
+    data::N coord_negate (const data::N x);
+    data::N coord_plus (const data::N x, const data::N y);
+    data::N coord_minus (const data::N x, const data::N y);
+    data::N coord_times (const data::N x, const data::N y);
 
-    bool secret_equal (const data::uint256 &x, const data::uint256 &y);
-    bool secret_unequal (const data::uint256 &x, const data::uint256 &y);
-    bool secret_greater_equal (const data::uint256 &x, const data::uint256 &y);
-    bool secret_less_equal (const data::uint256 &x, const data::uint256 &y);
-    bool secret_greater (const data::uint256 &x, const data::uint256 &y);
-    bool secret_less (const data::uint256 &x, const data::uint256 &y);
+    bool secret_equal (const data::N x, const data::N y);
+    bool secret_unequal (const data::N x, const data::N y);
+    bool secret_greater_equal (const data::N x, const data::N y);
+    bool secret_less_equal (const data::N x, const data::N y);
+    bool secret_greater (const data::N x, const data::N y);
+    bool secret_less (const data::N x, const data::N y);
 
-    data::uint256 secret_negate (const data::uint256 &x);
-    data::uint256 secret_plus (const data::uint256 &x, const data::uint256 &y);
-    data::uint256 secret_minus (const data::uint256 &x, const data::uint256 &y);
-    data::uint256 secret_times (const data::uint256 &x, const data::uint256 &y);
+    data::N secret_negate (const data::N x);
+    data::N secret_plus (const data::N x, const data::N y);
+    data::N secret_minus (const data::N x, const data::N y);
+    data::N secret_times (const data::N x, const data::N y);
 
-    data::uint256 secret_invert (const data::uint256 &x);
-    data::uint256 secret_divide (const data::uint256 &x, const data::uint256 &y);
+    data::N secret_invert (const data::N x);
+    data::N secret_divide (const data::N x, const data::N y);
 
-    data::uint256 secret_power (const data::uint256 &x, const data::Z &y);
+    data::N secret_power (const data::N x, const data::Z &y);
 
-    data::uint256 coord_invert (const data::uint256 &x);
-    data::uint256 coord_divide (const data::uint256 &x, const data::uint256 &y);
+    data::N coord_invert (const data::N x);
+    data::N coord_divide (const data::N x, const data::N y);
 
-    data::uint256 coord_power (const data::uint256 &x, const data::Z &y);
+    data::N coord_power (const data::N x, const data::Z &y);
 
-    bool secret_valid (const data::uint256 &x);
-    bool coord_valid (const data::uint256 &x);
+    bool secret_valid (const data::N x);
+    bool coord_valid (const data::N x);
 
 }
 

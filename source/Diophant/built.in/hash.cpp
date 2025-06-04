@@ -26,6 +26,10 @@ namespace Diophant {
         return data::crypto::Bitcoin_160 (m);
     }
 
+    data::uint160_little Hash160 (const secp256k1::pubkey &m) {
+        return data::crypto::Bitcoin_160 (m);
+    }
+
     data::uint128_little SHA1_128 (const data::string &m) {
         return data::crypto::SHA1 (m);
     }

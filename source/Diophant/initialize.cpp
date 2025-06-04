@@ -1,6 +1,7 @@
 #include <Diophant/machine.hpp>
 #include <Diophant/values/leaf.hpp>
 #include <Diophant/values/list.hpp>
+#include <Diophant/values/struct.hpp>
 #include <Diophant/built.in/bool.hpp>
 #include <Diophant/built.in/numbers.hpp>
 #include <Diophant/built.in/hash.hpp>
@@ -1141,118 +1142,110 @@ namespace Diophant {
         // we also have secret and coord, two modular number types that are used in the
         // Bitcoin elliptic curve.
 
-        type coord_type {call::make (symbol::make ("coord"), {uint256_type})};
-        type secret_type {call::make (symbol::make ("secret"), {uint256_type})};
+        type coord_type {call::make (symbol::make ("coord"), {natural_type})};
+        type secret_type {call::make (symbol::make ("secret"), {natural_type})};
 
         m = m.define (symbol {"Coordinate"}, expression {coord_type});
         m = m.define (symbol {"Secret"}, expression {secret_type});
 
-        m = m.define (symbol {"secret"}, secret_type, {{natural_type, x}},
-            call::make (symbol::make ("secret"), {call::make (
-                built_in_func<data::uint256, const data::N>::make (cast_natural_to_uint256), {X})}));
-
-        m = m.define (symbol {"coord"}, coord_type, {{natural_type, x}},
-            call::make (symbol::make ("coord"), {call::make (
-                built_in_func<data::uint256, const data::N>::make (cast_natural_to_uint256), {X})}));
-
         // identical
         m = m.define (binary_operand::identical, bool_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_equal), {X, Y}));
 
         m = m.define (symbol {"identical"}, bool_type,
-            {call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-                call::make (symbol::make ("coord"), {pattern {uint256_type, y}})},
+            {call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+                call::make (symbol::make ("coord"), {pattern {natural_type, y}})},
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_equal), {X, Y}));
 
         m = m.define (binary_operand::identical, bool_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (secret_equal), {X, Y}));
+                const data::N, const data::N>::make (secret_equal), {X, Y}));
 
         m = m.define (symbol {"identical"}, bool_type,
-            {call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-                call::make (symbol::make ("secret"), {pattern {uint256_type, y}})},
+            {call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+                call::make (symbol::make ("secret"), {pattern {natural_type, y}})},
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (secret_equal), {X, Y}));
+                const data::N, const data::N>::make (secret_equal), {X, Y}));
 
         // comparisons for coordinates
         m = m.define (binary_operand::bool_equal, bool_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_equal), {X, Y}));
 
         m = m.define (binary_operand::bool_unequal, bool_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_unequal), {X, Y}));
+                const data::N, const data::N>::make (coord_unequal), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, bool_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_greater_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_greater_equal), {X, Y}));
 
         m = m.define (binary_operand::less_equal, bool_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_less_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_less_equal), {X, Y}));
 
         m = m.define (binary_operand::greater, bool_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_greater), {X, Y}));
+                const data::N, const data::N>::make (coord_greater), {X, Y}));
 
         m = m.define (binary_operand::less, bool_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_less), {X, Y}));
+                const data::N, const data::N>::make (coord_less), {X, Y}));
 
         // comparisons for secrets
         m = m.define (binary_operand::bool_equal, bool_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_equal), {X, Y}));
 
         m = m.define (binary_operand::bool_unequal, bool_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_unequal), {X, Y}));
+                const data::N, const data::N>::make (coord_unequal), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, bool_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_greater_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_greater_equal), {X, Y}));
 
         m = m.define (binary_operand::less_equal, bool_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_less_equal), {X, Y}));
+                const data::N, const data::N>::make (coord_less_equal), {X, Y}));
 
         m = m.define (binary_operand::greater, bool_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_greater), {X, Y}));
+                const data::N, const data::N>::make (coord_greater), {X, Y}));
 
         m = m.define (binary_operand::less, bool_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (coord_less), {X, Y}));
+                const data::N, const data::N>::make (coord_less), {X, Y}));
 
         // let's talk about size and indexing. We have many types that support indexing.
         // we do not have a special char type for strings yet but we use a uint32 because
@@ -1713,82 +1706,82 @@ namespace Diophant {
 
         // abs and negate for coordinate and secret.
         m = m.define (symbol ("abs"), secret_type, {
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}})},
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}})},
             call::make (symbol::make ("secret"), {X}));
 
         m = m.define (unary_operand::negate, secret_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &>::make (&secret_negate), {X})}));
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N>::make (&secret_negate), {X})}));
 
         m = m.define (symbol ("abs"), coord_type, {
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}})},
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}})},
             call::make (symbol::make ("coord"), {X}));
 
         m = m.define (unary_operand::negate, coord_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &>::make (coord_negate), {X})}));
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N>::make (coord_negate), {X})}));
 
         // arithmetic for coordinates
         m = m.define (binary_operand::plus, coord_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (coord_plus), {X, Y})}));
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (coord_plus), {X, Y})}));
 
         m = m.define (binary_operand::minus, coord_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (coord_minus), {X, Y})}));
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (coord_minus), {X, Y})}));
 
         m = m.define (binary_operand::times, coord_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (coord_times), {X, Y})}));
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (coord_times), {X, Y})}));
 
         m = m.define (symbol {"invert"}, coord_type,
-            {call::make (symbol::make ("coord"), {pattern {uint256_type, x}})},
-            call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &>::make (coord_invert), {X})}));
+            {call::make (symbol::make ("coord"), {pattern {natural_type, x}})},
+            call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N>::make (coord_invert), {X})}));
 
         m = m.define (binary_operand::divide, coord_type,
-            call::make (symbol::make ("coord"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (coord_divide), {X, Y})}));
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (coord_divide), {X, Y})}));
 
         // arithmetic for secrets
         m = m.define (binary_operand::plus, secret_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (secret_plus), {X, Y})}));
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (secret_plus), {X, Y})}));
 
         m = m.define (binary_operand::minus, secret_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (secret_minus), {X, Y})}));
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (secret_minus), {X, Y})}));
 
         m = m.define (binary_operand::times, secret_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (secret_times), {X, Y})}));
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (secret_times), {X, Y})}));
 
         m = m.define (symbol {"invert"}, secret_type,
-            {call::make (symbol::make ("secret"), {pattern {uint256_type, x}})},
-            call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &>::make (&secret_invert), {X})}));
+            {call::make (symbol::make ("secret"), {pattern {natural_type, x}})},
+            call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N>::make (&secret_invert), {X})}));
 
         m = m.define (binary_operand::divide, secret_type,
-            call::make (symbol::make ("secret"), {pattern {uint256_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {uint256_type, y}}),
-            call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::uint256 &>::make (secret_divide), {X, Y})}));
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N, const data::N>::make (secret_divide), {X, Y})}));
 
         // power
         m = m.define (binary_operand::power, natural_type, {natural_type, x}, {natural_type, y},
@@ -1820,35 +1813,35 @@ namespace Diophant {
                 const data::bytes &, const data::N &>::make (&scriptnum_power), {X, Y})}));
 
         m = m.define (binary_operand::power, coord_type,
-            call::make (symbol::make ("coord"), {pattern {secret_type, x}}), {integer_type, y},
-            call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::Z &>::make (&coord_power), {X, Y})}));
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}), {integer_type, y},
+            call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N, const data::Z &>::make (&coord_power), {X, Y})}));
 
         m = m.define (symbol {"power"}, coord_type, {
-                call::make (symbol::make ("coord"), {pattern {secret_type, x}}), {integer_type, y},
-            }, call::make (symbol::make ("coord"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::Z &>::make (&coord_power), {X, Y})}));
+                call::make (symbol::make ("coord"), {pattern {natural_type, x}}), {integer_type, y},
+            }, call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
+                const data::N, const data::Z &>::make (&coord_power), {X, Y})}));
 
         m = m.define (binary_operand::power, secret_type,
-            call::make (symbol::make ("secret"), {pattern {secret_type, x}}), {integer_type, y},
-            call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::Z &>::make (&secret_power), {X, Y})}));
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}), {integer_type, y},
+            call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N, const data::Z &>::make (&secret_power), {X, Y})}));
 
         m = m.define (symbol {"power"}, secret_type, {
-                call::make (symbol::make ("secret"), {pattern {secret_type, x}}), {integer_type, y},
-            }, call::make (symbol::make ("secret"), {call::make (built_in_func<data::uint256,
-                const data::uint256 &, const data::Z &>::make (&secret_power), {X, Y})}));
+                call::make (symbol::make ("secret"), {pattern {natural_type, x}}), {integer_type, y},
+            }, call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
+                const data::N, const data::Z &>::make (&secret_power), {X, Y})}));
 
         // TODO rational types
 
         // now let's do some elliptic curve operations
         m = m.define (symbol ("valid"), bool_type,
-            {call::make (symbol::make ("coord"), {pattern {uint256_type, x}})},
-            call::make (built_in_func<bool, const data::uint256 &>::make (coord_valid), {X}));
+            {call::make (symbol::make ("coord"), {pattern {natural_type, x}})},
+            call::make (built_in_func<bool, const data::N>::make (coord_valid), {X}));
 
         m = m.define (symbol ("valid"), bool_type,
-            {call::make (symbol::make ("secret"), {pattern {uint256_type, x}})},
-            call::make (built_in_func<bool, const data::uint256 &>::make (secret_valid), {X}));
+            {call::make (symbol::make ("secret"), {pattern {natural_type, x}})},
+            call::make (built_in_func<bool, const data::N>::make (secret_valid), {X}));
 
         // first we define a pubkey type.
         type pubkey_type {symbol::make ("pubkey")};
@@ -1889,9 +1882,11 @@ namespace Diophant {
             call::make (built_in_func<bool,
                 const secp256k1::pubkey &>::make (&pubkey_compressed), {X}));
 
-        m = m.define (symbol {"to_public"}, pubkey_type, {{bool_type, x}, {secret_type, y}},
+        m = m.define (symbol {"to_public"}, pubkey_type,
+            {{bool_type, x},
+                call::make (symbol::make ("secret"), {pattern {natural_type, y}})},
             call::make (built_in_func<secp256k1::pubkey,
-                bool, const data::uint256_little &>::make (&secret_to_public), {X, Y}));
+                bool, const data::N>::make (&secret_to_public), {X, Y}));
 
         m = m.define (unary_operand::negate, pubkey_type, {pubkey_type, x},
             call::make (built_in_func<secp256k1::pubkey,
@@ -1903,11 +1898,11 @@ namespace Diophant {
 
         m = m.define (binary_operand::times, pubkey_type, {secret_type, x}, {pubkey_type, y},
             call::make (built_in_func<secp256k1::pubkey,
-                const data::uint256_little &, const secp256k1::pubkey &>::make (&pubkey_times), {X, Y}));
+                const data::N, const secp256k1::pubkey &>::make (&pubkey_times), {X, Y}));
 
         m = m.define (binary_operand::times, pubkey_type, {pubkey_type, x}, {secret_type, y},
             call::make (built_in_func<secp256k1::pubkey,
-                const secp256k1::pubkey &, const data::uint256_little &>::make (&pubkey_times), {X, Y}));
+                const secp256k1::pubkey &, const data::N>::make (&pubkey_times), {X, Y}));
 
         m = m.define (symbol {"Satoshi"}, call::make (symbol::make ("sats"), {int64_little_type}));
         m = m.define (symbol {"Pubkey"}, call::make (symbol::make ("pubkey"), {bytes_type}));
@@ -1958,6 +1953,9 @@ namespace Diophant {
         m = m.define (symbol {"Hash160"}, uint160_little_type, {{bytes_type, x}},
             call::make (built_in_func<data::uint160_little, const data::bytes &>::make (&Hash160), {X}));
 
+        m = m.define (symbol {"Hash160"}, uint160_little_type, {{pubkey_type, x}},
+            call::make (built_in_func<data::uint160_little, const secp256k1::pubkey &>::make (&Hash160), {X}));
+
         m = m.define (symbol {"Hash160"}, uint160_little_type, {{string_type, x}},
             call::make (built_in_func<data::uint160_little, const data::string &>::make (&Hash160), {X}));
 
@@ -1991,16 +1989,32 @@ namespace Diophant {
                 const data::string &>::make (&decode_base_58_check), {X}));
 
         m = m.define (symbol {"base58_check_encode"}, string_type,
-            {list::make ({pattern {uint8_type, x}, pattern {scriptnum_type, y}})},
+            {list::make ({pattern {uint8_type, x}, pattern {bytes_type, y}})},
             call::make (built_in_func<data::string,
                 const data::byte &, const data::bytes &>::make (&encode_base_58_check), {X, Y}));
 
-
+        m = m.define (symbol {"base58"}, dstruct::make ({
+            {symbol {"decode"}, expression {"base58_decode"}},
+            {symbol {"encode"}, expression {"base58_encode"}},
+            {symbol {"check"}, dstruct::make ({
+                {symbol {"decode"}, expression {"base58_check_decode"}},
+                {symbol {"encode"}, expression {"base58_check_encode"}}
+            })}
+        }));
 
         m = m.define (symbol {"address_main"}, byte::make (data::byte (0x00)));
         m = m.define (symbol {"address_test"}, byte::make (data::byte (0x6f)));
         m = m.define (symbol {"WIF_main"}, byte::make (data::byte (0x80)));
         m = m.define (symbol {"WIF_test"}, byte::make (data::byte (0xef)));
+/*
+        m = m.define (symbol {"address_encode"}, {expression {"net.Main"}, pattern {uint160_little_type, x}},
+            expression {"base58_check_encode address_main x"});
+
+        m = m.define (symbol {"address_encode"}, {expression {"net.Test"}, pattern {uint160_little_type, x}},
+            expression {"base58_check_encode address_test x"});
+
+        type xpub_type {call::make (symbol::make ("xpub"), {string_type})};
+        type xpriv_type {call::make (symbol::make ("xpriv"), {string_type})};*/
 
         type sats_type {symbol::make ("satoshi")};
 

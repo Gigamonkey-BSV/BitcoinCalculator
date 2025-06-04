@@ -159,20 +159,20 @@ namespace tao_pegtl_grammar {
     struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'`'>> {};
     struct right_unary_operand : sor<one<'!'>> {};
 
-    template <typename atom> struct call_op : seq<plus<white>, atom> {};
-    template <typename atom> struct call_expr : seq<atom, star<call_op<atom>>> {};
+    template <typename atom> struct dot_expr;
+    template <typename atom> struct dot_op : seq<ws, one<'.'>, ws, dot_expr<atom>> {};
+    template <typename atom> struct dot_expr : seq<atom, opt<dot_op<atom>>> {};
+
+    template <typename atom> struct call_op : seq<plus<white>, dot_expr<atom>> {};
+    template <typename atom> struct call_expr : seq<dot_expr<atom>, star<call_op<atom>>> {};
 
     template <typename atom> struct left_unary_expr;
     template <typename atom> struct left_unary_operation : seq<left_unary_operand, ws, left_unary_expr<atom>> {};
     template <typename atom> struct left_unary_expr : sor<left_unary_operation<atom>, call_expr<atom>> {};
 
-    //template <typename atom> struct dot_expr;
-    template <typename atom> struct dot_op : seq<ws, one<'.'>, ws, left_unary_expr<atom>> {};
-    template <typename atom> struct dot_expr : seq<left_unary_expr<atom>, star<dot_op<atom>>> {};
-
     template <typename atom> struct cat_expr;
     template <typename atom> struct cat_op : seq<ws, string<'<','>'>, ws, cat_expr<atom>> {};
-    template <typename atom> struct cat_expr : seq<dot_expr<atom>, opt<cat_op<atom>>> {};
+    template <typename atom> struct cat_expr : seq<left_unary_expr<atom>, opt<cat_op<atom>>> {};
 
     template <typename atom> struct pow_expr;
     template <typename atom> struct mul_expr;
