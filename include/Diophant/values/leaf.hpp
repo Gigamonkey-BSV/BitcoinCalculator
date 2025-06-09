@@ -1,7 +1,7 @@
 #ifndef BITCOIN_CALCULATOR_VALUE_LEAF
 #define BITCOIN_CALCULATOR_VALUE_LEAF
 
-#include <data/types.hpp>
+#include <data/encoding/endian.hpp>
 #include <Diophant/value.hpp>
 #include <Diophant/values/list.hpp>
 
@@ -140,6 +140,8 @@ namespace Diophant {
     template <typename X> using stack = leaf<data::stack<X>>;
     template <typename Y, typename ... X> using built_in_func = leaf<Y (*)(X...)>;
 
+    using net = leaf<Bitcoin::net>;
+
     namespace {
         template <typename T> struct leaf_cast {
             bool operator () (Machine, const node &t);
@@ -150,6 +152,12 @@ namespace Diophant {
         template <> struct base_type<bool> {
             type operator () () {
                 return symbol::make ("bool");
+            }
+        };
+
+        template <> struct base_type<Bitcoin::net> {
+            type operator () () {
+                return symbol::make ("network");
             }
         };
 
@@ -201,31 +209,31 @@ namespace Diophant {
             }
         };
 
-        template <std::size_t bytes>
-        struct base_type<data::endian_integral<false, data::endian::order::little, bytes>> {
+        template <std::unsigned_integral T, std::size_t n_bits>
+        struct base_type<boost::endian::endian_arithmetic<data::endian::order::little, T, n_bits, boost::endian::align::no>> {
             type operator () () {
-                return call::make (symbol::make ("uint_little"), {natural::make (data::N (bytes * 8))});
+                return call::make (symbol::make ("uint_little"), {natural::make (data::N (n_bits))});
             }
         };
 
-        template <std::size_t bytes>
-        struct base_type<data::endian_integral<true, data::endian::order::little, bytes>> {
+        template <std::signed_integral T, std::size_t n_bits>
+        struct base_type<boost::endian::endian_arithmetic<data::endian::order::little, T, n_bits, boost::endian::align::no>> {
             type operator () () {
-                return call::make (symbol::make ("int_little"), {natural::make (data::N (bytes * 8))});
+                return call::make (symbol::make ("int_little"), {natural::make (data::N (n_bits))});
             }
         };
 
-        template <std::size_t bytes>
-        struct base_type<data::endian_integral<false, data::endian::order::big, bytes>> {
+        template <std::unsigned_integral T, std::size_t n_bits>
+        struct base_type<boost::endian::endian_arithmetic<data::endian::order::big, T, n_bits, boost::endian::align::no>> {
             type operator () () {
-                return call::make (symbol::make ("uint_big"), {natural::make (data::N (bytes * 8))});
+                return call::make (symbol::make ("uint_big"), {natural::make (data::N (n_bits))});
             }
         };
 
-        template <std::size_t bytes>
-        struct base_type<data::endian_integral<true, data::endian::order::big, bytes>> {
+        template <std::signed_integral T, std::size_t n_bits>
+        struct base_type<boost::endian::endian_arithmetic<data::endian::order::big, T, n_bits, boost::endian::align::no>> {
             type operator () () {
-                return call::make (symbol::make ("int_big"), {natural::make (data::N (bytes * 8))});
+                return call::make (symbol::make ("int_big"), {natural::make (data::N (n_bits))});
             }
         };
 
@@ -408,6 +416,12 @@ namespace Diophant {
         template <> struct write_leaf<bool> {
             std::ostream &operator () (std::ostream &o, bool b) {
                 return o << std::boolalpha << b;
+            }
+        };
+
+        template <> struct write_leaf<Bitcoin::net> {
+            std::ostream &operator () (std::ostream &o, Bitcoin::net n) {
+                return o << (n == Bitcoin::net::Main ? "net.Main" : n == Bitcoin::net::Test ? "net.Test" : "net.Invalid");
             }
         };
 

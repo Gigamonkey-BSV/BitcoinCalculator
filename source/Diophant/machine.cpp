@@ -172,23 +172,37 @@ namespace Diophant {
         }
     }
 
-    match_result machine::match (data::stack<pattern> p, data::stack<expression> e) const {
+    match_result machine::match (
+        data::stack<pattern> p,
+        data::stack<expression> e,
+        data::list<machine::autocast> conversions) const {
         if (data::size (p) != data::size (e)) return {no};
 
-        replacements r;
+        match_result r {no};
         while (!data::empty (p)) {
             auto m = Diophant::match (*this, data::first (p), data::first (e));
-            if (intuit (m) != yes) return m;
-            try {
-                r = r & *m;
-            // will be thrown if these maps have any of the same keys.
-            } catch (replacements::key_already_exists) {
-                return {no};
+            intuit result = intuit (m);
+
+            // an unknown result indicates that computation cannot continue.
+            if (result == unknown) return m;
+
+            // if we get a yes result, then we try to combine the replacements
+            // we get from this match with replacements from previous arguments.
+            if (result == yes) {
+                if (intuit (r) == yes) {
+                    try {
+                        r = *r & *m;
+                    // will be thrown if these maps have any of the same keys.
+                    } catch (replacements::key_already_exists) {
+                        return {no};
+                    }
+                } else r = m;
             }
 
             p = data::rest (p);
             e = data::rest (e);
         }
+
         return r;
     }
 
@@ -246,26 +260,31 @@ namespace Diophant {
             data::stack<expression> Remaining;
         };
 
+        using candidate_result = intuit_result<candidate>;
+
+        // here we attempt to find a single candidate among the available matches
+        // to evaluate. For a typeable expression, every pattern will match either
+        // no or yes. For a non-typeable expression, we may not know whether we can
+        // match a pattern (because the pattern may involve a type). If we generate
+        // two "yes" matches, we throw an error. Other possible results are not
+        // errors. If we get zero "yes" matches we return a "no" and if we get any
+        // "unknown" match we return "unknown".
         // TODO we need an option for a set of automatic replacements.
-        data::maybe<candidate> get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
+        candidate_result get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
             // we store a potential match here but continue searching to
             // ensure that we do not match twice.
-            data::maybe<candidate> matched {};
+            intuit_result<candidate> matched {no};
 
             while (!data::empty (tfs)) {
 
                 auto &tf = data::first (tfs);
-                if (data::size (tf.Arguments) > data::size (args)) return {};
-
+                if (data::size (tf.Arguments) > data::size (args)) return matched;
                 auto match_args = data::take (args, data::size (tf.Arguments));
                 match_result r = m.match (tf.Arguments, match_args);
-
                 if (intuit (r) == yes) {
-                    if (bool (matched)) throw data::exception {} << "no unique match";
-                    matched = {{*r, tf.Value, data::drop (args, data::size (tf.Arguments))}};
-                } else if (intuit (r) == unknown) {
-                    throw data::exception {} << "we need to ensure that evaluation does not continue at this point";
-                }
+                    if (intuit (matched) == yes) throw data::exception {} << "no unique match";
+                    matched = intuit_result<candidate> {candidate {*r, tf.Value, data::drop (args, data::size (tf.Arguments))}};
+                } else if (intuit (r) == unknown) return {unknown};
 
                 tfs = data::rest (tfs);
             }
@@ -346,11 +365,18 @@ namespace Diophant {
 
                 data::stack<mtf> tfs = *v;
 
-                if (data::maybe<candidate> cx = get_candidate (m, tfs, body); bool (cx)) {
+                candidate_result cx = get_candidate (m, tfs, body);
+                if (intuit (cx) == yes) {
                     changed = true;
+
                     if (cx->Result.Def == expression {})
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
                     return m.evaluate (replace (cx->Result.Def, cx->Replacements));
+                }
+
+                // we can try again with automatic conversions.
+                if (intuit (cx) == no) {
+
                 }
             }
 
@@ -368,9 +394,9 @@ namespace Diophant {
                 if (v == nullptr) goto done;
 
                 data::stack<mtf> tfs = *v;
-                data::maybe<candidate> cx = get_candidate (m, tfs, {body});
+                candidate_result cx = get_candidate (m, tfs, {body});
 
-                if (bool (cx)) {
+                if (intuit (cx) == yes) {
                     changed = true;
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
@@ -446,8 +472,8 @@ namespace Diophant {
                         tfs = data::rest (tfs);
                     }
 
-                    data::maybe<candidate> cx = get_candidate (m, tfs, args);
-                    if (bool (cx)) {
+                    candidate_result cx = get_candidate (m, tfs, args);
+                    if (intuit (cx) == yes) {
                         changed = true;
                         if (!bool (cx->Result.Def))
                             throw data::exception {} << "Error: attempt to evaluate undefined pattern";

@@ -89,7 +89,14 @@ namespace Diophant {
 
         bool operator == (const machine &) const;
 
-        match_result match (data::stack<pattern>, data::stack<expression>) const;
+        struct autocast {
+            type From;
+            type To;
+            expression Function;
+        };
+
+        match_result match (data::stack<pattern>, data::stack<expression>,
+            data::list<machine::autocast> conversions = {}) const;
 
         using definition = data::either<casted, data::stack<transformation>>;
 

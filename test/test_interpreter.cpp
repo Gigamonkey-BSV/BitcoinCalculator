@@ -21,7 +21,7 @@ namespace Diophant {
 
     // test whether the expression evaluates to the given expression or throws an error.
     void test_eval (std::string input, expression expect_eval);
-    void test_eval (std::string input, bool expect_eval);
+    void test_eval (std::string input, bool expect_eval = true);
     void test_eval (std::string input, std::string expect_eval);
 
     expression make_natural (data::N n) {

@@ -205,11 +205,11 @@ namespace Diophant {
 
     // here we cannot support operations that negate bits because
     // all bits set all the way up to infinity is not a valid value.
-    data::N natural_bit_and (const data::N x, const data::N y);
-    data::N natural_bit_or (const data::N x, const data::N y);
+    data::N natural_bit_and (const data::N &x, const data::N &y);
+    data::N natural_bit_or (const data::N &x, const data::N &y);
 
-    data::Z integer_bit_and (const data::Z x, const data::Z y);
-    data::Z integer_bit_or (const data::Z x, const data::Z y);
+    data::Z integer_bit_and (const data::Z &x, const data::Z &y);
+    data::Z integer_bit_or (const data::Z &x, const data::Z &y);
 
     data::N_bytes_little N_bytes_bit_and (const data::N_bytes_little &x, const data::N_bytes_little &y);
     data::N_bytes_little N_bytes_bit_or (const data::N_bytes_little &x, const data::N_bytes_little &y);
@@ -224,19 +224,19 @@ namespace Diophant {
     data::Z_bytes_big Z_bytes_bit_or (const data::Z_bytes_big &x, const data::Z_bytes_big &y);
 
     // comparisons
-    bool natural_equal (const data::N x, const data::N y);
-    bool natural_unequal (const data::N x, const data::N y);
-    bool natural_greater_equal (const data::N x, const data::N y);
-    bool natural_less_equal (const data::N x, const data::N y);
-    bool natural_greater (const data::N x, const data::N y);
-    bool natural_less (const data::N x, const data::N y);
+    bool natural_equal (const data::N &x, const data::N &y);
+    bool natural_unequal (const data::N &x, const data::N &y);
+    bool natural_greater_equal (const data::N &x, const data::N &y);
+    bool natural_less_equal (const data::N &x, const data::N &y);
+    bool natural_greater (const data::N &x, const data::N &y);
+    bool natural_less (const data::N &x, const data::N &y);
 
-    bool integer_equal (const data::Z x, const data::Z y);
-    bool integer_unequal (const data::Z x, const data::Z y);
-    bool integer_greater_equal (const data::Z x, const data::Z y);
-    bool integer_less_equal (const data::Z x, const data::Z y);
-    bool integer_greater (const data::Z x, const data::Z y);
-    bool integer_less (const data::Z x, const data::Z y);
+    bool integer_equal (const data::Z &x, const data::Z &y);
+    bool integer_unequal (const data::Z &x, const data::Z &y);
+    bool integer_greater_equal (const data::Z &x, const data::Z &y);
+    bool integer_less_equal (const data::Z &x, const data::Z &y);
+    bool integer_greater (const data::Z &x, const data::Z &y);
+    bool integer_less (const data::Z &x, const data::Z &y);
 
     bool N_bytes_equal (const data::N_bytes_little &x, const data::N_bytes_little &y);
     bool N_bytes_unequal (const data::N_bytes_little &x, const data::N_bytes_little &y);
@@ -245,26 +245,26 @@ namespace Diophant {
     bool N_bytes_greater (const data::N_bytes_little &x, const data::N_bytes_little &y);
     bool N_bytes_less (const data::N_bytes_little &x, const data::N_bytes_little &y);
 
-    bool N_bytes_equal (const data::N_bytes_big & x, const data::N_bytes_big & y);
-    bool N_bytes_unequal (const data::N_bytes_big & x, const data::N_bytes_big & y);
-    bool N_bytes_greater_equal (const data::N_bytes_big & x, const data::N_bytes_big & y);
-    bool N_bytes_less_equal (const data::N_bytes_big & x, const data::N_bytes_big & y);
-    bool N_bytes_greater (const data::N_bytes_big & x, const data::N_bytes_big & y);
-    bool N_bytes_less (const data::N_bytes_big & x, const data::N_bytes_big & y);
+    bool N_bytes_equal (const data::N_bytes_big &x, const data::N_bytes_big &y);
+    bool N_bytes_unequal (const data::N_bytes_big &x, const data::N_bytes_big &y);
+    bool N_bytes_greater_equal (const data::N_bytes_big &x, const data::N_bytes_big &y);
+    bool N_bytes_less_equal (const data::N_bytes_big &x, const data::N_bytes_big &y);
+    bool N_bytes_greater (const data::N_bytes_big &x, const data::N_bytes_big &y);
+    bool N_bytes_less (const data::N_bytes_big &x, const data::N_bytes_big &y);
 
-    bool Z_bytes_equal (const data::Z_bytes_little & x, const data::Z_bytes_little & y);
-    bool Z_bytes_unequal (const data::Z_bytes_little & x, const data::Z_bytes_little & y);
-    bool Z_bytes_greater_equal (const data::Z_bytes_little & x, const data::Z_bytes_little & y);
-    bool Z_bytes_less_equal (const data::Z_bytes_little & x, const data::Z_bytes_little & y);
-    bool Z_bytes_greater (const data::Z_bytes_little & x, const data::Z_bytes_little & y);
-    bool Z_bytes_less (const data::Z_bytes_little & x, const data::Z_bytes_little & y);
+    bool Z_bytes_equal (const data::Z_bytes_little &x, const data::Z_bytes_little &y);
+    bool Z_bytes_unequal (const data::Z_bytes_little &x, const data::Z_bytes_little &y);
+    bool Z_bytes_greater_equal (const data::Z_bytes_little &x, const data::Z_bytes_little &y);
+    bool Z_bytes_less_equal (const data::Z_bytes_little &x, const data::Z_bytes_little &y);
+    bool Z_bytes_greater (const data::Z_bytes_little &x, const data::Z_bytes_little &y);
+    bool Z_bytes_less (const data::Z_bytes_little &x, const data::Z_bytes_little &y);
 
-    bool Z_bytes_equal (const data::Z_bytes_big & x, const data::Z_bytes_big & y);
-    bool Z_bytes_unequal (const data::Z_bytes_big & x, const data::Z_bytes_big & y);
-    bool Z_bytes_greater_equal (const data::Z_bytes_big & x, const data::Z_bytes_big & y);
-    bool Z_bytes_less_equal (const data::Z_bytes_big & x, const data::Z_bytes_big & y);
-    bool Z_bytes_greater (const data::Z_bytes_big & x, const data::Z_bytes_big & y);
-    bool Z_bytes_less (const data::Z_bytes_big & x, const data::Z_bytes_big & y);
+    bool Z_bytes_equal (const data::Z_bytes_big & x, const data::Z_bytes_big &y);
+    bool Z_bytes_unequal (const data::Z_bytes_big & x, const data::Z_bytes_big &y);
+    bool Z_bytes_greater_equal (const data::Z_bytes_big & x, const data::Z_bytes_big &y);
+    bool Z_bytes_less_equal (const data::Z_bytes_big & x, const data::Z_bytes_big &y);
+    bool Z_bytes_greater (const data::Z_bytes_big & x, const data::Z_bytes_big &y);
+    bool Z_bytes_less (const data::Z_bytes_big & x, const data::Z_bytes_big &y);
 
     bool uint8_equal (data::byte x, data::byte y);
     bool uint8_unequal (data::byte x, data::byte y);

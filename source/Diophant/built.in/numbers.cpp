@@ -3,51 +3,51 @@
 
 namespace Diophant {
 
-    bool natural_equal (const data::N x, const data::N y) {
+    bool natural_equal (const data::N &x, const data::N &y) {
         return x == y;
     }
 
-    bool natural_unequal (const data::N x, const data::N y) {
+    bool natural_unequal (const data::N &x, const data::N &y) {
         return x != y;
     }
 
-    bool natural_greater_equal (const data::N x, const data::N y) {
+    bool natural_greater_equal (const data::N &x, const data::N &y) {
         return x >= y;
     }
 
-    bool natural_less_equal (const data::N x, const data::N y) {
+    bool natural_less_equal (const data::N &x, const data::N &y) {
         return x <= y;
     }
 
-    bool natural_greater (const data::N x, const data::N y) {
+    bool natural_greater (const data::N &x, const data::N &y) {
         return x > y;
     }
 
-    bool natural_less (const data::N x, const data::N y) {
+    bool natural_less (const data::N &x, const data::N &y) {
         return x < y;
     }
 
-    bool integer_equal (const data::Z x, const data::Z y) {
+    bool integer_equal (const data::Z &x, const data::Z &y) {
         return x == y;
     }
 
-    bool integer_unequal (const data::Z x, const data::Z y) {
+    bool integer_unequal (const data::Z &x, const data::Z &y) {
         return x != y;
     }
 
-    bool integer_greater_equal (const data::Z x, const data::Z y) {
+    bool integer_greater_equal (const data::Z &x, const data::Z &y) {
         return x >= y;
     }
 
-    bool integer_less_equal (const data::Z x, const data::Z y) {
+    bool integer_less_equal (const data::Z &x, const data::Z &y) {
         return x <= y;
     }
 
-    bool integer_greater (const data::Z x, const data::Z y) {
+    bool integer_greater (const data::Z &x, const data::Z &y) {
         return x > y;
     }
 
-    bool integer_less (const data::Z x, const data::Z y) {
+    bool integer_less (const data::Z &x, const data::Z &y) {
         return x < y;
     }
 
@@ -536,7 +536,7 @@ namespace Diophant {
     }
 
     data::int16_little int16_little_abs (data::int16_little x) {
-        return x < 0 ? -x : x;
+        return x < 0 ? data::int16_little {static_cast<data::int16> (-x)} : x;
     }
 
     data::uint32_little uint32_little_negate (data::uint32_little x) {
@@ -548,7 +548,7 @@ namespace Diophant {
     }
 
     data::int32_little int32_little_abs (data::int32_little x) {
-        return x < 0 ? -x : x;
+        return x < 0 ? data::int32_little {-x} : x;
     }
 
     data::uint64_little uint64_little_negate (data::uint64_little x) {
@@ -560,7 +560,7 @@ namespace Diophant {
     }
 
     data::int64_little int64_little_abs (data::int64_little x) {
-        return x < 0 ? -x : x;
+        return x < 0 ? data::int64_little {-x} : x;
     }
 
     data::uint16_big uint16_big_negate (data::uint16_big x) {
@@ -572,7 +572,7 @@ namespace Diophant {
     }
 
     data::int16_big int16_big_abs (data::int16_big x) {
-        return x < 0 ? -x : x;
+        return x < 0 ? data::int16_big {static_cast<data::int16> (-x)} : x;
     }
 
     data::uint32_big uint32_big_negate (data::uint32_big x) {
@@ -584,7 +584,7 @@ namespace Diophant {
     }
 
     data::int32_big int32_big_abs (data::int32_big x) {
-        return x < 0 ? -x : x;
+        return x < 0 ? data::int32_big {static_cast<data::int32> (-x)} : x;
     }
 
     data::uint64_big uint64_big_negate (data::uint64_big x) {
@@ -596,7 +596,7 @@ namespace Diophant {
     }
 
     data::int64_big int64_big_abs (data::int64_big x) {
-        return x < 0 ? -x : x;
+        return x < 0 ? data::int64_big {-x} : x;
     }
 
     data::uint16_little harden_little (data::uint16_little x) {

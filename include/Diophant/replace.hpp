@@ -22,22 +22,35 @@ namespace Diophant {
     // rules for symbols. We also need a case where we
     // say that we cannot tell if the pattern matches, so
     // we use intuits as well.
-    struct match_result : data::either<replacements, intuit> {
-        match_result (intuit i): data::either<replacements, intuit> {i} {}
-        match_result (replacements r): data::either<replacements, intuit> {r} {}
+    template <typename result_type>
+    struct intuit_result : data::either<result_type, intuit> {
+        intuit_result (intuit i): data::either<result_type, intuit> {i} {}
+        intuit_result (const result_type &r): data::either<result_type, intuit> {r} {}
 
         operator intuit () const {
-            if (std::holds_alternative<replacements> (*this)) return yes;
+            if (std::holds_alternative<result_type> (*this)) return yes;
             return std::get<intuit> (*this);
         }
 
-        replacements operator * () const {
-            if (std::holds_alternative<intuit> (*this) && std::get<intuit> (*this) == yes) return replacements {};
-            return std::get<replacements> (*this);
+        result_type operator * () const {
+            if (std::holds_alternative<result_type> (*this)) return std::get<result_type> (*this);
+            if (std::get<intuit> (*this) == yes) return result_type {};
+            throw data::exception {} << "No result";
+        }
+
+        constexpr result_type *operator -> () {
+            return this->template get_if<result_type> ();
+        }
+
+        constexpr result_type *operator -> () const {
+            return this->template get_if<result_type> ();
         }
     };
 
-    std::ostream &operator << (std::ostream &o, match_result mr);
+    using match_result = intuit_result<replacements>;
+
+    template <typename result_type>
+    std::ostream &operator << (std::ostream &o, intuit_result<result_type> mr);
 
     struct machine;
     struct pattern;
@@ -55,9 +68,10 @@ namespace Diophant {
         return o << "no";
     }
 
-    std::ostream inline &operator << (std::ostream &o, match_result mr) {
+    template <typename result_type>
+    std::ostream inline &operator << (std::ostream &o, intuit_result<result_type> mr) {
         if (std::holds_alternative<intuit> (mr)) return o << std::get<intuit> (mr);
-        return o << "yes: " << std::get<replacements> (mr);
+        return o << "yes: " << std::get<result_type> (mr);
     }
 
 }

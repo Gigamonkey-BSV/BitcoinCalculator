@@ -17,7 +17,7 @@ project (
   LANGUAGES CXX
 )
 
-set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD 23)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package (Boost 1.86 COMPONENTS thread chrono log_setup log REQUIRED)
@@ -78,6 +78,8 @@ add_library (
     source/Diophant/nodes.cpp
     source/Diophant/type.cpp
     source/Diophant/pattern.cpp
+    source/Diophant/values/list.cpp
+    source/Diophant/values/struct.cpp
     source/Diophant/built.in/bool.cpp
     source/Diophant/built.in/numbers.cpp
     source/Diophant/built.in/scriptnum.cpp
@@ -86,8 +88,7 @@ add_library (
     source/Diophant/built.in/string.cpp
     source/Diophant/built.in/base58.cpp
     source/Diophant/built.in/hash.cpp
-    source/Diophant/values/list.cpp
-    source/Diophant/values/struct.cpp
+    source/Diophant/built.in/hd.cpp
 )
 
 target_link_libraries (diophant PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)

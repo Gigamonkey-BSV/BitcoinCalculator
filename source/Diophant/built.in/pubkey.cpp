@@ -1,4 +1,5 @@
 #include <Diophant/built.in/pubkey.hpp>
+#include <gigamonkey/wif.hpp>
 
 namespace Diophant {
 
@@ -20,7 +21,7 @@ namespace Diophant {
         return x.valid ();
     }
 
-    secp256k1::pubkey secret_to_public (bool y, const data::N x) {
+    secp256k1::pubkey secret_to_public (bool y, const data::N &x) {
         secp256k1::secret z {data::uint256_little (x)};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";
 
@@ -58,7 +59,7 @@ namespace Diophant {
         return x + y;
     }
 
-    secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const data::N y) {
+    secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const data::N &y) {
         if (!x.valid ()) throw data::exception {} << "invalid public key";
         secp256k1::secret z {data::uint256_little (y)};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";
@@ -70,5 +71,33 @@ namespace Diophant {
         secp256k1::secret z {data::uint256_little (x)};
         if (!z.valid ()) throw data::exception {} << "invalid secret key";
         return y * z;
+    }
+
+    data::bytes sign (const data::N &key, const data::uint256_little &digest) {
+        return secp256k1::secret {data::uint256_little {key}}.sign (digest);
+    }
+
+    bool verify (const secp256k1::pubkey &x, const data::uint256_little &digest, const data::bytes &sig) {
+        return x.verify (digest, secp256k1::signature {sig});
+    }
+
+    data::uint160_little address_hash (const secp256k1::pubkey &p) {
+        return Bitcoin::Hash160 (p);
+    }
+
+    data::string address_from_pubkey (const secp256k1::pubkey &p, bool mainnet) {
+        return Gigamonkey::Bitcoin::address::encode (mainnet ? Bitcoin::net::Main : Bitcoin::net::Test, Bitcoin::Hash160 (p));
+    }
+
+    data::string address_from_secret (const data::N &n, bool mainnet, bool compressed) {
+        return address_from_pubkey (secret_to_public (compressed, n), mainnet);
+    }
+
+    data::bytes sign_with_WIF (const data::string &wif, const data::uint256_little &digest) {
+        return Bitcoin::WIF::decode (wif).sign (digest);
+    }
+
+    data::string address_from_WIF (const data::string &wif) {
+        return Bitcoin::WIF::decode (wif).address ().encode ();
     }
 }
