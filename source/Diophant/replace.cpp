@@ -18,7 +18,10 @@ namespace Diophant {
             // any of the replacement symbols, they are removed
             // from the replacements.
             data::stack<symbol> removed;
-            for (const symbol &x : q->Args) if (data::contains (rr, x)) removed <<= x;
+            for (const symbol &x : q->Args) 
+                if (rr.contains (x)) 
+                    removed >>= x;
+
             for (const symbol &x : removed) rr = data::remove (rr, x);
 
             if (expression replaced = replace_inner (q->Body, rr); replaced != nullptr)
@@ -33,8 +36,8 @@ namespace Diophant {
             for (const expression z : ls->List) {
                 expression replaced = replace_inner (z, rr);
                 if (replaced != expression {}) {
-                    new_list <<= replaced;
-                } else new_list <<= z;
+                    new_list >>= replaced;
+                } else new_list >>= z;
             }
 
             return replacement_was_made ? list::make (data::reverse (new_list)): expression {};
@@ -52,8 +55,8 @@ namespace Diophant {
                 expression replaced = replace_inner (z, rr);
                 if (replaced != expression {}) {
                     replacement_was_made = true;
-                    new_list <<= replaced;
-                } else new_list <<= z;
+                    new_list >>= replaced;
+                } else new_list >>= z;
             }
 
             if (!replacement_was_made) return expression {};
@@ -77,8 +80,8 @@ namespace Diophant {
                 expression replaced = replace_inner (z, rr);
                 if (replaced != expression {}) {
                     replacement_was_made = true;
-                    new_list <<= replaced;
-                } else new_list <<= z;
+                    new_list >>= replaced;
+                } else new_list >>= z;
             }
 
             return replacement_was_made ?
@@ -88,7 +91,7 @@ namespace Diophant {
 
         if (const let *l = dynamic_cast<const let *> (p); l != nullptr) {
             bool replacement_was_made = false;
-            data::stack<data::entry<const symbol, expression>> new_symbols;
+            data::dispatch<const symbol, expression> new_symbols;
 
             replacements r = rr;
 
@@ -98,8 +101,8 @@ namespace Diophant {
                 expression replaced = replace_inner (v, r);
                 if (replaced != expression {}) {
                     replacement_was_made = true;
-                    new_symbols <<= data::entry<const symbol, expression> {k, replaced};
-                } else new_symbols <<= data::entry<const symbol, expression> {k, v};
+                    new_symbols >>= data::entry<const symbol, expression> {k, replaced};
+                } else new_symbols >>= data::entry<const symbol, expression> {k, v};
             }
 
             expression replaced = replace_inner (l->In, r);

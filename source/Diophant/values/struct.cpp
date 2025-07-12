@@ -37,8 +37,8 @@ namespace Diophant {
 
             if (!v->cast (m, *x)) return false;
 
-            la = data::rest (la);
-            lb = data::rest (lb);
+            la++;
+            lb++;
         }
 
         return true;

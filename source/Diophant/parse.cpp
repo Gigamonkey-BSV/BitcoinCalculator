@@ -512,7 +512,7 @@ namespace Diophant {
     }
 
     void inline parser::push (Expression x) {
-        Exp <<= x;
+        Exp >>= x;
     }
 
     program inline parser::complete () const {
@@ -525,7 +525,7 @@ namespace Diophant {
         }
 
         if (Exp.size () == 0) return data::reverse (Final);
-        return data::reverse (Final << statement {Exp.first ()});
+        return data::reverse (Final >> statement {Exp.first ()});
     }
 
     void parser::unary (unary_operand op) {
@@ -553,13 +553,13 @@ namespace Diophant {
     }
 
     void parser::close_list () {
-        Exp = prepend (data::first (Back), list::make (data::reverse (Exp)));
-        Back = data::rest (Back);
+        Exp = prepend (first (Back), list::make (reverse (Exp)));
+        Back = rest (Back);
     }
 
     void parser::start_lambda () {
         open_list ();
-        Symbols = prepend (Symbols, data::stack<symbol> {});
+        Symbols >>= data::stack<symbol> {};
     }
 
     void parser::complete_lambda () {
@@ -568,23 +568,23 @@ namespace Diophant {
         // This is done in case we start to read one lambda
         // format and then find out that it isn't valid and
         // read the other one instead.
-        Exp = prepend (data::first (Back), lambda::make (reverse (first (Symbols)), first (Exp)));
+        Exp = prepend (first (Back), lambda::make (reverse (first (Symbols)), first (Exp)));
         Symbols = rest (Symbols);
-        Back = data::rest (Back);
+        Back = rest (Back);
     }
 
     void parser::open_struct () {
         Back = prepend (Back, Exp);
         Exp = {};
-        Symbols = prepend (Symbols, data::stack<symbol> {});
+        Symbols >>= data::stack<symbol> {};
     }
 
     void parser::close_struct () {
-        Exp = prepend (data::first (Back), dstruct::make (data::reverse (data::map_thread ([] (const symbol &x, const expression &p) {
+        Exp = prepend (first (Back), dstruct::make (reverse (data::map_thread ([] (const symbol &x, const expression &p) {
             return data::entry<symbol, expression> {x, p};
         }, first (Symbols), Exp))));
         Symbols = rest (Symbols);
-        Back = data::rest (Back);
+        Back = rest (Back);
     }
 
     void parser::make_if () {
@@ -592,32 +592,32 @@ namespace Diophant {
     }
 
     void parser::read_symbol (const symbol &x) {
-        Symbols = prepend (rest (Symbols), first (Symbols) << x);
+        Symbols = prepend (rest (Symbols), first (Symbols) >> x);
     }
 
     void parser::let_open () {
         Back = prepend (Back, Exp);
         Exp = {};
-        Symbols = prepend (Symbols, data::stack<symbol> {});
+        Symbols >>= data::stack<symbol> {};
     }
 
     void parser::let_close () {
-        Exp = prepend (data::first (Back), let::make (data::reverse (data::map_thread ([] (const symbol &x, const expression &p) {
+        Exp = prepend (first (Back), let::make (reverse (data::map_thread ([] (const symbol &x, const expression &p) {
             return data::entry<const symbol, expression> {x, p};
-        }, first (Symbols), data::rest (Exp))), data::first (Exp)));
+        }, first (Symbols), rest (Exp))), first (Exp)));
         Symbols = rest (Symbols);
         Back = data::rest (Back);
     }
 
     // top entry on stack should be a declaration.
     void parser::declare () {
-        Final <<= statement {pattern {data::first (Exp)}};
+        Final >>= statement {pattern {first (Exp)}};
         Exp = data::rest (Exp);
     }
 
     void parser::define () {
-        Final <<= statement {pattern {data::first (data::rest (Exp))}, data::first (Exp)};
-        Exp = data::rest (data::rest (Exp));
+        Final >>= statement {pattern {first (rest (Exp))}, first (Exp)};
+        Exp = rest (rest (Exp));
     }
 
 }

@@ -53,7 +53,7 @@ namespace Diophant {
 
             while (true) {
                 fun = fx->Fun;
-                args <<= fx->Args;
+                args >>= fx->Args;
 
                 const node *fn = dynamic_cast<const node *> (fun.get ());
 
@@ -300,7 +300,7 @@ namespace Diophant {
             for (Expression old_arg : data::stack<expression> (ls.List)) {
                 expression new_arg = m.evaluate (old_arg);
                 if (new_arg != old_arg) changed = true;
-                new_ls <<= new_arg;
+                new_ls >>= new_arg;
             }
 
             return changed ? list::make (data::reverse (new_ls)) : expression {};
@@ -313,7 +313,7 @@ namespace Diophant {
             for (data::entry<symbol, expression> old : dst.Values) {
                 data::entry<symbol, expression> new_e {old.Key, m.evaluate (old.Value)};
                 if (new_e.Value != old.Value) changed = true;
-                new_dst <<= new_e;
+                new_dst >>= new_e;
             }
 
             return changed ? dstruct::make (data::reverse (new_dst)) : expression {};
@@ -496,7 +496,7 @@ namespace Diophant {
                                     next = *n->Evaluated;
                                 } else break;
                             }
-                            new_args <<= next;
+                            new_args >>= next;
                         }
                         if (changed) args = data::reverse (new_args);
                         else return expression {};
@@ -517,11 +517,11 @@ namespace Diophant {
             data::stack<expression> new_args {};
             for (Expression ex : args) {
                 expression next = m.evaluate (ex);
-                new_args <<= next;
+                new_args >>= next;
                 if (next != ex) changed = true;
             }
 
-            args = data::reverse (new_args);
+            args = reverse (new_args);
 
             return changed ? call::make (fun, args) : expression {};
         }
@@ -624,16 +624,16 @@ namespace Diophant {
             const data::stack<pattern> args = new_def.Arguments;
 
             while (true) {
-                if (data::empty (defs)) {
-                    defs <<= new_def;
+                if (empty (defs)) {
+                    defs >>= new_def;
                     break;
                 }
 
                 const mtf &current = data::first (defs);
                 data::stack<pattern> old_args = current.Arguments;
 
-                if (data::size (current.Arguments) > data::size (args)) {
-                    defs <<= new_def;
+                if (size (current.Arguments) > data::size (args)) {
+                    defs >>= new_def;
                     break;
                 }
 
@@ -660,7 +660,7 @@ namespace Diophant {
                     if (comparison == impartial_ordering::nonempty_complements) throw excp;
 
                     if (comparison == impartial_ordering::subset || comparison == impartial_ordering::disjoint) {
-                        defs <<= new_def;
+                        defs >>= new_def;
                         break;
                     }
 
@@ -670,14 +670,14 @@ namespace Diophant {
                     }
                 }
 
-                back <<= data::first (defs);
-                defs = data::rest (defs);
+                back >>= first (defs);
+                defs = rest (defs);
             }
 
             // put the ealier definitions back onto the stack.
-            while (!data::empty (back)) {
-                defs <<= data::first (back);
-                back = data::rest (back);
+            while (!empty (back)) {
+                defs >>= first (back);
+                back = rest (back);
             }
 
             return defs;
