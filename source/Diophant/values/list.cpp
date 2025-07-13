@@ -5,12 +5,12 @@ namespace Diophant {
 
     std::ostream &list::write (std::ostream &o) const {
         o << "[";
-        if (!data::empty (List)) {
-            o << List.first ();
-            auto r = List.rest ();
-            while (!data::empty (r)) {
-                o << ", " << r.first ();
-                r = r.rest ();
+        if (!empty (List)) {
+            o << first (List);
+            auto r = rest (List);
+            while (!empty (r)) {
+                o << ", " << first (r);
+                r = rest (r);
             }
         }
         o << "]";
@@ -24,9 +24,9 @@ namespace Diophant {
 
             if (*tt != symbol {"list"}) return false;
 
-            if (fx->Args.size () != 1) return false;
+            if (size (fx->Args) != 1) return false;
 
-            const node *x = dynamic_cast<const node *> (fx->Args.first ().get ());
+            const node *x = dynamic_cast<const node *> (first (fx->Args).get ());
             if (x == nullptr) return false;
 
             for (const expression &ex : List) {
@@ -44,9 +44,9 @@ namespace Diophant {
             if (ll->List.size () != List.size ()) return false;
             data::stack<expression> la;
             data::stack<expression> lb;
-            while (!data::empty (la)) {
-                const expression &a = la.first ();
-                const expression &b = la.first ();
+            while (!empty (la)) {
+                const expression &a = first (la);
+                const expression &b = first (lb);
 
                 const value *v = dynamic_cast<const value *> (a.get ());
                 if (v == nullptr) return false;
@@ -56,8 +56,8 @@ namespace Diophant {
 
                 if (!v->cast (m, *x)) return false;
 
-                la = data::rest (la);
-                lb = data::rest (lb);
+                la = rest (la);
+                lb = rest (lb);
             }
 
             return true;

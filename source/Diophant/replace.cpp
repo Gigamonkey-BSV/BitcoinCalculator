@@ -40,7 +40,7 @@ namespace Diophant {
                 } else new_list >>= z;
             }
 
-            return replacement_was_made ? list::make (data::reverse (new_list)): expression {};
+            return replacement_was_made ? list::make (reverse (new_list)): expression {};
         }
 
         if (const dstruct *dt = dynamic_cast<const dstruct *> (p); dt != nullptr) {
@@ -110,7 +110,7 @@ namespace Diophant {
             else replaced = l->In;
 
             return replacement_was_made ?
-                let::make (data::reverse (new_symbols), replaced):
+                let::make (reverse (new_symbols), replaced):
                 expression {};
         }
 
@@ -214,11 +214,11 @@ namespace Diophant {
             replacements r {};
             auto jkl = jk->List;
             auto mno = mn->List;
-            while (!data::empty (jkl)) {
-                auto rr = match (m, pattern (data::first (jkl)), data::first (mno));
+            while (!empty (jkl)) {
+                auto rr = match (m, pattern (first (jkl)), first (mno));
                 if (intuit (rr) != yes) return rr;
-                jkl = data::rest (jkl);
-                mno = data::rest (mno);
+                jkl = rest (jkl);
+                mno = rest (mno);
                 try {
                     r = r & *rr;
                     // will be thrown if these maps have any of the same keys.

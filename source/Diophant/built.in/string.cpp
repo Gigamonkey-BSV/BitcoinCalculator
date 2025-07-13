@@ -83,23 +83,23 @@ namespace Diophant {
     }
 
     std::tuple<data::string, data::string> string_split (const data::string &x, const Bitcoin::integer &y) {
-        auto sp = Bitcoin::split (x, size_t (y));
-        return {data::string (sp.first), data::string (sp.second)};
+        auto [first, second] = Bitcoin::split (x, size_t (y));
+        return {data::string (first), data::string (second)};
     }
 
     std::tuple<data::string, data::string> string_split (const data::string &x, const data::N &y) {
-        auto sp = Bitcoin::split (x, size_t (y));
-        return {data::string (sp.first), data::string (sp.second)};
+        auto [first, second] = Bitcoin::split (x, size_t (y));
+        return {data::string (first), data::string (second)};
     }
 
     std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const Bitcoin::integer &y) {
-        auto sp = Bitcoin::split (x, size_t (y));
-        return {data::bytes (sp.first), data::bytes (sp.second)};
+        auto [first, second] = Bitcoin::split (x, size_t (y));
+        return {data::bytes (first), data::bytes (second)};
     }
 
     std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::N &y) {
-        auto sp = Bitcoin::split (x, size_t (y));
-        return {data::bytes (sp.first), data::bytes (sp.second)};
+        auto [first, second] = Bitcoin::split (x, size_t (y));
+        return {data::bytes (first), data::bytes (second)};
     }
 
     data::bytes bytes_left_shift (const data::bytes &x, const Bitcoin::integer &y) {

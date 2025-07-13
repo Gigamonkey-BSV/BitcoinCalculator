@@ -97,14 +97,14 @@ namespace Diophant {
 
     std::ostream &write_binary (std::ostream &o, const binop &b) {
         data::stack<expression> body = b.Body;
-        if (data::size (body) < 2) throw data::exception {} << "invalid binary operation " << b.Operand;
+        if (size (body) < 2) throw data::exception {} << "invalid binary operation " << b.Operand;
 
-        write (o, body.first ().get (), b.Operand);
-        body = data::rest (body);
+        write (o, first (body).get (), b.Operand);
+        body = rest (body);
         do {
-            write (o << " " << b.Operand << " ", body.first ().get (), b.Operand);
-            body = data::rest (body);
-        } while (!data::empty (body));
+            write (o << " " << b.Operand << " ", first (body).get (), b.Operand);
+            body = rest (body);
+        } while (!empty (body));
         return o;
     }
 
@@ -115,9 +115,9 @@ namespace Diophant {
     std::ostream &write_call (std::ostream &o, const call &c) {
         write (o << "(", c.Fun.get (), precedence::call);
         auto args = c.Args;
-        while (!data::empty (args)) {
-            write (o << " ", data::first (args).get (), precedence::call);
-            args = data::rest (args);
+        while (!empty (args)) {
+            write (o << " ", first (args).get (), precedence::call);
+            args = rest (args);
         }
         return o << ")";
     }

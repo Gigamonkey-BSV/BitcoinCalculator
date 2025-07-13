@@ -12,9 +12,9 @@ namespace Diophant {
         machine::result r {*this, expression {}};
         program pp = p;
 
-        while (!data::empty (pp)) {
-            r = r.Machine.evaluate (data::first (pp));
-            pp = data::rest (pp);
+        while (!empty (pp)) {
+            r = r.Machine.evaluate (first (pp));
+            pp = rest (pp);
         }
 
         return r;
@@ -65,11 +65,11 @@ namespace Diophant {
                     data::stack<pattern> drgs;
 
                     while (!data::empty (args)) {
-                        drgs = drgs + data::stack<pattern> (data::reverse (data::first (args)));
-                        args = data::rest (args);
+                        drgs = drgs + data::stack<pattern> (reverse (first (args)));
+                        args = rest (args);
                     }
 
-                    drgs = data::reverse (drgs);
+                    drgs = reverse (drgs);
 
                     return {define (*z, of, drgs, as), expression {}};
                 }
@@ -176,11 +176,11 @@ namespace Diophant {
         data::stack<pattern> p,
         data::stack<expression> e,
         data::list<machine::autocast> conversions) const {
-        if (data::size (p) != data::size (e)) return {no};
+        if (size (p) != size (e)) return {no};
 
         match_result r {no};
         while (!data::empty (p)) {
-            auto m = Diophant::match (*this, data::first (p), data::first (e));
+            auto m = Diophant::match (*this, first (p), first (e));
             intuit result = intuit (m);
 
             // an unknown result indicates that computation cannot continue.
@@ -199,8 +199,8 @@ namespace Diophant {
                 } else r = m;
             }
 
-            p = data::rest (p);
-            e = data::rest (e);
+            p = rest (p);
+            e = rest (e);
         }
 
         return r;
@@ -275,18 +275,18 @@ namespace Diophant {
             // ensure that we do not match twice.
             intuit_result<candidate> matched {no};
 
-            while (!data::empty (tfs)) {
+            while (!empty (tfs)) {
 
-                auto &tf = data::first (tfs);
-                if (data::size (tf.Arguments) > data::size (args)) return matched;
-                auto match_args = data::take (args, data::size (tf.Arguments));
+                auto &tf = first (tfs);
+                if (size (tf.Arguments) > size (args)) return matched;
+                auto match_args = take (args, size (tf.Arguments));
                 match_result r = m.match (tf.Arguments, match_args);
                 if (intuit (r) == yes) {
                     if (intuit (matched) == yes) throw data::exception {} << "no unique match";
-                    matched = intuit_result<candidate> {candidate {*r, tf.Value, data::drop (args, data::size (tf.Arguments))}};
+                    matched = intuit_result<candidate> {candidate {*r, tf.Value, drop (args, size (tf.Arguments))}};
                 } else if (intuit (r) == unknown) return {unknown};
 
-                tfs = data::rest (tfs);
+                tfs = rest (tfs);
             }
 
             return matched;
@@ -303,7 +303,7 @@ namespace Diophant {
                 new_ls >>= new_arg;
             }
 
-            return changed ? list::make (data::reverse (new_ls)) : expression {};
+            return changed ? list::make (reverse (new_ls)) : expression {};
         }
 
         expression evaluate_struct (const machine &m, const dstruct &dst) {
@@ -316,7 +316,7 @@ namespace Diophant {
                 new_dst >>= new_e;
             }
 
-            return changed ? dstruct::make (data::reverse (new_dst)) : expression {};
+            return changed ? dstruct::make (reverse (new_dst)) : expression {};
         }
 
         expression evaluate_symbol (const machine &m, const symbol &x) {
@@ -435,7 +435,7 @@ namespace Diophant {
                     // have already been checked.
 
                     min_args += data::size (fx->Args);
-                    args = data::reverse (args + data::reverse (fx->Args));
+                    args = reverse (args + reverse (fx->Args));
                     fun = fx->Fun;
                     p = fun.get ();
                     changed = true;
@@ -443,20 +443,20 @@ namespace Diophant {
 
                 // if the head is a lambda, we can evaluate it completely lazily.
                 if (const lambda *n = dynamic_cast<const lambda *> (p); n != nullptr) {
-                    if (data::size (n->Args) > data::size (args)) break;
+                    if (size (n->Args) > size (args)) break;
 
                     changed = true;
                     data::stack<symbol> in = n->Args;
                     replacements r;
 
                     while (!data::empty (in)) {
-                        r = r.insert (data::first (in), data::first (args));
-                        in = data::rest (in);
-                        args = data::rest (args);
+                        r = r.insert (first (in), first (args));
+                        in = rest (in);
+                        args = rest (args);
                     }
 
                     fun = m.evaluate (replace (n->Body, r));
-                    if (data::empty (args)) return fun;
+                    if (empty (args)) return fun;
                     continue;
                 }
 
@@ -467,9 +467,9 @@ namespace Diophant {
 
                     data::stack<mtf> tfs = std::get<data::stack<mtf>> (*v);
                     while (true) {
-                        if (data::empty (tfs)) goto done;
-                        if (data::size (data::first (tfs).Arguments) >= min_args) break;
-                        tfs = data::rest (tfs);
+                        if (empty (tfs)) goto done;
+                        if (size (first (tfs).Arguments) >= min_args) break;
+                        tfs = rest (tfs);
                     }
 
                     candidate_result cx = get_candidate (m, tfs, args);
@@ -498,7 +498,7 @@ namespace Diophant {
                             }
                             new_args >>= next;
                         }
-                        if (changed) args = data::reverse (new_args);
+                        if (changed) args = reverse (new_args);
                         else return expression {};
                     }
                 }
@@ -539,7 +539,7 @@ namespace Diophant {
                 if (f == nullptr) return {};
                 if (*f != symbol {"scriptnum"}) return {};
 
-                const bytes *x = dynamic_cast<const bytes *> (fx->Args.first ().get ());
+                const bytes *x = dynamic_cast<const bytes *> (first (fx->Args).get ());
                 if (x == nullptr) return {};
 
                 return Bitcoin::nonzero (x->Value) ? df.Then : df.Else;
@@ -591,21 +591,21 @@ namespace Diophant {
                     if (!std::holds_alternative<data::stack<mtf>> (prev)) throw excp;
                     const data::stack<mtf> ps = std::get<data::stack<mtf>> (prev);
                     const data::stack<mtf> ns = std::get<data::stack<mtf>> (next);
-                    return insert_def_into_stack (m, excp, ps, data::first (ns));
+                    return insert_def_into_stack (m, excp, ps, first (ns));
                 });
         }
 
         machine::unary_defs def (Machine m, machine::unary_defs defs, unary_operand op, type of, pattern arg, expression as) {
             return defs.insert (op, data::stack<mtf> {mtf {{arg}, casted {of, as}}},
                 [m, op] (const data::stack<mtf> &prev, const data::stack<mtf> &next) {
-                    return insert_def_into_stack (m, data::exception {} << "op " << op << " is already defined", prev, data::first (next));
+                    return insert_def_into_stack (m, data::exception {} << "op " << op << " is already defined", prev, first (next));
                 });
         }
 
         machine::binary_defs def (Machine m, machine::binary_defs defs, binary_operand op, type of, pattern left, pattern right, expression as) {
             return defs.insert (op, data::stack<mtf> {mtf {{left, right}, casted {of, as}}},
                 [m, op] (const data::stack<mtf> &prev, const data::stack<mtf> &next) {
-                    return insert_def_into_stack (m, data::exception {} << "op " << op << " is already defined", prev, data::first (next));
+                    return insert_def_into_stack (m, data::exception {} << "op " << op << " is already defined", prev, first (next));
                 });
         }
 
@@ -629,7 +629,7 @@ namespace Diophant {
                     break;
                 }
 
-                const mtf &current = data::first (defs);
+                const mtf &current = first (defs);
                 data::stack<pattern> old_args = current.Arguments;
 
                 if (size (current.Arguments) > data::size (args)) {
@@ -643,7 +643,7 @@ namespace Diophant {
 
                     data::stack<pattern> new_args = args;
 
-                    impartial_ordering comparison = compare (m, data::first (new_args), data::first (old_args));
+                    impartial_ordering comparison = compare (m, first (new_args), first (old_args));
 
                     // we require that the impartial
                     while (true) {
@@ -654,7 +654,7 @@ namespace Diophant {
 
                         if (data::empty (new_args)) break;
 
-                        comparison = comparison && compare (m, data::first (new_args), data::first (old_args));
+                        comparison = comparison && compare (m, first (new_args), first (old_args));
                     }
 
                     if (comparison == impartial_ordering::nonempty_complements) throw excp;

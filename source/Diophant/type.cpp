@@ -136,12 +136,12 @@ namespace Diophant {
 
             auto targ = ct->Args;
             auto carg = c.Args;
-            if (data::size (targ) != data::size (carg)) return no;
+            if (size (targ) != size (carg)) return no;
 
-            while (data::size (targ) > 0) {
-                if (!type {targ.first ()}.castable (m, carg.first ())) return no;
-                targ = data::rest (targ);
-                carg = data::rest (carg);
+            while (size (targ) > 0) {
+                if (!type {first (targ)}.castable (m, first (carg))) return no;
+                targ = rest (targ);
+                carg = rest (carg);
             }
 
             return yes;

@@ -491,15 +491,15 @@ namespace Diophant {
     }
 
     expression read_expression (const data::string &input) {
-        return read<tao_pegtl_grammar::read_expression> (input).first ().Predicate;
+        return first (read<tao_pegtl_grammar::read_expression> (input)).Predicate;
     }
 
     statement read_definition (const data::string &input) {
-        return read<tao_pegtl_grammar::read_definition> (input).first ();
+        return first (read<tao_pegtl_grammar::read_definition> (input));
     }
 
     pattern read_declaration (const data::string &input) {
-        return *read<tao_pegtl_grammar::read_declaration> (input).first ().Subject;
+        return *first (read<tao_pegtl_grammar::read_declaration> (input)).Subject;
     }
 
     program read_line (const data::string &input) {
@@ -507,8 +507,8 @@ namespace Diophant {
     }
 
     void inline parser::call () {
-        if (data::size (Exp) < 2) throw data::exception {} << "invalid parser stack on call: too small";
-        Exp = prepend (data::rest (data::rest (Exp)), call::make (data::first (data::rest (Exp)), {data::first (Exp)}));
+        if (size (Exp) < 2) throw data::exception {} << "invalid parser stack on call: too small";
+        Exp = prepend (rest (rest (Exp)), call::make (first (rest (Exp)), {first (Exp)}));
     }
 
     void inline parser::push (Expression x) {
@@ -521,11 +521,11 @@ namespace Diophant {
 
         if (Final.size () == 0) {
             if (Exp.size () == 0) return program {statement {nil::make ()}};
-            return program {statement {data::first (Exp)}};
+            return program {statement {first (Exp)}};
         }
 
-        if (Exp.size () == 0) return data::reverse (Final);
-        return data::reverse (Final >> statement {Exp.first ()});
+        if (Exp.size () == 0) return reverse (Final);
+        return reverse (Final >> statement {first (Exp)});
     }
 
     void parser::unary (unary_operand op) {
@@ -606,13 +606,13 @@ namespace Diophant {
             return data::entry<const symbol, expression> {x, p};
         }, first (Symbols), rest (Exp))), first (Exp)));
         Symbols = rest (Symbols);
-        Back = data::rest (Back);
+        Back = rest (Back);
     }
 
     // top entry on stack should be a declaration.
     void parser::declare () {
         Final >>= statement {pattern {first (Exp)}};
-        Exp = data::rest (Exp);
+        Exp = rest (Exp);
     }
 
     void parser::define () {

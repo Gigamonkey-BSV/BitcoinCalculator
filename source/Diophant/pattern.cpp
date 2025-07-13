@@ -35,11 +35,11 @@ namespace Diophant {
             data::stack<expression> k = c->Body;
             if (j.size () != k.size ()) return impartial_ordering::disjoint;
             impartial_ordering compare = impartial_ordering::equal;
-            while (!data::empty (j)) {
-                compare = compare && pattern_compare (m, j.first (), k.first ());
+            while (!empty (j)) {
+                compare = compare && pattern_compare (m, first (j), first (k));
                 if (compare == impartial_ordering::disjoint) return impartial_ordering::disjoint;
-                j = data::rest (j);
-                k = data::rest (k);
+                j = rest (j);
+                k = rest (k);
             }
             return compare;
         }
@@ -51,11 +51,11 @@ namespace Diophant {
             data::stack<expression> k = mm->List;
             if (j.size () != k.size ()) return impartial_ordering::disjoint;
             impartial_ordering compare = impartial_ordering::equal;
-            while (!data::empty (j)) {
-                compare = compare && pattern_compare (m, j.first (), k.first ());
+            while (!empty (j)) {
+                compare = compare && pattern_compare (m, first (j), first (k));
                 if (compare == impartial_ordering::disjoint) return impartial_ordering::disjoint;
-                j = data::rest (j);
-                k = data::rest (k);
+                j = rest (j);
+                k = rest (k);
             }
             return compare;
         }
@@ -71,11 +71,11 @@ namespace Diophant {
 
             impartial_ordering compare = pattern_compare (m, fx->Fun, gx->Fun);
 
-            while (!data::empty (j)) {
+            while (!empty (j)) {
                 if (compare == impartial_ordering::disjoint) return impartial_ordering::disjoint;
-                compare = compare && pattern_compare (m, j.first (), k.first ());
-                j = data::rest (j);
-                k = data::rest (k);
+                compare = compare && pattern_compare (m, first (j), first (k));
+                j = rest (j);
+                k = rest (k);
             }
 
             return compare;
