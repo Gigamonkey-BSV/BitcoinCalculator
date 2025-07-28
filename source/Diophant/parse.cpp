@@ -14,6 +14,8 @@ namespace tao_pegtl_grammar {
     struct read_definition : seq<ws, definition, ws, eof> {};
     struct read_declaration : seq<ws, declaration, ws, eof> {};
     struct read_expression : seq<opt<seq<ws, expression<atom>>>, ws, eof> {};
+
+    struct read_symbol : seq<symbol, eof> {};
 }
 
 namespace Diophant {
@@ -504,6 +506,19 @@ namespace Diophant {
 
     program read_line (const data::string &input) {
         return read<tao_pegtl_grammar::program> (input);
+    }
+    
+    bool symbol::valid () const {
+        parser p;
+        tao::pegtl::memory_input<> in {*this, "expression"};
+
+        try {
+            if (!tao::pegtl::parse<tao_pegtl_grammar::read_symbol, rules::read_expression> (in, p)) return false;
+        } catch (tao::pegtl::parse_error &err) {
+            return false;
+        }
+
+        return true;
     }
 
     void inline parser::call () {

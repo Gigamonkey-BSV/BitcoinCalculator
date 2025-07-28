@@ -15,6 +15,8 @@ namespace Diophant {
 
         bool operator == (const symbol &x) const;
         std::strong_ordering operator <=> (const symbol &x) const;
+
+        bool valid () const;
     };
 
     using Symbol = const symbol &;

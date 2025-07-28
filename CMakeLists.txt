@@ -6,7 +6,7 @@ if (${CMAKE_VERSION} VERSION_LESS 3.12)
 endif ()
 
 if (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-  message(FATAL_ERROR "In-source builds are not allowed")
+  message (FATAL_ERROR "In-source builds are not allowed")
 endif ()
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake" CACHE STRING "Modules for CMake" FORCE)
