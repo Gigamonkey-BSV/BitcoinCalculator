@@ -78,6 +78,7 @@ add_library (
     source/Diophant/nodes.cpp
     source/Diophant/type.cpp
     source/Diophant/pattern.cpp
+    source/Diophant/symbol.cpp
     source/Diophant/values/list.cpp
     source/Diophant/values/struct.cpp
     source/Diophant/built.in/bool.cpp
