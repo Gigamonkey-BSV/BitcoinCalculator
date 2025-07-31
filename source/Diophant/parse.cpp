@@ -12,16 +12,7 @@ namespace Diophant {
     template program read<tao_pegtl_grammar::read_declaration> (const data::string &);
     template program read<tao_pegtl_grammar::program> (const data::string &);
 
-    void inline parser::call () {
-        if (size (Exp) < 2) throw data::exception {} << "invalid parser stack on call: too small";
-        Exp = prepend (rest (rest (Exp)), call::make (first (rest (Exp)), {first (Exp)}));
-    }
-
-    void inline parser::push (Expression x) {
-        Exp >>= x;
-    }
-
-    program inline parser::complete () const {
+    program parser::complete () const {
 
         if (Exp.size () > 1) throw data::exception {} << "parsing error: stack is " << Exp;
 
@@ -32,10 +23,6 @@ namespace Diophant {
 
         if (Exp.size () == 0) return reverse (Final);
         return reverse (Final >> statement {first (Exp)});
-    }
-
-    void parser::unary (unary_operand op) {
-        Exp = prepend (rest (Exp), unop::make (op, first (Exp)));
     }
 
     void parser::binary (binary_operand op) {
@@ -51,21 +38,6 @@ namespace Diophant {
         }
 
         Exp = prepend (rest (rest (Exp)), binop::make (op, z, x));
-    }
-
-    void parser::open_list () {
-        Back = prepend (Back, Exp);
-        Exp = {};
-    }
-
-    void parser::close_list () {
-        Exp = prepend (first (Back), list::make (reverse (Exp)));
-        Back = rest (Back);
-    }
-
-    void parser::start_lambda () {
-        open_list ();
-        Symbols >>= data::stack<symbol> {};
     }
 
     void parser::complete_lambda () {
@@ -91,14 +63,6 @@ namespace Diophant {
         }, first (Symbols), Exp))));
         Symbols = rest (Symbols);
         Back = rest (Back);
-    }
-
-    void parser::make_if () {
-        Exp = prepend (drop (Exp, 3), dif::make (Exp[2], Exp[1], Exp[0]));
-    }
-
-    void parser::read_symbol (const symbol &x) {
-        Symbols = prepend (rest (Symbols), first (Symbols) >> x);
     }
 
     void parser::let_open () {

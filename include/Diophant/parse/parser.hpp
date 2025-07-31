@@ -507,6 +507,42 @@ namespace Diophant {
         return read<tao_pegtl_grammar::program> (input);
     }
 
+    void inline parser::call () {
+        if (size (Exp) < 2) throw data::exception {} << "invalid parser stack on call: too small";
+        Exp = prepend (rest (rest (Exp)), call::make (first (rest (Exp)), {first (Exp)}));
+    }
+
+    void inline parser::push (Expression x) {
+        Exp >>= x;
+    }
+
+    void inline parser::unary (unary_operand op) {
+        Exp = prepend (rest (Exp), unop::make (op, first (Exp)));
+    }
+
+    void inline parser::open_list () {
+        Back = prepend (Back, Exp);
+        Exp = {};
+    }
+
+    void inline parser::close_list () {
+        Exp = prepend (first (Back), list::make (reverse (Exp)));
+        Back = rest (Back);
+    }
+
+    void inline parser::start_lambda () {
+        open_list ();
+        Symbols >>= data::stack<symbol> {};
+    }
+
+    void inline parser::make_if () {
+        Exp = prepend (drop (Exp, 3), dif::make (Exp[2], Exp[1], Exp[0]));
+    }
+
+    void inline parser::read_symbol (const symbol &x) {
+        Symbols = prepend (rest (Symbols), first (Symbols) >> x);
+    }
+
 }
 
 #endif

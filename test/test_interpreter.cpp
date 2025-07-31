@@ -1,4 +1,4 @@
-#include <Diophant/parse.hpp>
+#include <Diophant/parse/parser.hpp>
 #include <Diophant/values/leaf.hpp>
 #include <Diophant/values/lambda.hpp>
 #include "gtest/gtest.h"
