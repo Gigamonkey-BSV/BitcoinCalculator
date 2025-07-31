@@ -491,19 +491,19 @@ namespace Diophant {
         return p.complete ();
     }
 
-    expression read_expression (const data::string &input) {
+    expression inline read_expression (const data::string &input) {
         return first (read<tao_pegtl_grammar::read_expression> (input)).Predicate;
     }
 
-    statement read_definition (const data::string &input) {
+    statement inline read_definition (const data::string &input) {
         return first (read<tao_pegtl_grammar::read_definition> (input));
     }
 
-    pattern read_declaration (const data::string &input) {
+    pattern inline read_declaration (const data::string &input) {
         return *first (read<tao_pegtl_grammar::read_declaration> (input)).Subject;
     }
 
-    program read_line (const data::string &input) {
+    program inline read_line (const data::string &input) {
         return read<tao_pegtl_grammar::program> (input);
     }
 
