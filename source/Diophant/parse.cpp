@@ -7,6 +7,11 @@
 
 namespace Diophant {
 
+    template program read<tao_pegtl_grammar::read_expression> (const data::string &);
+    template program read<tao_pegtl_grammar::read_definition> (const data::string &);
+    template program read<tao_pegtl_grammar::read_declaration> (const data::string &);
+    template program read<tao_pegtl_grammar::program> (const data::string &);
+
     void inline parser::call () {
         if (size (Exp) < 2) throw data::exception {} << "invalid parser stack on call: too small";
         Exp = prepend (rest (rest (Exp)), call::make (first (rest (Exp)), {first (Exp)}));

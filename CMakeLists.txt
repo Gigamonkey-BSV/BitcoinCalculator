@@ -103,7 +103,7 @@ target_include_directories (diophant
 target_compile_features (diophant PUBLIC cxx_std_23)
 set_target_properties (diophant PROPERTIES CXX_EXTENSIONS OFF)
 
-add_executable (BitcoinCalc calculator.cpp source/Diophant/parse.cpp)
+add_executable (BitcoinCalc calculator.cpp)
 
 target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh diophant Gigamonkey::gigamonkey Data::data)
 target_include_directories (BitcoinCalc PUBLIC include)
