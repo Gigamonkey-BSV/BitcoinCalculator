@@ -2,7 +2,7 @@
 #include <Diophant/values/struct.hpp>
 #include <Diophant/nodes.hpp>
 #include <Diophant/pattern.hpp>
-#include <Diophant/parse.hpp>
+#include <Diophant/parse/parser.hpp>
 
 namespace Diophant {
 
