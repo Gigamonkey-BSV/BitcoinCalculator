@@ -10,7 +10,7 @@ namespace Diophant {
     // replace symbols in exp according to the given replacements.
     expression replace (Expression exp, replacements);
 
-    enum intuit : char {
+    enum intuit : signed char {
         unknown = 0,
         yes = 1,
         no = -1
