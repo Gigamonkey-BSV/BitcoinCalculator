@@ -2,14 +2,9 @@
 #define BITCOIN_CALCULATOR_PARSE
 
 #include <Diophant/machine.hpp>
+#include <Diophant/parse/error.hpp>
 
 namespace Diophant {
-
-    struct parse_error : std::logic_error {
-        parse_error (): std::logic_error {"could not parse input"} {};
-        parse_error (const data::string &line):
-            std::logic_error {std::string {} + "could not parse input: " + line} {};
-    };
 
     expression read_expression (const data::string &in);
 

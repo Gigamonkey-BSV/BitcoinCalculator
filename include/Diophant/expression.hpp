@@ -3,6 +3,7 @@
 
 #include <Gigamonkey.hpp>
 #include <data/maybe.hpp>
+#include <Diophant/parse/error.hpp>
 
 namespace Diophant {
 
