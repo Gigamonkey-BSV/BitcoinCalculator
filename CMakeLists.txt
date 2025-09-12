@@ -92,7 +92,14 @@ add_library (
     source/Diophant/built.in/hd.cpp
 )
 
-target_link_libraries (diophant PUBLIC nlohmann_json argh Gigamonkey::gigamonkey Data::data)
+target_link_libraries (
+  diophant
+  PUBLIC
+  Gigamonkey::gigamonkey
+  Data::data
+  nlohmann_json
+  argh
+)
 
 target_include_directories (diophant
   PUBLIC
