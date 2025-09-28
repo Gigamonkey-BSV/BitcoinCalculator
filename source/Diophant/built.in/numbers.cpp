@@ -3,6 +3,15 @@
 
 namespace Diophant {
 
+    data::N cast_integer_to_natural (const data::Z &z) {
+        if (z < 0) throw data::exception {} << "cast " << z << " to natural but is negative";
+        return data::N (z);
+    }
+
+    data::Z cast_natural_to_integer (const data::N &n) {
+        return n.Value;
+    }
+
     bool natural_equal (const data::N &x, const data::N &y) {
         return x == y;
     }
@@ -193,68 +202,6 @@ namespace Diophant {
         return x < y;
     }
 
-    bool uint32_little_equal (data::uint32_little x, data::uint32_little y) {return x == y;}
-
-    bool uint32_little_unequal (data::uint32_little x, data::uint32_little y) {
-        return x != y;
-    }
-
-    bool uint32_little_greater_equal (data::uint32_little x, data::uint32_little y) {
-        return x <= y;
-    }
-
-    bool uint32_little_less_equal (data::uint32_little x, data::uint32_little y) {
-        return x >= y;
-    }
-
-    bool uint32_little_greater (data::uint32_little x, data::uint32_little y) {return x > y;}
-
-    bool uint32_little_less (data::uint32_little x, data::uint32_little y) {
-        return x < y;
-    }
-
-    bool int32_little_equal (data::int32_little x, data::int32_little y) {return x == y;}
-
-    bool int32_little_unequal (data::int32_little x, data::int32_little y) {return x != y;}
-
-    bool int32_little_greater_equal (data::int32_little x, data::int32_little y) {return x >= y;}
-
-    bool int32_little_less_equal (data::int32_little x, data::int32_little y) {return x <= y;}
-
-    bool int32_little_greater (data::int32_little x, data::int32_little y) {return x > y;}
-
-    bool int32_little_less (data::int32_little x, data::int32_little y) {return x < y;}
-
-    bool uint32_big_equal (data::uint32_big x, data::uint32_big y) {return x == y;}
-
-    bool uint32_big_unequal (data::uint32_big x, data::uint32_big y) {return x != y;}
-
-    bool uint32_big_greater_equal (data::uint32_big x, data::uint32_big y) {
-        return x >= y;
-    }
-
-    bool uint32_big_less_equal (data::uint32_big x, data::uint32_big y) {return x <= y;}
-
-    bool uint32_big_greater (data::uint32_big x, data::uint32_big y) {
-        return x > y;
-    }
-
-    bool uint32_big_less (data::uint32_big x, data::uint32_big y) {return x < y;}
-
-    bool int32_big_equal (data::int32_big x, data::int32_big y) {
-        return x == y;
-    }
-
-    bool int32_big_unequal (data::int32_big x, data::int32_big y) {return x != y;}
-
-    bool int32_big_greater_equal (data::int32_big x, data::int32_big y) {return x >= y;}
-
-    bool int32_big_less_equal (data::int32_big x, data::int32_big y) {return x <= y;}
-
-    bool int32_big_greater (data::int32_big x, data::int32_big y) {return x > y;}
-
-    bool int32_big_less (data::int32_big x, data::int32_big y) {return x < y;}
-
     bool uint64_equal (data::uint64 x, data::uint64 y) { return x == y; }
     bool uint64_unequal (data::uint64 x, data::uint64 y) { return x != y; }
     bool uint64_greater_equal (data::uint64 x, data::uint64 y) { return x >= y; }
@@ -268,34 +215,6 @@ namespace Diophant {
     bool int64_less_equal (data::int64 x, data::int64 y) { return x <= y; }
     bool int64_greater (data::int64 x, data::int64 y) { return x > y; }
     bool int64_less (data::int64 x, data::int64 y) { return x < y; }
-
-    bool uint64_little_equal (data::uint64_little x, data::uint64_little y) { return x == y; }
-    bool uint64_little_unequal (data::uint64_little x, data::uint64_little y) { return x != y; }
-    bool uint64_little_greater_equal (data::uint64_little x, data::uint64_little y) { return x >= y; }
-    bool uint64_little_less_equal (data::uint64_little x, data::uint64_little y) { return x <= y; }
-    bool uint64_little_greater (data::uint64_little x, data::uint64_little y) { return x > y; }
-    bool uint64_little_less (data::uint64_little x, data::uint64_little y) { return x < y; }
-
-    bool int64_little_equal (data::int64_little x, data::int64_little y) { return x == y; }
-    bool int64_little_unequal (data::int64_little x, data::int64_little y) { return x != y; }
-    bool int64_little_greater_equal (data::int64_little x, data::int64_little y) { return x >= y; }
-    bool int64_little_less_equal (data::int64_little x, data::int64_little y) { return x <= y; }
-    bool int64_little_greater (data::int64_little x, data::int64_little y) { return x > y; }
-    bool int64_little_less (data::int64_little x, data::int64_little y) { return x < y; }
-
-    bool uint64_big_equal (data::uint64_big x, data::uint64_big y) { return x == y; }
-    bool uint64_big_unequal (data::uint64_big x, data::uint64_big y) { return x != y; }
-    bool uint64_big_greater_equal (data::uint64_big x, data::uint64_big y) { return x >= y; }
-    bool uint64_big_less_equal (data::uint64_big x, data::uint64_big y) { return x <= y; }
-    bool uint64_big_greater (data::uint64_big x, data::uint64_big y) { return x > y; }
-    bool uint64_big_less (data::uint64_big x, data::uint64_big y) { return x < y; }
-
-    bool int64_big_equal (data::int64_big x, data::int64_big y) { return x == y; }
-    bool int64_big_unequal (data::int64_big x, data::int64_big y) { return x != y; }
-    bool int64_big_greater_equal (data::int64_big x, data::int64_big y) { return x >= y; }
-    bool int64_big_less_equal (data::int64_big x, data::int64_big y) { return x <= y; }
-    bool int64_big_greater (data::int64_big x, data::int64_big y) { return x > y; }
-    bool int64_big_less (data::int64_big x, data::int64_big y) { return x < y; }
 
     bool uint128_equal (const data::uint128 &x, const data::uint128 &y) { return x == y; }
     bool uint128_unequal (const data::uint128 &x, const data::uint128 &y) { return x != y; }
@@ -325,20 +244,6 @@ namespace Diophant {
     bool int160_greater (const data::int160 &x, const data::int160 &y) { return x > y; }
     bool int160_less (const data::int160 &x, const data::int160 &y) { return x < y; }
 
-    bool uint160_little_equal (const data::uint160_little &x, const data::uint160_little &y) { return x == y; }
-    bool uint160_little_unequal (const data::uint160_little &x, const data::uint160_little &y) { return x != y; }
-    bool uint160_little_greater_equal (const data::uint160_little &x, const data::uint160_little &y) { return x >= y; }
-    bool uint160_little_less_equal (const data::uint160_little &x, const data::uint160_little &y) { return x <= y; }
-    bool uint160_little_greater (const data::uint160_little &x, const data::uint160_little &y) { return x > y; }
-    bool uint160_little_less (const data::uint160_little &x, const data::uint160_little &y) { return x < y; }
-
-    bool int160_little_equal (const data::int160_little &x, const data::int160_little &y) { return x == y; }
-    bool int160_little_unequal (const data::int160_little &x, const data::int160_little &y) { return x != y; }
-    bool int160_little_greater_equal (const data::int160_little &x, const data::int160_little &y) { return x >= y; }
-    bool int160_little_less_equal (const data::int160_little &x, const data::int160_little &y) { return x <= y; }
-    bool int160_little_greater (const data::int160_little &x, const data::int160_little &y) { return x > y; }
-    bool int160_little_less (const data::int160_little &x, const data::int160_little &y) { return x < y; }
-
     bool uint256_equal (const data::uint256 &x, const data::uint256 &y) { return x == y; }
     bool uint256_unequal (const data::uint256 &x, const data::uint256 &y) { return x != y; }
     bool uint256_greater_equal (const data::uint256 &x, const data::uint256 &y) { return x >= y; }
@@ -352,20 +257,6 @@ namespace Diophant {
     bool int256_less_equal (const data::int256 &x, const data::int256 &y) { return x <= y; }
     bool int256_greater (const data::int256 &x, const data::int256 &y) { return x > y; }
     bool int256_less (const data::int256 &x, const data::int256 &y) { return x < y; }
-
-    bool uint256_little_equal (const data::uint256_little &x, const data::uint256_little &y) { return x == y; }
-    bool uint256_little_unequal (const data::uint256_little &x, const data::uint256_little &y) { return x != y; }
-    bool uint256_little_greater_equal (const data::uint256_little &x, const data::uint256_little &y) { return x >= y; }
-    bool uint256_little_less_equal (const data::uint256_little &x, const data::uint256_little &y) { return x <= y; }
-    bool uint256_little_greater (const data::uint256_little &x, const data::uint256_little &y) { return x > y; }
-    bool uint256_little_less (const data::uint256_little &x, const data::uint256_little &y) { return x < y; }
-
-    bool int256_little_equal (const data::int256_little &x, const data::int256_little &y) { return x == y; }
-    bool int256_little_unequal (const data::int256_little &x, const data::int256_little &y) { return x != y; }
-    bool int256_little_greater_equal (const data::int256_little &x, const data::int256_little &y) { return x >= y; }
-    bool int256_little_less_equal (const data::int256_little &x, const data::int256_little &y) { return x <= y; }
-    bool int256_little_greater (const data::int256_little &x, const data::int256_little &y) { return x > y; }
-    bool int256_little_less (const data::int256_little &x, const data::int256_little &y) { return x < y; }
 
     bool uint512_equal (const data::uint512 &x, const data::uint512 &y) { return x == y; }
     bool uint512_unequal (const data::uint512 &x, const data::uint512 &y) { return x != y; }
@@ -381,19 +272,59 @@ namespace Diophant {
     bool int512_greater (const data::int512 &x, const data::int512 &y) { return x > y; }
     bool int512_less (const data::int512 &x, const data::int512 &y) { return x < y; }
 
-    bool uint512_little_equal (const data::uint512_little &x, const data::uint512_little &y) { return x == y; }
-    bool uint512_little_unequal (const data::uint512_little &x, const data::uint512_little &y) { return x != y; }
-    bool uint512_little_greater_equal (const data::uint512_little &x, const data::uint512_little &y) { return x >= y; }
-    bool uint512_little_less_equal (const data::uint512_little &x, const data::uint512_little &y) { return x <= y; }
-    bool uint512_little_greater (const data::uint512_little &x, const data::uint512_little &y) { return x > y; }
-    bool uint512_little_less (const data::uint512_little &x, const data::uint512_little &y) { return x < y; }
+    data::byte uint8_plus (data::byte x, data::byte y) { return x + y; }
+    data::int8 int8_plus (data::int8 x, data::int8 y) { return x + y; }
 
-    bool int512_little_equal (const data::int512_little &x, const data::int512_little &y) { return x == y; }
-    bool int512_little_unequal (const data::int512_little &x, const data::int512_little &y) { return x != y; }
-    bool int512_little_greater_equal (const data::int512_little &x, const data::int512_little &y) { return x >= y; }
-    bool int512_little_less_equal (const data::int512_little &x, const data::int512_little &y) { return x <= y; }
-    bool int512_little_greater (const data::int512_little &x, const data::int512_little &y) { return x > y; }
-    bool int512_little_less (const data::int512_little &x, const data::int512_little &y) { return x < y; }
+    data::byte uint8_minus (data::byte x, data::byte y) { return x - y; }
+    data::int8 int8_minus (data::int8 x, data::int8 y) { return x - y; }
+
+    data::byte uint8_times (data::byte x, data::byte y) { return x * y; }
+    data::int8 int8_times (data::int8 x, data::int8 y) { return x * y; }
+
+    data::uint16 uint16_plus (data::uint16 x, data::uint16 y) { return x + y; }
+    data::int16 int16_plus (data::int16 x, data::int16 y) { return x + y; }
+
+    data::uint16 uint16_minus (data::uint16 x, data::uint16 y) { return x - y; }
+    data::int16 int16_minus (data::int16 x, data::int16 y) { return x - y; }
+
+    data::uint16 uint16_times (data::uint16 x, data::uint16 y) { return x * y; }
+    data::int16 int16_times (data::int16 x, data::int16 y) { return x * y; }
+
+    data::uint32 uint32_plus (data::uint32 x, data::uint32 y) { return x + y; }
+    data::int32 int32_plus (data::int32 x, data::int32 y) { return x + y; }
+
+    data::uint32 uint32_minus (data::uint32 x, data::uint32 y) { return x - y; }
+    data::int32 int32_minus (data::int32 x, data::int32 y) { return x - y; }
+
+    data::uint32 uint32_times (data::uint32 x, data::uint32 y) { return x * y; }
+    data::int32 int32_times (data::int32 x, data::int32 y) { return x * y; }
+
+    data::byte uint8_bit_and (data::byte x, data::byte y) { return x & y; }
+    data::int8 int8_bit_and (data::int8 x, data::int8 y) { return x & y; }
+
+    data::byte uint8_bit_or (data::byte x, data::byte y) { return x | y; }
+    data::int8 int8_bit_or (data::int8 x, data::int8 y) { return x | y; }
+
+    data::byte uint8_bit_xor (data::byte x, data::byte y) { return x ^ y; }
+    data::int8 int8_bit_xor (data::int8 x, data::int8 y) { return x ^ y; }
+
+    data::uint16 uint16_bit_and (data::uint16 x, data::uint16 y) { return x & y; }
+    data::int16 int16_bit_and (data::int16 x, data::int16 y) { return x & y; }
+
+    data::uint16 uint16_bit_or (data::uint16 x, data::uint16 y) { return x | y; }
+    data::int16 int16_bit_or (data::int16 x, data::int16 y) { return x | y; }
+
+    data::uint16 uint16_bit_xor (data::uint16 x, data::uint16 y) { return x ^ y; }
+    data::int16 int16_bit_xor (data::int16 x, data::int16 y) { return x ^ y; }
+
+    data::uint32 uint32_bit_and (data::uint32 x, data::uint32 y) { return x & y; }
+    data::int32 int32_bit_and (data::int32 x, data::int32 y) { return x & y; }
+
+    data::uint32 uint32_bit_or (data::uint32 x, data::uint32 y) { return x | y; }
+    data::int32 int32_bit_or (data::int32 x, data::int32 y) { return x | y; }
+
+    data::uint32 uint32_bit_xor (data::uint32 x, data::uint32 y) { return x ^ y; }
+    data::int32 int32_bit_xor (data::int32 x, data::int32 y) { return x ^ y; }
 
     data::Z natural_negate (const data::N &x) {
         return -x;
@@ -527,102 +458,6 @@ namespace Diophant {
         return x < 0 ? -x : x;
     }
 
-    data::uint16_little uint16_little_negate (data::uint16_little x) {
-        return -data::uint16 (x);
-    }
-
-    data::int16_little int16_little_negate (data::int16_little x) {
-        return -x;
-    }
-
-    data::int16_little int16_little_abs (data::int16_little x) {
-        return x < 0 ? data::int16_little {static_cast<data::int16> (-x)} : x;
-    }
-
-    data::uint32_little uint32_little_negate (data::uint32_little x) {
-        return -data::uint32 (x);
-    }
-
-    data::int32_little int32_little_negate (data::int32_little x) {
-        return -x;
-    }
-
-    data::int32_little int32_little_abs (data::int32_little x) {
-        return x < 0 ? data::int32_little {-x} : x;
-    }
-
-    data::uint64_little uint64_little_negate (data::uint64_little x) {
-        return -data::uint64 (x);
-    }
-
-    data::int64_little int64_little_negate (data::int64_little x) {
-        return -x;
-    }
-
-    data::int64_little int64_little_abs (data::int64_little x) {
-        return x < 0 ? data::int64_little {-x} : x;
-    }
-
-    data::uint16_big uint16_big_negate (data::uint16_big x) {
-        return -data::uint16 (x);
-    }
-
-    data::int16_big int16_big_negate (data::int16_big x) {
-        return -x;
-    }
-
-    data::int16_big int16_big_abs (data::int16_big x) {
-        return x < 0 ? data::int16_big {static_cast<data::int16> (-x)} : x;
-    }
-
-    data::uint32_big uint32_big_negate (data::uint32_big x) {
-        return -data::uint32 (x);
-    }
-
-    data::int32_big int32_big_negate (data::int32_big x) {
-        return -x;
-    }
-
-    data::int32_big int32_big_abs (data::int32_big x) {
-        return x < 0 ? data::int32_big {static_cast<data::int32> (-x)} : x;
-    }
-
-    data::uint64_big uint64_big_negate (data::uint64_big x) {
-        return -data::uint64 (x);
-    }
-
-    data::int64_big int64_big_negate (data::int64_big x) {
-        return -x;
-    }
-
-    data::int64_big int64_big_abs (data::int64_big x) {
-        return x < 0 ? data::int64_big {-x} : x;
-    }
-
-    data::uint16_little harden_little (data::uint16_little x) {
-        return harden (data::uint16 (x));
-    }
-
-    data::uint32_little harden_little (data::uint32_little x) {
-        return harden (data::uint32 (x));
-    }
-
-    data::uint64_little harden_little (data::uint64_little x) {
-        return harden (data::uint64 (x));
-    }
-
-    data::uint16_big harden_big (data::uint16_big x) {
-        return harden (data::uint16 (x));
-    }
-
-    data::uint32_big harden_big (data::uint32_big x) {
-        return harden (data::uint32 (x));
-    }
-
-    data::uint64_big harden_big (data::uint64_big x) {
-        return harden (data::uint64 (x));
-    }
-
     data::byte harden (data::byte x) {
         return (x & 0x7f) | ((~x) & 0x80);
     }
@@ -671,48 +506,6 @@ namespace Diophant {
         return y;
     }
 
-    data::uint160_little harden_little (const data::uint160_little &x) {
-        auto y = x;
-        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
-        return y;
-    }
-
-    data::uint256_little harden_little (const data::uint256_little &x) {
-        auto y = x;
-        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
-        return y;
-    }
-
-    data::uint512_little harden_little (const data::uint512_little &x) {
-        auto y = x;
-        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
-        return y;
-    }
-
-    data::uint128_big harden_big (const data::uint128_big &x) {
-        auto y = x;
-        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
-        return y;
-    }
-
-    data::uint160_big harden_big (const data::uint160_big &x) {
-        auto y = x;
-        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
-        return y;
-    }
-
-    data::uint256_big harden_big (const data::uint256_big &x) {
-        auto y = x;
-        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
-        return y;
-    }
-
-    data::uint512_big harden_big (const data::uint512_big &x) {
-        auto y = x;
-        y.words ()[-1] = (y.words ()[-1] & 0x7f) | ((~y.words ()[-1]) & 0x80);
-        return y;
-    }
-
     using GMP_uint = data::math::number::GMP::gmp_uint;
 
     static_assert (std::same_as<GMP_uint, data::uint64>);
@@ -737,26 +530,6 @@ namespace Diophant {
         return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
     }
 
-    data::uint16_little cast_natural_to_uint16_little (const data::N n) {
-        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint16> (*n.Value.begin ());
-    }
-
-    data::int16_little cast_natural_to_int16_little (const data::N n) {
-        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
-    }
-
-    data::uint16_big cast_natural_to_uint16_big (const data::N n) {
-        if (n > std::numeric_limits<data::uint16>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint16> (*n.Value.begin ());
-    }
-
-    data::int16_big cast_natural_to_int16_big (const data::N n) {
-        if (n > std::numeric_limits<data::int16>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int16> (*n.Value.begin ()) : static_cast<data::int16> (*n.Value.begin ());
-    }
-
     data::uint32 cast_natural_to_uint32 (const data::N n) {
         if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
         return static_cast<data::uint32> (*n.Value.begin ());
@@ -767,50 +540,12 @@ namespace Diophant {
         return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
     }
 
-    data::uint32_little cast_natural_to_uint32_little (const data::N n) {
-        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint32> (*n.Value.begin ());
-    }
-
-    data::int32_little cast_natural_to_int32_little (const data::N n) {
-        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
-    }
-
-    data::uint32_big cast_natural_to_uint32_big (const data::N n) {
-        if (n > std::numeric_limits<data::uint32>::max ()) throw std::out_of_range {""};
-        return static_cast<data::uint32> (*n.Value.begin ());
-    }
-
-    data::int32_big cast_natural_to_int32_big (const data::N n) {
-        if (n > std::numeric_limits<data::int32>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int32> (*n.Value.begin ()) : static_cast<data::int32> (*n.Value.begin ());
-    }
-
     data::uint64 cast_natural_to_uint64 (const data::N n) {
         return data::uint64 (n);
     }
 
     data::int64 cast_natural_to_int64 (const data::N n) {
         if (n > std::numeric_limits<data::int64>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
-    }
-
-    data::uint64_little cast_natural_to_uint64_little (const data::N n) {
-        return data::uint64 (n);
-    }
-
-    data::int64_little cast_natural_to_int64_little (const data::N n) {
-        if (n > std::numeric_limits<data::int64>::max ()) throw std::out_of_range {""};
-        return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
-    }
-
-    data::uint64_big cast_natural_to_uint64_big (const data::N n) {
-        return data::uint64 (n);
-    }
-
-    data::int64_big cast_natural_to_int64_big (const data::N n) {
-        if (n > std::numeric_limits<data::uint64>::max ()) throw std::out_of_range {""};
         return n < 0 ? -static_cast<data::int64> (*n.Value.begin ()) : static_cast<data::int64> (*n.Value.begin ());
     }
 
@@ -830,38 +565,6 @@ namespace Diophant {
         return u;
     }
 
-    data::uint128_little cast_natural_to_uint128_little (const data::N n) {
-        if (n > data::uint128::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::uint32> nb (n);
-        data::uint128_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (16)), u.words ().begin ());
-        return u;
-    }
-
-    data::int128_little cast_natural_to_int128_little (const data::N n) {
-        if (n > data::int128::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int128_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (16)), u.words ().begin ());
-        return u;
-    }
-
-    data::uint128_big cast_natural_to_uint128_big (const data::N n) {
-        if (n > data::uint128::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::uint128_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (16)), u.words ().begin ());
-        return u;
-    }
-
-    data::int128_big cast_natural_to_int128_big (const data::N n) {
-        if (n > data::int128::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int128_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (16)), u.words ().begin ());
-        return u;
-    }
-
     data::uint160 cast_natural_to_uint160 (const data::N n) {
         if (n > data::uint160::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint16> nb (n);
@@ -875,38 +578,6 @@ namespace Diophant {
         data::math::N_bytes<data::endian::little, data::uint16> nb (n);
         data::int160 u {};
         std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (5)), u.words ().begin ());
-        return u;
-    }
-
-    data::uint160_little cast_natural_to_uint160_little (const data::N n) {
-        if (n > data::uint160::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::uint160_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (20)), u.words ().begin ());
-        return u;
-    }
-
-    data::int160_little cast_natural_to_int160_little (const data::N n) {
-        if (n > data::int160::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int160_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (20)), u.words ().begin ());
-        return u;
-    }
-
-    data::uint160_big cast_natural_to_uint160_big (const data::N n) {
-        if (n > data::uint160::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::uint160_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (20)), u.words ().begin ());
-        return u;
-    }
-
-    data::int160_big cast_natural_to_int160_big (const data::N n) {
-        if (n > data::int160::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int160_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (20)), u.words ().begin ());
         return u;
     }
 
@@ -926,38 +597,6 @@ namespace Diophant {
         return u;
     }
 
-    data::uint256_little cast_natural_to_uint256_little (const data::N n) {
-        if (n > data::uint256::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::uint32> nb (n);
-        data::uint256_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (32)), u.words ().begin ());
-        return u;
-    }
-
-    data::int256_little cast_natural_to_int256_little (const data::N n) {
-        if (n > data::int256::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int256_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (32)), u.words ().begin ());
-        return u;
-    }
-
-    data::uint256_big cast_natural_to_uint256_big (const data::N n) {
-        if (n > data::uint256::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::uint256_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (32)), u.words ().begin ());
-        return u;
-    }
-
-    data::int256_big cast_natural_to_int256_big (const data::N n) {
-        if (n > data::int256::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int256_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (32)), u.words ().begin ());
-        return u;
-    }
-
     data::uint512 cast_natural_to_uint512 (const data::N n) {
         if (n > data::uint512::max ()) throw std::out_of_range {""};
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
@@ -971,38 +610,6 @@ namespace Diophant {
         data::math::N_bytes<data::endian::little, data::uint32> nb (n);
         data::int512 u {};
         std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (16)), u.words ().begin ());
-        return u;
-    }
-
-    data::uint512_little cast_natural_to_uint512_little (const data::N n) {
-        if (n > data::uint512::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::uint512_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (64)), u.words ().begin ());
-        return u;
-    }
-
-    data::int512_little cast_natural_to_int512_little (const data::N n) {
-        if (n > data::uint512::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int512_little u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (64)), u.words ().begin ());
-        return u;
-    }
-
-    data::uint512_big cast_natural_to_uint512_big (const data::N n) {
-        if (n > data::int512::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::uint512_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (64)), u.words ().begin ());
-        return u;
-    }
-
-    data::int512_big cast_natural_to_int512_big (const data::N n) {
-        if (n > data::int512::max ()) throw std::out_of_range {""};
-        data::math::N_bytes<data::endian::little, data::byte> nb (n);
-        data::int512_big u {};
-        std::copy (nb.begin (), nb.begin () + std::min (nb.size (), size_t (64)), u.words ().begin ());
         return u;
     }
 }

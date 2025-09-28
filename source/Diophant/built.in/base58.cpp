@@ -24,26 +24,32 @@ namespace Diophant {
         return {ch.version (), ch.payload ()};
     }
 
-    data::string address_encode (const data::uint160_little &dig, bool mainnet) {
-        return Bitcoin::address::encode (mainnet ? Bitcoin::net::Main: Bitcoin::net::Test, digest160 {dig});
+    data::string address_encode (const data::bytes &dig, Bitcoin::net net) {
+        if (dig.size () != 20) throw data::exception {} << "invalid size for address.";
+        digest160 digest;
+        std::copy (dig.begin (), dig.end (), digest.begin ());
+        return Bitcoin::address::encode (net, digest);
+    }
+
+    data::tuple<data::bytes, Bitcoin::net> address_decode (const data::string &addr) {
+        auto decoded = Bitcoin::address::decode (addr);
+        data::bytes b {};
+        b.resize (20);
+        std::copy (decoded.Digest.begin (), decoded.Digest.end (), b.begin ());
+        return {b, decoded.Network};
     }
 
     static_assert (std::same_as<data::uint256, data::math::uint<data::endian::little, 4, data::uint64>>);
 
-    data::string WIF_encode (const data::N &secret, bool mainnet, bool compressed) {
-        return Bitcoin::WIF::encode (mainnet ? Bitcoin::net::Main: Bitcoin::net::Test,
+    data::string WIF_encode (const data::N &secret, Bitcoin::net mainnet, bool compressed) {
+        return Bitcoin::WIF::encode (mainnet,
             secp256k1::secret {data::uint256_little (secret)}, compressed);
     }
 
-    data::tuple<data::uint160_little, bool> address_decode (const data::string &addr) {
-        auto decoded = Bitcoin::address::decode (addr);
-        return {decoded.Digest, decoded.Network == Bitcoin::net::Main};
-    }
-
-    data::tuple<data::N, bool, bool> WIF_decode (const data::string &wif) {
+    data::tuple<data::N, Bitcoin::net, bool> WIF_decode (const data::string &wif) {
         auto decoded = Bitcoin::WIF::decode (wif);
         auto xl = decoded.Secret.Value.begin ();
-        return {data::N (decoded.Secret.Value), decoded.Network == Bitcoin::net::Main, decoded.Compressed};
+        return {data::N (decoded.Secret.Value), decoded.Network, decoded.Compressed};
     }
 
 }

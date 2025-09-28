@@ -26,13 +26,13 @@ namespace Diophant {
 
     data::uint160_little address_hash (const secp256k1::pubkey &);
 
-    data::string address_from_pubkey (const secp256k1::pubkey &, bool mainnet = true);
-    data::string address_from_secret (const data::N &, bool mainnet = true, bool compressed = true);
+    data::string address_from_pubkey (const secp256k1::pubkey &, Bitcoin::net = Bitcoin::net::Main);
+    data::string address_from_secret (const data::N &, Bitcoin::net = Bitcoin::net::Main, bool compressed = true);
 
     data::string address_from_WIF (const data::string &);
 
     data::bytes sign (const data::N &key, const data::uint256_little &digest);
-    bool verify (const secp256k1::pubkey &x, const data::uint256_little &digest, const data::bytes &sig);
+    bool verify (const secp256k1::pubkey &x, const data::bytes &digest, const data::bytes &sig);
 
     data::bytes sign_with_WIF (const data::string &wif, const data::uint256_little &digest);
 

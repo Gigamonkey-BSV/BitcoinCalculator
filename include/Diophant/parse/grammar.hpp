@@ -43,7 +43,7 @@ namespace tao_pegtl_grammar {
         , eof> {};
 
     // a decimal lit is 0 by itself or the digits 1 through 9 followed by digits.
-    struct dec_lit : seq<sor<one<'0'>, seq<range<'1', '9'>, star<digit>>>, not_at<one<'_'>>> {};
+    struct dec_lit : seq<sor<one<'0'>, seq<range<'1', '9'>, star<digit>>>> {};
 
     struct hex_digit : seq<xdigit, xdigit> {};
 
@@ -54,9 +54,9 @@ namespace tao_pegtl_grammar {
     struct thirty_two_hex_digits : seq<sixteen_hex_digits, sixteen_hex_digits> {};
     struct sixty_four_hex_digits : seq<thirty_two_hex_digits, thirty_two_hex_digits> {};
 
-    struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>, not_at<one<'_'>>> {};
+    struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>> {};
 
-    struct dec_or_hex : sor<dec_lit, hex_lit> {};
+    struct dec_or_hex : sor<hex_lit, dec_lit> {};
 
     struct unsigned_flag : one<'u'> {};
     struct fixed_size_flag : dec_or_hex {};
@@ -64,7 +64,7 @@ namespace tao_pegtl_grammar {
     struct little_endian_flag : one<'l'> {};
     struct number_suffix : seq<one<'_'>, opt<unsigned_flag>, opt<fixed_size_flag>, opt<sor<big_endian_flag, little_endian_flag>>> {};
 
-    struct number_lit : seq<dec_or_hex, number_suffix> {};
+    struct number_lit : seq<dec_or_hex, opt<number_suffix>> {};
 
     struct base58_char : sor<
         ranges<'1', '9'>,                       // 1-9
@@ -74,6 +74,8 @@ namespace tao_pegtl_grammar {
         ranges<'a', 'k'>,                       // a-k
         ranges<'m', 'z'>                        // m-z
     > {};
+
+    struct base58_lit : seq<string<'0', 'i'>, star<base58_char>> {};
 
     struct pubkey_lit : seq<one<'0'>,
         sor<seq<sor<one<'2'>, one<'3'>>, thirty_two_hex_digits>,
@@ -241,11 +243,11 @@ namespace tao_pegtl_grammar {
 
     template <typename atom> struct expression : apply_expr<atom> {};
 
-    struct atom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, symbol,
+    struct atom : sor<pubkey_lit, number_lit, hex_string_lit, string_lit, symbol,
         dif<atom>, parenthetical<atom>, list<atom>, let<atom>, lambda<atom>, dstruct<atom>> {};
 
     // a pattern atom
-    struct pattom : sor<hex_lit, pubkey_lit, dec_lit, hex_string_lit, string_lit, var,
+    struct pattom : sor<number_lit, pubkey_lit, hex_string_lit, string_lit, var,
         symbol,
         dif<pattom>, parenthetical<pattom>, list<pattom>, let<pattom>, lambda<pattom>, dstruct<pattom>> {};
 

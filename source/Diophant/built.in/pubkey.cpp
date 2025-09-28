@@ -77,19 +77,22 @@ namespace Diophant {
         return secp256k1::secret {data::uint256_little {key}}.sign (digest);
     }
 
-    bool verify (const secp256k1::pubkey &x, const data::uint256_little &digest, const data::bytes &sig) {
-        return x.verify (digest, secp256k1::signature {sig});
+    bool verify (const secp256k1::pubkey &x, const data::bytes &digest, const data::bytes &sig) {
+        if (digest.size () != 32) throw data::exception {} << "invalid signature size";
+        data::uint256_little dig;
+        std::copy (digest.begin (), digest.end (), dig.begin ());
+        return x.verify (dig, secp256k1::signature {sig});
     }
 
     data::uint160_little address_hash (const secp256k1::pubkey &p) {
         return Bitcoin::Hash160 (p);
     }
 
-    data::string address_from_pubkey (const secp256k1::pubkey &p, bool mainnet) {
-        return Gigamonkey::Bitcoin::address::encode (mainnet ? Bitcoin::net::Main : Bitcoin::net::Test, Bitcoin::Hash160 (p));
+    data::string address_from_pubkey (const secp256k1::pubkey &p, Bitcoin::net mainnet) {
+        return Gigamonkey::Bitcoin::address::encode (mainnet, Bitcoin::Hash160 (p));
     }
 
-    data::string address_from_secret (const data::N &n, bool mainnet, bool compressed) {
+    data::string address_from_secret (const data::N &n, Bitcoin::net mainnet, bool compressed) {
         return address_from_pubkey (secret_to_public (compressed, n), mainnet);
     }
 

@@ -40,6 +40,15 @@ namespace Diophant {
     data::bytes scriptnum_greater (const data::bytes &x, const data::bytes &y);
     data::bytes scriptnum_less (const data::bytes &x, const data::bytes &y);
 
+    bool scriptnum_is_negative (const data::bytes &x);
+
+    bool scriptnum_cast_to_bool (const data::bytes &x);
+
+    data::N cast_scriptnum_to_N (const data::bytes &);
+    data::Z cast_scriptnum_to_Z (const data::bytes &);
+    data::bytes cast_N_to_scriptnum (const data::N &);
+    data::bytes cast_Z_to_scriptnum (const data::Z &);
+
     // arithmetic
     data::bytes scriptnum_negate (const data::bytes &x);
     data::bytes scriptnum_plus (const data::bytes &x, const data::bytes &y);

@@ -90,4 +90,169 @@ namespace Diophant {
         Exp = rest (rest (Exp));
     }
 
+    template <typename X>
+    expression zoob (data::string_view z) {
+        // note: we don't check whether the * operation worked because
+        // it should always work.
+        return leaf<X>::make (*data::encoding::read<X> {} (z));
+    }
+
+    expression number_parser::result () {
+
+        if (!SuffixFlag) {
+            if (data::encoding::decimal::valid (Value))
+                return natural::make (data::N {Value});
+            else return call::make (symbol::make ("scriptnum"),
+            {bytes::make (Bitcoin::integer::read (Value))});
+        }
+
+        if (!bool (Fixed)) {
+            if (Endian) throw data::exception {} << "No endianness for unbounded number types.";
+            if (data::encoding::decimal::valid (Value)) {
+                if (UnsignedFlag) return natural::make (data::N {Value});
+                else return integer::make (data::Z {Value});
+            } else {
+                if (UnsignedFlag)
+                    throw data::exception {} << "No unsigned scriptnum type";
+                else return call::make (symbol::make ("scriptnum"),
+                {bytes::make (Bitcoin::integer::read (Value))});
+            }
+        }
+
+        if (*Fixed == 8) {
+            if (UnsignedFlag) return zoob<data::byte> (Value);
+            else return zoob<data::int8> (Value);
+        } else if (*Fixed == 16) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint16_little> (Value);
+                    else return zoob<data::int16_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint16_big> (Value);
+                    else return zoob<data::int16_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint16> (Value);
+                else return zoob<data::int16> (Value);
+            }
+        } else if (*Fixed == 32) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint32_little> (Value);
+                    else return zoob<data::int32_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint32_big> (Value);
+                    else return zoob<data::int32_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint32> (Value);
+                else return zoob<data::int32> (Value);
+            }
+        } else if (*Fixed == 64) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint64_little> (Value);
+                    else return zoob<data::int64_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint64_big> (Value);
+                    else return zoob<data::int64_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint64> (Value);
+                else return zoob<data::int64> (Value);
+            }
+        } else if (*Fixed == 128) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint128_little> (Value);
+                    else return zoob<data::int128_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint128_big> (Value);
+                    else return zoob<data::int128_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint128> (Value);
+                else return zoob<data::int128> (Value);
+            }
+        } else if (*Fixed == 160) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint160_little> (Value);
+                    else return zoob<data::int160_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint160_big> (Value);
+                    else return zoob<data::int160_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint160> (Value);
+                else return zoob<data::int160> (Value);
+            }
+        } else if (*Fixed == 224) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint224_little> (Value);
+                    else return zoob<data::int224_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint224_big> (Value);
+                    else return zoob<data::int224_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint224> (Value);
+                else return zoob<data::int224> (Value);
+            }
+        } else if (*Fixed == 256) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint256_little> (Value);
+                    else return zoob<data::int256_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint256_big> (Value);
+                    else return zoob<data::int256_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint256> (Value);
+                else return zoob<data::int256> (Value);
+            }
+        } else if (*Fixed == 320) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint320_little> (Value);
+                    else return zoob<data::int320_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint320_big> (Value);
+                    else return zoob<data::int320_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint320> (Value);
+                else return zoob<data::int320> (Value);
+            }
+        } else if (*Fixed == 448) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint448_little> (Value);
+                    else return zoob<data::int448_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint448_big> (Value);
+                    else return zoob<data::int448_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint448> (Value);
+                else return zoob<data::int448> (Value);
+            }
+        } else if (*Fixed == 512) {
+            if (Endian) {
+                if (*Endian == data::endian::little) {
+                    if (UnsignedFlag) return zoob<data::uint512_little> (Value);
+                    else return zoob<data::int512_little> (Value);
+                } else {
+                    if (UnsignedFlag) return zoob<data::uint512_big> (Value);
+                    else return zoob<data::int512_big> (Value);
+                }
+            } else {
+                if (UnsignedFlag) return zoob<data::uint512> (Value);
+                else return zoob<data::int512> (Value);
+            }
+        } else throw data::exception {} << "Invalid fixed number size " << *Fixed;
+    }
+
 }

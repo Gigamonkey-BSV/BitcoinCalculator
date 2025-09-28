@@ -285,6 +285,18 @@ namespace Diophant {
             }
         };
 
+        template <> struct base_type<data::uint224> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (224))});
+            }
+        };
+
+        template <> struct base_type<data::int224> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (224))});
+            }
+        };
+
         template <> struct base_type<data::uint256> {
             type operator () () {
                 return call::make (symbol::make ("uint"), {natural::make (data::N (256))});
@@ -294,6 +306,30 @@ namespace Diophant {
         template <> struct base_type<data::int256> {
             type operator () () {
                 return call::make (symbol::make ("int"), {natural::make (data::N (256))});
+            }
+        };
+
+        template <> struct base_type<data::uint320> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (320))});
+            }
+        };
+
+        template <> struct base_type<data::int320> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (320))});
+            }
+        };
+
+        template <> struct base_type<data::uint448> {
+            type operator () () {
+                return call::make (symbol::make ("uint"), {natural::make (data::N (448))});
+            }
+        };
+
+        template <> struct base_type<data::int448> {
+            type operator () () {
+                return call::make (symbol::make ("int"), {natural::make (data::N (448))});
             }
         };
 

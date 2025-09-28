@@ -275,14 +275,20 @@ namespace Diophant {
             // ensure that we do not match twice.
             intuit_result<candidate> matched {no};
 
+            data::stack<pattern> previously_matched_args;
+
             while (!empty (tfs)) {
 
                 auto &tf = first (tfs);
                 if (size (tf.Arguments) > size (args)) return matched;
+
                 auto match_args = take (args, size (tf.Arguments));
                 match_result r = m.match (tf.Arguments, match_args);
                 if (intuit (r) == yes) {
-                    if (intuit (matched) == yes) throw data::exception {} << "no unique match";
+                    if (intuit (matched) == yes)
+                        throw data::exception {} << "no unique match: for args " << args << ", confused by patterns " <<
+                            previously_matched_args << " and " << tf.Arguments;
+                    previously_matched_args = tf.Arguments;
                     matched = intuit_result<candidate> {candidate {*r, tf.Value, drop (args, size (tf.Arguments))}};
                 } else if (intuit (r) == unknown) return {unknown};
 

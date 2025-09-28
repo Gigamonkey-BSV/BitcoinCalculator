@@ -1,8 +1,28 @@
 
 #include <Diophant/built.in/scriptnum.hpp>
+#include <Diophant/built.in/numbers.hpp>
 #include <gigamonkey/p2p/checksum.hpp>
 
 namespace Diophant {
+
+    data::N cast_scriptnum_to_N (const data::bytes &n) {
+        return cast_integer_to_natural (cast_scriptnum_to_Z (n));
+    }
+
+    data::Z cast_scriptnum_to_Z (const data::bytes &n) {
+        Bitcoin::integer x;
+        x.resize (n.size ());
+        std::copy (n.begin (), n.end (), x.begin ());
+        return data::Z (x);
+    }
+
+    data::bytes cast_N_to_scriptnum (const data::N &n) {
+        return Bitcoin::integer (n);
+    }
+
+    data::bytes cast_Z_to_scriptnum (const data::Z &z) {
+        return Bitcoin::integer (z);
+    }
 
     data::bytes set_sign_bit (const data::bytes &b) {
         if (b.size () == 0) return data::bytes {{0x80}};
@@ -140,6 +160,10 @@ namespace Diophant {
     data::bytes scriptnum_power (const data::bytes &x, const data::N &y) {
         data::bytes a = x;
         return data::pow (Bitcoin::integer {std::move (a)}, Bitcoin::integer {y});
+    }
+
+    bool scriptnum_cast_to_bool (const data::bytes &x) {
+        return Bitcoin::nonzero (x);
     }
 
 }
