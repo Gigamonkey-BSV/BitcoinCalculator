@@ -127,7 +127,7 @@ namespace tao_pegtl_grammar {
     struct lambda_symbol : symbol_lit {};
     struct lambda_input : seq<lambda_open, ws, lambda_symbol, star<seq<plus<white>, lambda_symbol>>, ws, arrow> {};
 
-    template <typename atom> struct classic_lambda : seq<at<lambda_open>, lambda_open, lambda_body<atom>> {};
+    template <typename atom> struct classic_lambda : seq<at<lambda_open>, lambda_input, lambda_body<atom>> {};
     template <typename atom> struct compact_lambda : seq<lambda_open, lambda_body<sor<anon_var, atom>>> {};
 
     template <typename atom> struct lambda : sor<classic_lambda<atom>, compact_lambda<atom>> {};

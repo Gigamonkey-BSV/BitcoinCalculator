@@ -11,10 +11,10 @@
 namespace Diophant {
 
     // script
-    Bitcoin::integer push (const data::uint256_little &x);
-    Bitcoin::integer push (const Bitcoin::integer &x);
-    Bitcoin::integer push (const data::bytes &x);
-    Bitcoin::integer push (const secp256k1::pubkey &x);
+    data::bytes push (const data::uint256_little &x);
+    data::bytes push (const Bitcoin::integer &x);
+    data::bytes push (const data::bytes &x);
+    data::bytes push (const secp256k1::pubkey &x);
 
     // crypto
 
@@ -1795,19 +1795,19 @@ namespace Diophant {
 
         // push
         m = m.define (symbol {"push"}, scriptnum_type, {scriptnum_type, x},
-            call::make (built_in_func<Bitcoin::integer,
+            call::make (built_in_func<data::bytes,
                 const Bitcoin::integer &>::make (&push), {X}));
 
         m = m.define (symbol {"push"}, scriptnum_type, {string_type, x},
-            call::make (built_in_func<Bitcoin::integer,
+            call::make (built_in_func<data::bytes,
                 const data::bytes &>::make (&push), {X}));
 
         m = m.define (symbol {"push"}, scriptnum_type, {secret_type, x},
-            call::make (built_in_func<Bitcoin::integer,
+            call::make (built_in_func<data::bytes,
                 const data::uint256_little &>::make (&push), {X}));
 
         m = m.define (symbol {"push"}, scriptnum_type, {pubkey_type, x},
-            call::make (built_in_func<Bitcoin::integer,
+            call::make (built_in_func<data::bytes,
                 const secp256k1::pubkey &>::make (&push), {X}));
 
         // crypto
@@ -1981,8 +1981,53 @@ namespace Diophant {
             call::make (built_in_func<data::bytes,
                 const data::string &, const data::uint256_little &>::make (&sign_with_WIF), {X, Y}));
 
+        expression A = symbol::make ("a");
+        expression B = symbol::make ("b");
+        expression C = symbol::make ("c");
+
+        Symbol a = dynamic_cast<Symbol> (*A.get ());
+        Symbol b = dynamic_cast<Symbol> (*B.get ());
+        Symbol c = dynamic_cast<Symbol> (*C.get ());
+/*
+        m = m.declare (symbol {"HD_encode"}, string_type,
+            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}, pattern {net_type, z},
+                pattern {bytes_type, a}, pattern {uint32_type, b}, pattern {uint32_type, c}})});
+
+        m = m.declare (symbol {"HD_encode"}, string_type,
+            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}), pattern {bytes_type, y}, pattern {net_type, z},
+                pattern {byte_type, a}, pattern {uint32_type, b}, pattern {uint32_type, c}})});
+
+        m = m.declare (symbol {"HD_encode"}, string_type,
+            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}, pattern {net_type, z}})});
+
+        m = m.declare (symbol {"HD_encode"}, string_type,
+            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}), pattern {bytes_type, y}, pattern {net_type, z}})});
+
+        m = m.declare (symbol {"HD_encode"}, string_type,
+            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}})});
+
+        m = m.declare (symbol {"HD_encode"}, string_type,
+            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}), pattern {bytes_type, y}})});
+
+        m = m.declare (symbol {"HD_decode"}, )*/
+
         type xpub_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("pubkey")), {string_type})};
         type xprv_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("secret")), {string_type})};
+
+        m = m.define (binary_operand::dot,
+            symbol::make ("HD"),
+            symbol::make ("decode"),
+            symbol::make ("HD_decode"));
+
+        m = m.define (binary_operand::dot,
+            symbol::make ("HD"),
+            symbol::make ("encode"),
+            symbol::make ("HD_encode"));
+
+        m = m.define (binary_operand::dot,
+            symbol::make ("HD"),
+            symbol::make ("derive"),
+            symbol::make ("HD_derive"));
 /*
         // HD derive
         m = m.define (binary_operand::divide, xpub_type,
@@ -2031,20 +2076,20 @@ namespace Diophant {
         return m;
     }
 
-    Bitcoin::integer push (const data::uint256_little &x) {
-        return Bitcoin::integer {Bitcoin::compile (Bitcoin::push_data (data::Z (data::Z_bytes_little (x))))};
+    data::bytes push (const data::uint256_little &x) {
+        return Bitcoin::compile (Bitcoin::push_data (data::Z (x)));
     }
 
-    Bitcoin::integer push (const Bitcoin::integer &x) {
-        return Bitcoin::integer {Bitcoin::compile (Bitcoin::push_data (x))};
+    data::bytes push (const Bitcoin::integer &x) {
+        return Bitcoin::compile (Bitcoin::push_data (x));
     }
 
-    Bitcoin::integer push (const data::bytes &x) {
-        return Bitcoin::integer {Bitcoin::compile (Bitcoin::push_data (data::bytes (x)))};
+    data::bytes push (const data::bytes &x) {
+        return Bitcoin::compile (Bitcoin::push_data (data::bytes (x)));
     }
 
-    Bitcoin::integer push (const secp256k1::pubkey &x) {
-        return Bitcoin::integer {Bitcoin::compile (Bitcoin::push_data (data::bytes (x)))};
+    data::bytes push (const secp256k1::pubkey &x) {
+        return Bitcoin::compile (Bitcoin::push_data (data::bytes (x)));
     }
 
 }

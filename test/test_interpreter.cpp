@@ -144,6 +144,9 @@ namespace Diophant {
         // structs
         test_eval (R"({x -> 3, y -> 5}.x)", "3");
 
+        // lambda
+        //test_eval ("(@ x y -> y x) a b", "b a");
+
         // empty string
         test (R"("")");
         test (R"("abcd")");
@@ -243,7 +246,7 @@ namespace Diophant {
         test ("'abcdef00001'", false);
 
         // TODO this doesn't work.
-        //test_eval ("'abcdef000001'.1", make_byte (0xcd));
+        // test_eval ("'abcdef000001'.1", make_byte (0xcd));
 
         // bitnot
         test_eval ("~''", "''");
