@@ -145,7 +145,8 @@ namespace Diophant {
         test_eval (R"({x -> 3, y -> 5}.x)", "3");
 
         // lambda
-        //test_eval ("(@ x y -> y x) a b", "b a");
+        test_eval ("(@ x y -> y x) a b", "b a");
+        test_eval ("@ x y -> y x $ a $ b", "b a");
 
         // empty string
         test (R"("")");
@@ -245,8 +246,7 @@ namespace Diophant {
         test ("'abcdef000001'", bytes::make (*data::encoding::hex::read ("abcdef000001")));
         test ("'abcdef00001'", false);
 
-        // TODO this doesn't work.
-        // test_eval ("'abcdef000001'.1", make_byte (0xcd));
+        test_eval ("'abcdef000001'.1", make_byte (0xcd));
 
         // bitnot
         test_eval ("~''", "''");
@@ -272,7 +272,9 @@ namespace Diophant {
         test_eval (R"(size 'abcd')", "2");
 
         // hash functions
-
+        test_eval ("SHA1_160 ''", "'da39a3ee5e6b4b0d3255bfef95601890afd80709'");
+        test_eval ("SHA2_256 ''", "'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'");
+        test_eval ("RIPEMD_160 ''", "'9c1185a5c5e9fc54612808977ee8f548b2258d31'");
 
         // valid pubkeys
         test ("02cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
@@ -330,10 +332,12 @@ namespace Diophant {
         test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
 
         // addresses
+        //test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]");
 
         // WIFs
 
         // HD
+
 /*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5
         //

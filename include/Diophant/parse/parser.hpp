@@ -236,6 +236,7 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 std::cout << " we don't know how to read compact lambdas yet" << std::endl;
+                // TODO go through the expression tree to find all anon vars.
             }
         };
 

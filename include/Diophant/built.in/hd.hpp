@@ -5,16 +5,34 @@
 
 namespace Diophant {
 
-    data::N hd_get_secret (const data::string &);
-    secp256k1::pubkey hd_get_pubkey (const data::string &);
+    data::string encode_HD_pubkey (
+        const secp256k1::pubkey &,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        data::byte depth,
+        data::uint32 parent,
+        data::uint32 sequence);
+
+    data::string encode_HD_secret (
+        const data::N &,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        data::byte depth,
+        data::uint32 parent,
+        data::uint32 sequence);
+
+    data::tuple<secp256k1::pubkey, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
+    decode_HD_pubkey (const std::string &);
+
+    data::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
+    decode_HD_secret (const std::string &);
 
     data::bytes sign (const std::string &key, const data::uint256_little &digest);
     bool verify (const std::string &x, const data::uint256_little &digest, const data::bytes &sig);
 
     data::string hd_secret_to_public (const data::string &);
-    data::string hd_pubkey_derive (const data::string &, const data::N &);
-    data::string hd_derive (const data::string &, const data::N &);
-    data::string hd_derive_hardened (const data::string &, const data::N &);
+    data::string hd_pubkey_derive (const data::string &, data::list<data::uint32>);
+    data::string hd_secret_derive (const data::string &, data::list<data::uint32>);
 
 }
 
