@@ -332,7 +332,8 @@ namespace Diophant {
         test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
 
         // addresses
-        //test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]");
+        //test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]",
+        //    R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
 
         // WIFs
 

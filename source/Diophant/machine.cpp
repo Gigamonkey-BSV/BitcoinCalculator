@@ -176,6 +176,7 @@ namespace Diophant {
         data::stack<pattern> p,
         data::stack<expression> e,
         data::list<machine::autocast> conversions) const {
+
         if (size (p) != size (e)) return {no};
 
         match_result r {no};
@@ -184,20 +185,18 @@ namespace Diophant {
             intuit result = intuit (m);
 
             // an unknown result indicates that computation cannot continue.
-            if (result == unknown) return m;
+            if (result != yes) return m;
 
             // if we get a yes result, then we try to combine the replacements
             // we get from this match with replacements from previous arguments.
-            if (result == yes) {
-                if (intuit (r) == yes) {
-                    try {
-                        r = *r & *m;
-                    // will be thrown if these maps have any of the same keys.
-                    } catch (replacements::key_already_exists) {
-                        return {no};
-                    }
-                } else r = m;
-            }
+            if (intuit (r) == yes) {
+                try {
+                    r = *r & *m;
+                // will be thrown if these maps have any of the same keys.
+                } catch (replacements::key_already_exists) {
+                    return {no};
+                }
+            } else r = m;
 
             p = rest (p);
             e = rest (e);
@@ -275,7 +274,7 @@ namespace Diophant {
             // ensure that we do not match twice.
             intuit_result<candidate> matched {no};
 
-            data::stack<pattern> previously_matched_args;
+            data::stack<pattern> previously_matched_pattern;
 
             while (!empty (tfs)) {
 
@@ -287,8 +286,8 @@ namespace Diophant {
                 if (intuit (r) == yes) {
                     if (intuit (matched) == yes)
                         throw data::exception {} << "no unique match: for args " << args << ", confused by patterns " <<
-                            previously_matched_args << " and " << tf.Arguments;
-                    previously_matched_args = tf.Arguments;
+                            previously_matched_pattern << " and " << tf.Arguments;
+                    previously_matched_pattern = tf.Arguments;
                     matched = intuit_result<candidate> {candidate {*r, tf.Value, drop (args, size (tf.Arguments))}};
                 } else if (intuit (r) == unknown) return {unknown};
 
