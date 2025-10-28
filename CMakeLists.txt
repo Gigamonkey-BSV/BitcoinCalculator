@@ -70,6 +70,9 @@ find_package (gigamonkey CONFIG REQUIRED)
 
 add_library (
     diophant
+
+    STATIC
+
     source/Diophant/initialize.cpp
     source/Diophant/machine.cpp
     source/Diophant/replace.cpp
@@ -94,7 +97,9 @@ add_library (
 
 target_link_libraries (
   diophant
+
   PUBLIC
+
   Gigamonkey::gigamonkey
   Data::data
   nlohmann_json
@@ -112,7 +117,7 @@ set_target_properties (diophant PROPERTIES CXX_EXTENSIONS OFF)
 
 add_executable (BitcoinCalc calculator.cpp)
 
-target_link_libraries (BitcoinCalc PUBLIC nlohmann_json argh diophant Gigamonkey::gigamonkey Data::data)
+target_link_libraries (BitcoinCalc PUBLIC gigamonkey diophant gigamonkey)
 target_include_directories (BitcoinCalc PUBLIC include)
 
 target_compile_features (BitcoinCalc PUBLIC cxx_std_23)

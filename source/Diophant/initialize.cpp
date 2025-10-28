@@ -2068,8 +2068,6 @@ namespace Diophant {
         m = m.define (symbol {"pubkey"}, pubkey_type, {call::make (symbol::make ("HD_pubkey"), {pattern {string_type, x}})},
             call::make (symbol::make ("pubkey"),
                 {call::make (built_in_func<secp256k1::pubkey, const data::string &>::make (hd_get_pubkey), {X})}));*/
-
-
 /*
         // HD derive
         m = m.define (binary_operand::divide, xpub_type,
