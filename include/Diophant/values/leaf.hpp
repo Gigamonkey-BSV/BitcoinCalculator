@@ -602,11 +602,10 @@ namespace Diophant {
                 using type = std::remove_const_t<std::remove_reference_t<arg1>>;
 
                 const leaf<type> *v = dynamic_cast<const leaf<type> *> (first.get ());
+
                 // this should also not happen because we check earlier.
-                if (v == nullptr) {
-                    std::cout << "trying to cast " << first << std::endl;
+                if (v == nullptr)
                     throw data::exception {} << "built-in function called with invalid type";
-                }
 
                 return expand_stack<argtypes...> {}.template expand<callable, Z..., arg1> (f, data::rest (stack), z..., v->Value);
             }

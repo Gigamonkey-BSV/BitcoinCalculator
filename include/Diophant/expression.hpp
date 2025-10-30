@@ -107,6 +107,17 @@ namespace Diophant {
 
     extern LogStream cout;
 
+    struct indent {
+        LogStream &COut;
+        indent (LogStream &cout): COut {cout} {
+            ++COut;
+        }
+
+        ~indent () {
+            --COut;
+        }
+    };
+
 
 }
 

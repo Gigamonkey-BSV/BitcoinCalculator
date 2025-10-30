@@ -23,6 +23,7 @@ namespace Diophant {
     void test_eval (std::string input, expression expect_eval);
     void test_eval (std::string input, bool expect_eval = true);
     void test_eval (std::string input, std::string expect_eval);
+    void test_eval (std::string input, const char *expect_eval);
 
     // we expect an error to be thrown.
     void inline test_error (std::string input) {
@@ -79,22 +80,28 @@ namespace Diophant {
         return binop::make (binary_operand::plus, a, b);
     }
 
-    TEST (Interpreter, Interpreter) {
+    TEST (Interpreter, UnmatchedBrackets) {
 
         m = initialize ();
 
         // unmatched parentheses
-        test ("(", false);
-        test (")", false);
-        test ("(()", false);
-        test (")()", false);
-        test ("())", false);
-        test ("()(", false);
-        test ("[", false);
-        test ("]", false);
-        test ("[(])", false);
+        test_error ("(");
+        test_error (")");
+        test_error ("(()");
+        test_error (")()");
+        test_error ("())");
+        test_error ("()(");
+        test_error ("[");
+        test_error ("]");
+        test_error ("[(])");
 
-        // nil
+    }
+
+    TEST (Interpreter, Nil) {
+
+        m = initialize ();
+
+        // expressions that evaluate to nil
         test ("", nil::make (), nil::make ());
         test (" ", nil::make ());
         test ("()", nil::make ());
@@ -103,11 +110,34 @@ namespace Diophant {
         test (" ( () ) ", nil::make ());
         test (" ( (()) ) ", nil::make ());
         test ("nil", symbol::make ("nil"), nil::make ());
+    }
+
+    TEST (Interpreter, Addresses) {
+
+        m = initialize ();
+
+        // base 58
+        test_eval ("base58.encode 1234", R"("NH")");
+        test_eval (R"(base58.decode "NH")", "1234");
+
+        // base 58 check.
+        test_eval ("base58.check.encode [0_u8, 'abcdef000123']", R"("1AeqHaZrBsWzoXo")");
+        test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
+
+        // addresses
+        test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]",
+            R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+    }
+
+    TEST (Interpreter, Interpreter) {
+
+        m = initialize ();
 
         // symbols
-
         test ("x", symbol::make ("x"), symbol::make ("x"));
-        test ("x123");
+        test_eval ("x := 2");
+        test_eval ("x123 := 2");
+        test_error ("123 := 3");
 
         // call that doesn't evaluate to anything
         test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
@@ -116,7 +146,7 @@ namespace Diophant {
         test ("f");
         test ("f;");
         test ("f _a;");
-        test ("f _a", false);
+        test_error ("f _a");
         test ("f _a := x");
         test ("f _a := x;");
         test ("f _a := x; y");
@@ -126,10 +156,10 @@ namespace Diophant {
         test ("9876543", make_natural (9876543), make_natural (9876543));
 
         // invalid dec number
-        test ("0923", false);
+        test_error ("0923");
 
         // invalid hex number.
-        test ("0x0", false);
+        test_error ("0x0");
 
         // hex numbers
         test ("0x", make_scriptnum ("0x"));
@@ -153,7 +183,7 @@ namespace Diophant {
         test (R"("abcd")");
         test (R"("_x2")");
         test (R"("202")");
-        test (R"("xyz\")", false);
+        test_error (R"("xyz\")");
 
         // boolean
         test ("true", symbol::make ("true"), True ());
@@ -170,8 +200,8 @@ namespace Diophant {
 
         // unary operators
         test ("!8", unary ('!', make_natural (8)));
-        test ("8+", false);
-        test ("8-", false);
+        test_error ("8+");
+        test_error ("8-");
 
         // negative zero
         test ("-0", unary ('-', make_natural (0)), make_integer (0));
@@ -207,7 +237,7 @@ namespace Diophant {
         //test_error ("1 % 0");
 
         test_error ("0x01 / 0x");
-        //test_error ("0x01 % 0x");
+        test_error (R"(0x01 % 0x)");
 
         // cast to bool
         test_eval ("bool 0x", "false");
@@ -271,6 +301,8 @@ namespace Diophant {
         test_eval (R"(size '')", "0");
         test_eval (R"(size 'abcd')", "2");
 
+        // left, right, split
+
         // hash functions
         test_eval ("SHA1_160 ''", "'da39a3ee5e6b4b0d3255bfef95601890afd80709'");
         test_eval ("SHA2_256 ''", "'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'");
@@ -322,18 +354,6 @@ namespace Diophant {
             R"('3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
             R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')",
             True ());
-
-        // base 58
-        test_eval ("base58.encode 1234", R"("NH")");
-        test_eval (R"(base58.decode "NH")", "1234");
-
-        // base 58 check.
-        test_eval ("base58.check.encode [0_u8, 'abcdef000123']", R"("1AeqHaZrBsWzoXo")");
-        test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
-
-        // addresses
-        //test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]",
-        //    R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
 
         // WIFs
 
@@ -445,7 +465,13 @@ namespace Diophant {
     }
 
     void test_eval (std::string input, bool expect_eval) {
-        auto n = read_line (input);
+        program n;
+        try {
+            n = read_line (input);
+        } catch (const parse_error &p) {
+            if (!expect_eval) return;
+            FAIL () << "Expected " << input << " to evaluate to a Diophant expression.";
+        }
         if (expect_eval) {
             EXPECT_NO_THROW (m.evaluate (n)) << "Expected " << input << " to throw no exception but it did.";
         } else {
@@ -463,6 +489,10 @@ namespace Diophant {
 
     void test_eval (std::string input, std::string expect_eval) {
         EXPECT_EQ (m.evaluate (read_line (input)).Expression, read_expression (expect_eval)) << "expected " << input << " to evaluate to " << expect_eval;
+    }
+
+    void test_eval (std::string input, const char *expect_eval) {
+        return test_eval (input, std::string {expect_eval});
     }
 
 }

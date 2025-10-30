@@ -35,7 +35,7 @@ namespace Diophant {
         result_type operator * () const {
             if (std::holds_alternative<result_type> (*this)) return std::get<result_type> (*this);
             if (std::get<intuit> (*this) == yes) return result_type {};
-            throw data::exception {} << "No result";
+            throw data::exception {} << "no result";
         }
 
         constexpr result_type *operator -> () {

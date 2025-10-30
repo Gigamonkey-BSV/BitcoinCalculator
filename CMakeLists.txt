@@ -117,7 +117,7 @@ set_target_properties (diophant PROPERTIES CXX_EXTENSIONS OFF)
 
 add_executable (BitcoinCalc calculator.cpp)
 
-target_link_libraries (BitcoinCalc PUBLIC gigamonkey diophant gigamonkey)
+target_link_libraries (BitcoinCalc PUBLIC diophant gigamonkey)
 target_include_directories (BitcoinCalc PUBLIC include)
 
 target_compile_features (BitcoinCalc PUBLIC cxx_std_23)

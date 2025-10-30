@@ -176,33 +176,35 @@ namespace Diophant {
         data::stack<pattern> p,
         data::stack<expression> e,
         data::list<machine::autocast> conversions) const {
-
         if (size (p) != size (e)) return {no};
 
-        match_result r {no};
-        while (!data::empty (p)) {
-            auto m = Diophant::match (*this, first (p), first (e));
-            intuit result = intuit (m);
+        match_result result {no};
+        while (!empty (p)) {
+            match_result matches = Diophant::match (*this, first (p), first (e));
 
+            if (intuit (matches) == no) return no;
             // an unknown result indicates that computation cannot continue.
-            if (result != yes) return m;
-
-            // if we get a yes result, then we try to combine the replacements
+            // We keep track of an unknown result and continue trying to
+            // match because we could get an unambiguous no later on.
+            else if (intuit (matches) == unknown) result = unknown;
+            // if we get yes, then we try to combine the replacements
             // we get from this match with replacements from previous arguments.
-            if (intuit (r) == yes) {
-                try {
-                    r = *r & *m;
-                // will be thrown if these maps have any of the same keys.
-                } catch (replacements::key_already_exists) {
-                    return {no};
-                }
-            } else r = m;
+            else if (intuit (matches) == yes) {
+                if (intuit (result) == yes) {
+                    try {
+                        result = *result | *matches;
+                    // will be thrown if these maps have any of the same keys.
+                    } catch (replacements::key_already_exists) {
+                        return {no};
+                    }
+                } else if (intuit (result) == no) result = matches;
+            }
 
             p = rest (p);
             e = rest (e);
         }
 
-        return r;
+        return result;
     }
 
     namespace {
@@ -270,10 +272,13 @@ namespace Diophant {
         // "unknown" match we return "unknown".
         // TODO we need an option for a set of automatic replacements.
         candidate_result get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
+
             // we store a potential match here but continue searching to
             // ensure that we do not match twice.
-            intuit_result<candidate> matched {no};
+            candidate_result matched {no};
 
+            // we keep track of a previously matched pattern in order to
+            // provide a complete error if more than one pattern is matched.
             data::stack<pattern> previously_matched_pattern;
 
             while (!empty (tfs)) {
@@ -287,9 +292,11 @@ namespace Diophant {
                     if (intuit (matched) == yes)
                         throw data::exception {} << "no unique match: for args " << args << ", confused by patterns " <<
                             previously_matched_pattern << " and " << tf.Arguments;
+
                     previously_matched_pattern = tf.Arguments;
-                    matched = intuit_result<candidate> {candidate {*r, tf.Value, drop (args, size (tf.Arguments))}};
-                } else if (intuit (r) == unknown) return {unknown};
+                    matched = candidate_result {candidate {*r, tf.Value, drop (args, size (tf.Arguments))}};
+                } else if (intuit (r) == unknown)
+                    return {unknown};
 
                 tfs = rest (tfs);
             }
@@ -357,6 +364,8 @@ namespace Diophant {
 
             if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
 
+            // if the operand is dot and the first argument is a struct, then
+            // we interpret the dot as a scope resolution.
             if (b.Operand == binary_operand::dot) {
                 auto fst = first (body);
                 auto snd = first (rest (body));
@@ -406,7 +415,8 @@ namespace Diophant {
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
 
-                    return m.evaluate (replace (cx->Result.Def, cx->Replacements));
+                    auto replaced = replace (cx->Result.Def, cx->Replacements);
+                    return m.evaluate (replaced);
                 }
             }
 

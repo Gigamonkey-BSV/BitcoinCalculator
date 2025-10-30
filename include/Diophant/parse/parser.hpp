@@ -311,6 +311,13 @@ namespace Diophant {
             }
         };
 
+        template <typename atom> struct read_expression<tao_pegtl_grammar::mod_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::mod);
+            }
+        };
+
         template <typename atom> struct read_expression<tao_pegtl_grammar::div_mod_op<atom>> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {

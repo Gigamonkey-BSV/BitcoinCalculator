@@ -200,7 +200,7 @@ namespace Diophant {
             auto rx = m.match (data::stack<pattern> (fx->Args), gx->Args);
             if (intuit (rx) != yes) return rx;
             try {
-                return *rf & *rx;
+                return *rf | *rx;
                 // will be thrown if these maps have any of the same keys.
             } catch (replacements::key_already_exists) {
                 return {no};
@@ -220,7 +220,7 @@ namespace Diophant {
                 jkl = rest (jkl);
                 mno = rest (mno);
                 try {
-                    r = r & *rr;
+                    r = r | *rr;
                     // will be thrown if these maps have any of the same keys.
                 } catch (replacements::key_already_exists) {
                     return {no};

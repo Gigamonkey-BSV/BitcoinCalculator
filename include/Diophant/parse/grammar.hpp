@@ -185,7 +185,7 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct add_expr;
 
     template <typename atom> struct pow_op : seq<ws, one<'^'>, ws, pow_expr<atom>> {};
-    template <typename atom> struct mul_op : seq<ws, sor<one<'*'>, one<'%'>, one<'~'>>, ws, mul_expr<atom>> {};
+    template <typename atom> struct mul_op : seq<ws, one<'*'>, ws, mul_expr<atom>> {};
     template <typename atom> struct mod_op : seq<ws, string<'%'>, ws, mod_expr<atom>> {};
     template <typename atom> struct div_mod_op : seq<ws, string<'/', '%'>, ws, div_mod_expr<atom>> {};
     template <typename atom> struct div_op : seq<ws, one<'/'>, ws, div_expr<atom>> {};

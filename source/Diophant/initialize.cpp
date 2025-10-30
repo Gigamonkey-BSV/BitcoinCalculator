@@ -1089,8 +1089,7 @@ namespace Diophant {
                 const data::bytes &, const data::bytes &>::make (scriptnum_divide), {X, Y})}));
 
         m = m.define (binary_operand::mod, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_mod), {X, Y})}));
 
