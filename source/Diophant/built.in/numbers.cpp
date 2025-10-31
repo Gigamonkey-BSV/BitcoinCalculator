@@ -3,6 +3,14 @@
 
 namespace Diophant {
 
+    bool natint_equal (const data::N &x, const data::Z &y) {
+        return x == y;
+    }
+
+    bool natint_unequal (const data::N &x, const data::Z &y) {
+        return x != y;
+    }
+
     data::N cast_integer_to_natural (const data::Z &z) {
         if (z < 0) throw data::exception {} << "cast " << z << " to natural but is negative";
         return data::N (z);

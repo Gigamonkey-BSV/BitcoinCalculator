@@ -141,6 +141,9 @@ namespace Diophant {
     bool integer_greater (const data::Z &x, const data::Z &y);
     bool integer_less (const data::Z &x, const data::Z &y);
 
+    bool natint_equal (const data::N &x, const data::Z &y);
+    bool natint_unequal (const data::N &x, const data::Z &y);
+
     bool N_bytes_equal (const data::N_bytes_little &x, const data::N_bytes_little &y);
     bool N_bytes_unequal (const data::N_bytes_little &x, const data::N_bytes_little &y);
     bool N_bytes_greater_equal (const data::N_bytes_little &x, const data::N_bytes_little &y);

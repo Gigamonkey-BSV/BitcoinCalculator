@@ -212,9 +212,9 @@ namespace Diophant {
         test_eval ("scriptnum 0", "0x");
         test_eval ("scriptnum 1", "0x01");
         test_eval ("scriptnum (-1)", "0x81");
-        test_eval ("Z 0x", "0");
-        test_eval ("Z 0x01", "1");
-        test_eval ("Z 0x80", "0");
+        test_eval ("Z 0x", "Z 0");
+        test_eval ("Z 0x01", "Z 1");
+        test_eval ("Z 0x80", "Z 0");
         test_eval ("Z 0x81", "-1");
         test_eval ("N 0x", "0");
         test_eval ("N 0x01", "1");

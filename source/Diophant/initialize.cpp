@@ -108,6 +108,22 @@ namespace Diophant {
             call::make (built_in_func<bool,
                 const data::Z &, const data::Z &>::make (integer_less), {X, Y}));
 
+        m = m.define (binary_operand::bool_equal, bool_type, {integer_type, x}, {natural_type, y},
+            call::make (built_in_func<bool,
+                const data::N &, const data::Z &>::make (natint_equal), {Y, X}));
+
+        m = m.define (binary_operand::bool_equal, bool_type, {natural_type, x}, {integer_type, y},
+            call::make (built_in_func<bool,
+                const data::N &, const data::Z &>::make (natint_equal), {X, Y}));
+
+        m = m.define (binary_operand::bool_unequal, bool_type, {integer_type, x}, {natural_type, y},
+            call::make (built_in_func<bool,
+                const data::N &, const data::Z &>::make (natint_unequal), {Y, X}));
+
+        m = m.define (binary_operand::bool_unequal, bool_type, {natural_type, x}, {integer_type, y},
+            call::make (built_in_func<bool,
+                const data::N &, const data::Z &>::make (natint_unequal), {X, Y}));
+
         // basic arithmetic for unbounded types.
         m = m.define (binary_operand::plus, natural_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<data::N, const data::N &, const data::N &>::make (natural_plus), {X, Y}));
@@ -128,10 +144,10 @@ namespace Diophant {
             call::make (built_in_func<data::Z, const data::Z &, const data::Z &>::make (integer_times), {X, Y}));
 
         // casting between unbounded types
-        m = m.define (symbol {"Z"}, integer_type, {natural_type, x},
+        m = m.define (symbol {"Z"}, integer_type, {{natural_type, x}},
             call::make (built_in_func<data::Z, const data::N &>::make (cast_natural_to_integer), {X}));
 
-        m = m.define (symbol {"N"}, natural_type, {integer_type, x},
+        m = m.define (symbol {"N"}, natural_type, {{integer_type, x}},
             call::make (built_in_func<data::N, const data::Z &>::make (cast_integer_to_natural), {X}));
 
         // number types that can represent bytes and chars.

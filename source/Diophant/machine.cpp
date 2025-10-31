@@ -43,9 +43,8 @@ namespace Diophant {
         const node *n = dynamic_cast<const node *> (q);
         if (n == nullptr) throw data::exception {} << "invalid definition";
 
-        if (const symbol *p = dynamic_cast<const symbol *> (n); p != nullptr) {
+        if (const symbol *p = dynamic_cast<const symbol *> (n); p != nullptr)
             return {define (*p, of, as), expression {}};
-        }
 
         if (const call *fx = dynamic_cast<const call *> (n); fx != nullptr) {
             expression fun;
@@ -380,24 +379,6 @@ namespace Diophant {
                     for (const auto &[name, val] : ds->Values)
                         if (const symbol *x = dynamic_cast<const symbol *> (snd.get ()); x != nullptr)
                             if (*x == name) return val;
-            } else if (b.Operand == binary_operand::bool_equal ||
-                b.Operand == binary_operand::bool_unequal) {
-                {
-                    const value *x = dynamic_cast<const value *> (first (body).get ());
-                    const value *y = dynamic_cast<const value *> (first (rest (body)).get ());
-
-                    if (x != nullptr && y != nullptr)
-                        return b.Operand == binary_operand::bool_equal ?
-                            boolean::make (*x == *y): boolean::make (*x != *y);
-                }
-                {
-                    const symbol *x = dynamic_cast<const symbol *> (first (body).get ());
-                    const symbol *y = dynamic_cast<const symbol *> (first (rest (body)).get ());
-
-                    if (x != nullptr && y != nullptr)
-                        return b.Operand == binary_operand::bool_equal ?
-                        boolean::make (*x == *y): boolean::make (*x != *y);
-                }
             }
 
             if (const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operand); v != nullptr) {
@@ -416,6 +397,26 @@ namespace Diophant {
                 // we can try again with automatic conversions.
                 if (intuit (cx) == no) {
 
+                }
+            }
+
+            if (b.Operand == binary_operand::bool_equal ||
+                b.Operand == binary_operand::bool_unequal) {
+                {
+                    const value *x = dynamic_cast<const value *> (first (body).get ());
+                    const value *y = dynamic_cast<const value *> (first (rest (body)).get ());
+
+                    if (x != nullptr && y != nullptr)
+                        return b.Operand == binary_operand::bool_equal ?
+                            boolean::make (*x == *y): boolean::make (*x != *y);
+                }
+                {
+                    const symbol *x = dynamic_cast<const symbol *> (first (body).get ());
+                    const symbol *y = dynamic_cast<const symbol *> (first (rest (body)).get ());
+
+                    if (x != nullptr && y != nullptr)
+                        return b.Operand == binary_operand::bool_equal ?
+                        boolean::make (*x == *y): boolean::make (*x != *y);
                 }
             }
 

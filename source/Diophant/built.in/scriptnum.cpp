@@ -108,7 +108,6 @@ namespace Diophant {
     }
 
     bool scriptnum_unequal (const data::bytes &x, const data::bytes &y) {
-        std::cout << " call scriptnum unequal on " << x << " and " << y << std::endl;
         return Bitcoin::num_not_equal (x, y);
     }
 
