@@ -5,18 +5,6 @@ namespace Diophant {
 
     static_assert (std::same_as<data::uint256, data::math::uint<data::endian::little, 4, data::uint64>>);
 
-    bool pubkey_equal (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
-        return x == y;
-    }
-
-    bool pubkey_identical (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
-        return x != y;
-    }
-
-    bool pubkey_unequal (const secp256k1::pubkey &x, const secp256k1::pubkey &y) {
-        return static_cast<const data::bytes &> (x) == static_cast<const data::bytes &> (y);
-    }
-
     bool pubkey_valid (const secp256k1::pubkey &x) {
         return x.valid ();
     }

@@ -17,7 +17,6 @@ namespace Diophant {
     }
 
     bool operator == (Expression A, Expression B) {
-
         const form *a = A.get ();
         const form *b = B.get ();
 

@@ -43,6 +43,7 @@ namespace Diophant {
         equal,
         unequal,
         identical,        // ===
+        unidentical,
         apply,
         element,
         colon,

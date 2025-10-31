@@ -272,7 +272,6 @@ namespace Diophant {
         // "unknown" match we return "unknown".
         // TODO we need an option for a set of automatic replacements.
         candidate_result get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
-
             // we store a potential match here but continue searching to
             // ensure that we do not match twice.
             candidate_result matched {no};
@@ -285,7 +284,6 @@ namespace Diophant {
 
                 auto &tf = first (tfs);
                 if (size (tf.Arguments) > size (args)) return matched;
-
                 auto match_args = take (args, size (tf.Arguments));
                 match_result r = m.match (tf.Arguments, match_args);
                 if (intuit (r) == yes) {
@@ -332,7 +330,6 @@ namespace Diophant {
         }
 
         expression evaluate_symbol (const machine &m, const symbol &x) {
-
             const machine::definition *v = m.SymbolDefinitions.contains (x);
             if (v == nullptr) return {};
 
@@ -346,14 +343,15 @@ namespace Diophant {
         }
 
         expression evaluate_binop (const machine &m, const binop &b) {
-            // first we evaluate function and args individually.
-            bool changed = false;
 
             if (b.Operand == binary_operand::define)
                 throw data::exception {} << "define operator found in expression. This is not allowed!";
 
             if (b.Operand == binary_operand::apply)
                 return call::make (first (b.Body), rest (b.Body));
+
+            // first we evaluate function and args individually.
+            bool changed = false;
 
             data::list<expression> body;
             for (Expression old_arg : data::stack<expression> (b.Body)) {
@@ -364,6 +362,15 @@ namespace Diophant {
 
             if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
 
+            if (b.Operand == binary_operand::identical) {
+                auto res = first (body) == first (rest (body));
+                return boolean::make (res);
+            }
+
+            if (b.Operand == binary_operand::unidentical) {
+                return boolean::make (first (body) != first (rest (body)));
+            }
+
             // if the operand is dot and the first argument is a struct, then
             // we interpret the dot as a scope resolution.
             if (b.Operand == binary_operand::dot) {
@@ -373,6 +380,24 @@ namespace Diophant {
                     for (const auto &[name, val] : ds->Values)
                         if (const symbol *x = dynamic_cast<const symbol *> (snd.get ()); x != nullptr)
                             if (*x == name) return val;
+            } else if (b.Operand == binary_operand::bool_equal ||
+                b.Operand == binary_operand::bool_unequal) {
+                {
+                    const value *x = dynamic_cast<const value *> (first (body).get ());
+                    const value *y = dynamic_cast<const value *> (first (rest (body)).get ());
+
+                    if (x != nullptr && y != nullptr)
+                        return b.Operand == binary_operand::bool_equal ?
+                            boolean::make (*x == *y): boolean::make (*x != *y);
+                }
+                {
+                    const symbol *x = dynamic_cast<const symbol *> (first (body).get ());
+                    const symbol *y = dynamic_cast<const symbol *> (first (rest (body)).get ());
+
+                    if (x != nullptr && y != nullptr)
+                        return b.Operand == binary_operand::bool_equal ?
+                        boolean::make (*x == *y): boolean::make (*x != *y);
+                }
             }
 
             if (const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operand); v != nullptr) {
@@ -496,7 +521,7 @@ namespace Diophant {
                         args = cx->Remaining;
                         if (args.size () == 0) return fun;
                         continue;
-                    }
+                    };
 
                     // in this case, we need to check if any of the arguments have been
                     // evaluated so that we can fast forward them.

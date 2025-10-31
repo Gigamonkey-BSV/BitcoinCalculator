@@ -112,6 +112,116 @@ namespace Diophant {
         test ("nil", symbol::make ("nil"), nil::make ());
     }
 
+    TEST (Interpreter, Bool) {
+
+        m = initialize ();
+
+        // boolean
+        test ("true", symbol::make ("true"), True ());
+        test ("false", symbol::make ("false"), False ());
+
+        test ("!true", unary ('!', symbol::make ("true")), False ());
+        test ("!false", unary ('!', symbol::make ("false")), True ());
+
+        test ("true && false", And (symbol::make ("true"), symbol::make ("false")), False ());
+        test ("false && true", And (symbol::make ("false"), symbol::make ("true")), False ());
+
+        test ("true || false", Or (symbol::make ("true"), symbol::make ("false")), True ());
+        test ("false || true", Or (symbol::make ("false"), symbol::make ("true")), True ());
+
+        test_eval ("true == false", False ());
+        test_eval ("false == true", False ());
+
+        test_eval ("true == true", True ());
+        test_eval ("false == false", True ());
+    }
+
+    TEST (Interpreter, Identical) {
+
+        m = initialize ();
+
+        test_eval ("nil === nil", "true");
+        //test_eval ("nil =!= nil", "false");
+        test_eval ("true === true", "true");
+        //test_eval ("true =!= true", "false");
+        test_eval ("true === false", "false");
+        //test_eval ("true =!= false", "true");
+        test_eval ("230 === 230", "true");
+        //test_eval ("345 =!= 123", "true");
+        //test_eval ("0x0000 =!= 0x", "true");
+        test_eval ("0x0000 == 0x", "true");
+        test_eval ("X == X", "true");
+        test_eval ("X != X", "false");
+
+        test_eval (
+            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915"
+            " == 03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523", "true");
+
+        test_eval (
+            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915"
+            " === 03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523", "false");
+
+        // NOTE: it is an error to add a definition to ===, =!=, or !=
+    }
+
+    TEST (Interpreter, Scriptnum) {
+
+        m = initialize ();
+
+        // invalid hex number.
+        test_error ("0x0");
+
+        // hex numbers
+        test ("0x", make_scriptnum ("0x"));
+        test ("0x00", make_scriptnum ("0x00"));
+        test ("0x80", make_scriptnum ("0x80"));
+        test ("0x01", make_scriptnum ("0x01"));
+
+        // negative zero
+        test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
+        test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
+
+        // equal versus identical
+        test_eval ("0x80 == 0x00", "true");
+        test_eval ("0x80 === 0x00", "false");
+
+        test_eval ("0x81 == 0x8001", "true");
+        test_eval ("0x81 === 0x8001", "false");
+    }
+
+    TEST (Interpreter, ScriptnumBool) {
+
+        m = initialize ();
+
+        // cast to bool
+        test_eval ("bool 0x", "false");
+        test_eval ("bool 0x00", "false");
+        test_eval ("bool 0x80", "false");
+        test_eval ("bool 0x01", "true");
+        test_eval ("bool 0x81", "true");
+
+        test_eval ("scriptnum false", "0x");
+        test_eval ("scriptnum true", "0x01");
+    }
+
+    TEST (Interpreter, ScriptnumN) {
+
+        m = initialize ();
+
+        // cast to scriptnum and Z.
+        test_eval ("scriptnum 0", "0x");
+        test_eval ("scriptnum 1", "0x01");
+        test_eval ("scriptnum (-1)", "0x81");
+        test_eval ("Z 0x", "0");
+        test_eval ("Z 0x01", "1");
+        test_eval ("Z 0x80", "0");
+        test_eval ("Z 0x81", "-1");
+        test_eval ("N 0x", "0");
+        test_eval ("N 0x01", "1");
+        test_eval ("N 0x80", "0");
+        test_error ("N 0x81");
+    }
+
     TEST (Interpreter, Addresses) {
 
         m = initialize ();
@@ -127,6 +237,15 @@ namespace Diophant {
         // addresses
         test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]",
             R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+    }
+
+    TEST (Interpreter, If) {
+
+        m = initialize ();
+
+        // if
+        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
+        test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
     }
 
     TEST (Interpreter, Interpreter) {
@@ -158,15 +277,6 @@ namespace Diophant {
         // invalid dec number
         test_error ("0923");
 
-        // invalid hex number.
-        test_error ("0x0");
-
-        // hex numbers
-        test ("0x", make_scriptnum ("0x"));
-        test ("0x00", make_scriptnum ("0x00"));
-        test ("0x80", make_scriptnum ("0x80"));
-        test ("0x01", make_scriptnum ("0x01"));
-
         // lists
         test (R"([])", list::make ({}), list::make ({}));
         test (R"([x, 21, "hi"])");
@@ -185,19 +295,6 @@ namespace Diophant {
         test (R"("202")");
         test_error (R"("xyz\")");
 
-        // boolean
-        test ("true", symbol::make ("true"), True ());
-        test ("false", symbol::make ("false"), False ());
-
-        test ("!true", unary ('!', symbol::make ("true")), False ());
-        test ("!false", unary ('!', symbol::make ("false")), True ());
-
-        test ("true && false", And (symbol::make ("true"), symbol::make ("false")), False ());
-        test ("false && true", And (symbol::make ("false"), symbol::make ("true")), False ());
-
-        test ("true || false", Or (symbol::make ("true"), symbol::make ("false")), True ());
-        test ("false || true", Or (symbol::make ("false"), symbol::make ("true")), True ());
-
         // unary operators
         test ("!8", unary ('!', make_natural (8)));
         test_error ("8+");
@@ -206,16 +303,6 @@ namespace Diophant {
         // negative zero
         test ("-0", unary ('-', make_natural (0)), make_integer (0));
         test ("- 0", unary ('-', make_natural (0)), make_integer (0));
-
-        test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
-        test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
-
-        // equal versus identical
-        test_eval ("0x80 == 0x00", "0x01");
-        test_eval ("0x80 === 0x00", "0x");
-
-        test_eval ("0x81 == 0x8001", "0x01");
-        test_eval ("0x81 === 0x8001", "0x");
 
         // arithmetic
         test_eval ("0x + 0x", "0x");
@@ -238,33 +325,6 @@ namespace Diophant {
 
         test_error ("0x01 / 0x");
         test_error (R"(0x01 % 0x)");
-
-        // cast to bool
-        test_eval ("bool 0x", "false");
-        test_eval ("bool 0x00", "false");
-        test_eval ("bool 0x80", "false");
-        test_eval ("bool 0x01", "true");
-        test_eval ("bool 0x80", "true");
-
-        test_eval ("scriptnum false", "0x");
-        test_eval ("scriptnum true", "0x01");
-
-        // if
-        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
-        test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
-
-        // cast to scriptnum and Z.
-        test_eval ("scriptnum 0", "0x");
-        test_eval ("scriptnum 1", "0x01");
-        test_eval ("scriptnum -1", "0x81");
-        test_eval ("Z 0x", "0");
-        test_eval ("Z 0x01", "1");
-        test_eval ("Z 0x80", "0");
-        test_eval ("Z 0x81", "-1");
-        test_eval ("N 0x", "0");
-        test_eval ("N 0x01", "1");
-        test_eval ("N 0x80", "0");
-        test_error ("N 0x81");
 
         // bytes
         test_eval ("0_u8", make_byte (0));
@@ -339,14 +399,6 @@ namespace Diophant {
         test_eval ("compress "
             "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915",
             "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
-
-        test_eval (
-            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915"
-            " == 03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523", "true");
-
-        test_eval (
-            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915"
-            " == 03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523", "false");
 
         // verify signatures
         test_eval (
@@ -483,12 +535,13 @@ namespace Diophant {
     }
 
     void test_eval (std::string input, expression expect_eval) {
-        auto [mm, ex] = m.evaluate (read_line (input));
-        EXPECT_EQ (ex, expect_eval) << "expected " << input << " to evaluate to " << expect_eval;
+        auto [_, ev] = m.evaluate (read_line (input));
+        auto ex = m.evaluate (expect_eval);
+        EXPECT_EQ (ev, ex) << "expected " << input << " to evaluate to " << expect_eval;
     }
 
     void test_eval (std::string input, std::string expect_eval) {
-        EXPECT_EQ (m.evaluate (read_line (input)).Expression, read_expression (expect_eval)) << "expected " << input << " to evaluate to " << expect_eval;
+        return test_eval (input, first (read_line (expect_eval)).Predicate);
     }
 
     void test_eval (std::string input, const char *expect_eval) {

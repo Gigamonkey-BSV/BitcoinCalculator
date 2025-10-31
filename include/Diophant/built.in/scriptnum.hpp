@@ -33,8 +33,8 @@ namespace Diophant {
     data::bytes scriptnum_identical (const data::bytes &x, const data::bytes &y);
 
     // comparisons
-    data::bytes scriptnum_equal (const data::bytes &x, const data::bytes &y);
-    data::bytes scriptnum_unequal (const data::bytes &x, const data::bytes &y);
+    bool scriptnum_equal (const data::bytes &x, const data::bytes &y);
+    bool scriptnum_unequal (const data::bytes &x, const data::bytes &y);
     data::bytes scriptnum_greater_equal (const data::bytes &x, const data::bytes &y);
     data::bytes scriptnum_less_equal (const data::bytes &x, const data::bytes &y);
     data::bytes scriptnum_greater (const data::bytes &x, const data::bytes &y);
@@ -48,6 +48,8 @@ namespace Diophant {
     data::Z cast_scriptnum_to_Z (const data::bytes &);
     data::bytes cast_N_to_scriptnum (const data::N &);
     data::bytes cast_Z_to_scriptnum (const data::Z &);
+
+    data::bytes cast_bool_to_scriptnum (bool);
 
     // arithmetic
     data::bytes scriptnum_negate (const data::bytes &x);

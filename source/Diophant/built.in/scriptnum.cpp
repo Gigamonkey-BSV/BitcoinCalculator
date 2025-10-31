@@ -5,6 +5,10 @@
 
 namespace Diophant {
 
+    data::bytes cast_bool_to_scriptnum (bool b) {
+        return Bitcoin::integer {b};
+    }
+
     data::N cast_scriptnum_to_N (const data::bytes &n) {
         return cast_integer_to_natural (cast_scriptnum_to_Z (n));
     }
@@ -13,7 +17,7 @@ namespace Diophant {
         Bitcoin::integer x;
         x.resize (n.size ());
         std::copy (n.begin (), n.end (), x.begin ());
-        return data::Z (x);
+        return data::Z (Bitcoin::integer {x});
     }
 
     data::bytes cast_N_to_scriptnum (const data::N &n) {
@@ -99,12 +103,13 @@ namespace Diophant {
         return Bitcoin::integer {x == y};
     }
 
-    data::bytes scriptnum_equal (const data::bytes &x, const data::bytes &y) {
-        return Bitcoin::integer {Bitcoin::num_equal (x, y)};
+    bool scriptnum_equal (const data::bytes &x, const data::bytes &y) {
+        return Bitcoin::num_equal (x, y);
     }
 
-    data::bytes scriptnum_unequal (const data::bytes &x, const data::bytes &y) {
-        return Bitcoin::integer {Bitcoin::num_not_equal (x, y)};
+    bool scriptnum_unequal (const data::bytes &x, const data::bytes &y) {
+        std::cout << " call scriptnum unequal on " << x << " and " << y << std::endl;
+        return Bitcoin::num_not_equal (x, y);
     }
 
     data::bytes scriptnum_greater_equal (const data::bytes &x, const data::bytes &y) {

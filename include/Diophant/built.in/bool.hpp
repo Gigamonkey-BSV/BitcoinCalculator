@@ -3,6 +3,9 @@
 
 namespace Diophant {
 
+    bool bool_equal (bool, bool);
+    bool bool_unequal (bool, bool);
+
     bool bool_not (bool x);
     bool bool_and (bool x, bool y);
     bool bool_or (bool x, bool y);

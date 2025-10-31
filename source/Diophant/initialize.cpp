@@ -75,38 +75,6 @@ namespace Diophant {
         type natural_type {symbol::make ("N")};
         type integer_type {symbol::make ("Z")};
 
-        m = m.define (binary_operand::bool_equal, bool_type, {natural_type, x}, {natural_type, y},
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {natural_type, x}, {natural_type, y},
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {natural_type, x}, {natural_type, y},
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{natural_type, x}, {natural_type, y}},
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (natural_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {integer_type, x}, {integer_type, y},
-            call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {integer_type, x}, {integer_type, y},
-            call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {integer_type, x}, {integer_type, y},
-            call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{integer_type, x}, {integer_type, y}},
-            call::make (built_in_func<bool,
-                const data::Z &, const data::Z &>::make (integer_equal), {X, Y}));
-
         // comparisons for unbounded types
         m = m.define (binary_operand::greater_equal, bool_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<bool,
@@ -173,38 +141,6 @@ namespace Diophant {
         m = m.define (symbol {"byte"}, uint8_type);
 
         // mathematical operations on bytes.
-        m = m.define (binary_operand::bool_equal, bool_type, {uint8_type, x}, {uint8_type, y},
-            call::make (built_in_func<bool,
-                data::byte, data::byte>::make (uint8_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint8_type, x}, {uint8_type, y},
-            call::make (built_in_func<bool,
-                data::byte, data::byte>::make (uint8_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint8_type, x}, {uint8_type, y},
-            call::make (built_in_func<bool,
-                data::byte, data::byte>::make (uint8_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint8_type, x}, {uint8_type, y}},
-            call::make (built_in_func<bool,
-                data::byte, data::byte>::make (uint8_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int8_type, x}, {int8_type, y},
-            call::make (built_in_func<bool,
-                data::int8, data::int8>::make (int8_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int8_type, x}, {int8_type, y},
-            call::make (built_in_func<bool,
-                data::int8, data::int8>::make (int8_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int8_type, x}, {int8_type, y},
-            call::make (built_in_func<bool,
-                data::int8, data::int8>::make (int8_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int8_type, x}, {int8_type, y}},
-            call::make (built_in_func<bool,
-                data::int8, data::int8>::make (int8_equal), {X, Y}));
-
         m = m.define (binary_operand::greater_equal, bool_type, {uint8_type, x}, {uint8_type, y},
             call::make (built_in_func<bool,
                 data::byte, data::byte>::make (uint8_greater_equal), {X, Y}));
@@ -283,38 +219,6 @@ namespace Diophant {
         type int16_type {call::make (symbol::make ("int"), {natural::make (data::N (16))})};
         type uint16_type {call::make (symbol::make ("uint"), {natural::make (data::N (16))})};
 
-        m = m.define (binary_operand::bool_equal, bool_type, {uint16_type, x}, {uint16_type, y},
-            call::make (built_in_func<bool,
-                data::uint16, data::uint16>::make (uint16_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint16_type, x}, {uint16_type, y},
-            call::make (built_in_func<bool,
-                data::uint16, data::uint16>::make (uint16_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint16_type, x}, {uint16_type, y},
-            call::make (built_in_func<bool,
-                data::uint16, data::uint16>::make (uint16_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint16_type, x}, {uint16_type, y}},
-            call::make (built_in_func<bool,
-                data::uint16, data::uint16>::make (uint16_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int16_type, x}, {int16_type, y},
-            call::make (built_in_func<bool,
-                data::int16, data::int16>::make (int16_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int16_type, x}, {int16_type, y},
-            call::make (built_in_func<bool,
-                data::int16, data::int16>::make (int16_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int16_type, x}, {int16_type, y},
-            call::make (built_in_func<bool,
-                data::int16, data::int16>::make (int16_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int16_type, x}, {int16_type, y}},
-            call::make (built_in_func<bool,
-                data::int16, data::int16>::make (int16_equal), {X, Y}));
-
         m = m.define (binary_operand::greater_equal, bool_type, {uint16_type, x}, {uint16_type, y},
             call::make (built_in_func<bool,
                 data::uint16, data::uint16>::make (uint16_greater_equal), {X, Y}));
@@ -387,38 +291,6 @@ namespace Diophant {
 
         type int32_type {call::make (symbol::make ("int"), {natural::make (data::N (32))})};
         type uint32_type {call::make (symbol::make ("uint"), {natural::make (data::N (32))})};
-
-        m = m.define (binary_operand::bool_equal, bool_type, {uint32_type, x}, {uint32_type, y},
-            call::make (built_in_func<bool,
-                data::uint32, data::uint32>::make (uint32_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint32_type, x}, {uint32_type, y},
-            call::make (built_in_func<bool,
-                data::uint32, data::uint32>::make (uint32_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint32_type, x}, {uint32_type, y},
-            call::make (built_in_func<bool,
-                data::uint32, data::uint32>::make (uint32_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint32_type, x}, {uint32_type, y}},
-            call::make (built_in_func<bool,
-                data::uint32, data::uint32>::make (uint32_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int32_type, x}, {int32_type, y},
-            call::make (built_in_func<bool,
-                data::int32, data::int32>::make (int32_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int32_type, x}, {int32_type, y},
-            call::make (built_in_func<bool,
-                data::int32, data::int32>::make (int32_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int32_type, x}, {int32_type, y},
-            call::make (built_in_func<bool,
-                data::int32, data::int32>::make (int32_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int32_type, x}, {int32_type, y}},
-            call::make (built_in_func<bool,
-                data::int32, data::int32>::make (int32_equal), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, bool_type, {uint32_type, x}, {uint32_type, y},
             call::make (built_in_func<bool,
@@ -495,38 +367,6 @@ namespace Diophant {
         type int64_type {call::make (symbol::make ("int"), {natural::make (data::N (64))})};
         type uint64_type {call::make (symbol::make ("uint"), {natural::make (data::N (64))})};
 
-        m = m.define (binary_operand::bool_equal, bool_type, {uint64_type, x}, {uint64_type, y},
-            call::make (built_in_func<bool,
-                data::uint64, data::uint64>::make (uint64_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint64_type, x}, {uint64_type, y},
-            call::make (built_in_func<bool,
-                data::uint64, data::uint64>::make (uint64_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint64_type, x}, {uint64_type, y},
-            call::make (built_in_func<bool,
-                data::uint64, data::uint64>::make (uint64_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint64_type, x}, {uint64_type, y}},
-            call::make (built_in_func<bool,
-                data::uint64, data::uint64>::make (uint64_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int64_type, x}, {int64_type, y},
-            call::make (built_in_func<bool,
-                data::int64, data::int64>::make (int64_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int64_type, x}, {int64_type, y},
-            call::make (built_in_func<bool,
-                data::int64, data::int64>::make (int64_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int64_type, x}, {int64_type, y},
-            call::make (built_in_func<bool,
-                data::int64, data::int64>::make (int64_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int64_type, x}, {int64_type, y}},
-            call::make (built_in_func<bool,
-                data::int64, data::int64>::make (int64_equal), {X, Y}));
-
         m = m.define (binary_operand::greater_equal, bool_type, {uint64_type, x}, {uint64_type, y},
             call::make (built_in_func<bool,
                 data::uint64, data::uint64>::make (uint64_greater_equal), {X, Y}));
@@ -561,38 +401,6 @@ namespace Diophant {
 
         type int128_type {call::make (symbol::make ("int"), {natural::make (data::N (128))})};
         type uint128_type {call::make (symbol::make ("uint"), {natural::make (data::N (128))})};
-
-        m = m.define (binary_operand::bool_equal, bool_type, {uint128_type, x}, {uint128_type, y},
-            call::make (built_in_func<bool,
-                const data::uint128 &, const data::uint128 &>::make (uint128_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint128_type, x}, {uint128_type, y},
-            call::make (built_in_func<bool,
-                const data::uint128 &, const data::uint128 &>::make (uint128_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint128_type, x}, {uint128_type, y},
-            call::make (built_in_func<bool,
-                const data::uint128 &, const data::uint128 &>::make (uint128_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint128_type, x}, {uint128_type, y}},
-            call::make (built_in_func<bool,
-                const data::uint128 &, const data::uint128 &>::make (uint128_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int128_type, x}, {int128_type, y},
-            call::make (built_in_func<bool,
-                const data::int128 &, const data::int128 &>::make (int128_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int128_type, x}, {int128_type, y},
-            call::make (built_in_func<bool,
-                const data::int128 &, const data::int128 &>::make (int128_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int128_type, x}, {int128_type, y},
-            call::make (built_in_func<bool,
-                const data::int128 &, const data::int128 &>::make (int128_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int128_type, x}, {int128_type, y}},
-            call::make (built_in_func<bool,
-                const data::int128 &, const data::int128 &>::make (int128_equal), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, bool_type, {uint128_type, x}, {uint128_type, y},
             call::make (built_in_func<bool,
@@ -629,38 +437,6 @@ namespace Diophant {
         type int160_type {call::make (symbol::make ("int"), {natural::make (data::N (160))})};
         type uint160_type {call::make (symbol::make ("uint"), {natural::make (data::N (160))})};
 
-        m = m.define (binary_operand::bool_equal, bool_type, {uint160_type, x}, {uint160_type, y},
-            call::make (built_in_func<bool,
-                const data::uint160 &, const data::uint160 &>::make (uint160_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint160_type, x}, {uint160_type, y},
-            call::make (built_in_func<bool,
-                const data::uint160 &, const data::uint160 &>::make (uint160_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint160_type, x}, {uint160_type, y},
-            call::make (built_in_func<bool,
-                const data::uint160 &, const data::uint160 &>::make (uint160_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint160_type, x}, {uint160_type, y}},
-            call::make (built_in_func<bool,
-                const data::uint160 &, const data::uint160 &>::make (uint160_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int160_type, x}, {int160_type, y},
-            call::make (built_in_func<bool,
-                const data::int160 &, const data::int160 &>::make (int160_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int160_type, x}, {int160_type, y},
-            call::make (built_in_func<bool,
-                const data::int160 &, const data::int160 &>::make (int160_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int160_type, x}, {int160_type, y},
-            call::make (built_in_func<bool,
-                const data::int160 &, const data::int160 &>::make (int160_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int160_type, x}, {int160_type, y}},
-            call::make (built_in_func<bool,
-                const data::int160 &, const data::int160 &>::make (int160_equal), {X, Y}));
-
         m = m.define (binary_operand::greater_equal, bool_type, {uint160_type, x}, {uint160_type, y},
             call::make (built_in_func<bool,
                 const data::uint160 &, const data::uint160 &>::make (uint160_greater_equal), {X, Y}));
@@ -696,38 +472,6 @@ namespace Diophant {
         type int256_type {call::make (symbol::make ("int"), {natural::make (data::N (256))})};
         type uint256_type {call::make (symbol::make ("uint"), {natural::make (data::N (256))})};
 
-        m = m.define (binary_operand::bool_equal, bool_type, {uint256_type, x}, {uint256_type, y},
-            call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (uint256_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint256_type, x}, {uint256_type, y},
-            call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (uint256_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint256_type, x}, {uint256_type, y},
-            call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (uint256_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint256_type, x}, {uint256_type, y}},
-            call::make (built_in_func<bool,
-                const data::uint256 &, const data::uint256 &>::make (uint256_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int256_type, x}, {int256_type, y},
-            call::make (built_in_func<bool,
-                const data::int256 &, const data::int256 &>::make (int256_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int256_type, x}, {int256_type, y},
-            call::make (built_in_func<bool,
-                const data::int256 &, const data::int256 &>::make (int256_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int256_type, x}, {int256_type, y},
-            call::make (built_in_func<bool,
-                const data::int256 &, const data::int256 &>::make (int256_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int256_type, x}, {int256_type, y}},
-            call::make (built_in_func<bool,
-                const data::int256 &, const data::int256 &>::make (int256_equal), {X, Y}));
-
         m = m.define (binary_operand::greater_equal, bool_type, {uint256_type, x}, {uint256_type, y},
             call::make (built_in_func<bool,
                 const data::uint256 &, const data::uint256 &>::make (uint256_greater_equal), {X, Y}));
@@ -762,38 +506,6 @@ namespace Diophant {
 
         type int512_type {call::make (symbol::make ("int"), {natural::make (data::N (512))})};
         type uint512_type {call::make (symbol::make ("uint"), {natural::make (data::N (512))})};
-
-        m = m.define (binary_operand::bool_equal, bool_type, {uint512_type, x}, {uint512_type, y},
-            call::make (built_in_func<bool,
-                const data::uint512 &, const data::uint512 &>::make (uint512_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {uint512_type, x}, {uint512_type, y},
-            call::make (built_in_func<bool,
-                const data::uint512 &, const data::uint512 &>::make (uint512_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {uint512_type, x}, {uint512_type, y},
-            call::make (built_in_func<bool,
-                const data::uint512 &, const data::uint512 &>::make (uint512_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{uint512_type, x}, {uint512_type, y}},
-            call::make (built_in_func<bool,
-                const data::uint512 &, const data::uint512 &>::make (uint512_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {int512_type, x}, {int512_type, y},
-            call::make (built_in_func<bool,
-                const data::int512 &, const data::int512 &>::make (int512_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {int512_type, x}, {int512_type, y},
-            call::make (built_in_func<bool,
-                const data::int512 &, const data::int512 &>::make (int512_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {int512_type, x}, {int512_type, y},
-            call::make (built_in_func<bool,
-                const data::int512 &, const data::int512 &>::make (int512_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{int512_type, x}, {int512_type, y}},
-            call::make (built_in_func<bool,
-                const data::int512 &, const data::int512 &>::make (int512_equal), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, bool_type, {uint512_type, x}, {uint512_type, y},
             call::make (built_in_func<bool,
@@ -850,37 +562,9 @@ namespace Diophant {
         type bytes_type {symbol::make ("bytes")};
         type string_type {symbol::make ("string")};
 
-        m = m.define (binary_operand::identical, bool_type, {string_type, x}, {string_type, y},
-            call::make (built_in_func<bool,
-                const data::string &, const data::string &>::make (string_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{string_type, x}, {string_type, y}},
-            call::make (built_in_func<bool,
-                const data::string &, const data::string &>::make (&string_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {string_type, x}, {string_type, y},
-            call::make (built_in_func<bool,
-                const data::string &, const data::string &>::make (string_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {string_type, x}, {string_type, y},
-            call::make (built_in_func<bool,
-                const data::string &, const data::string &>::make (string_unequal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type, {bytes_type, x}, {bytes_type, y},
-            call::make (built_in_func<bool,
-                const data::bytes &, const data::bytes &>::make (bytes_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{bytes_type, x}, {bytes_type, y}},
-            call::make (built_in_func<bool,
-                const data::bytes &, const data::bytes &>::make (bytes_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {bytes_type, x}, {bytes_type, y},
-            call::make (built_in_func<bool,
-                const data::bytes &, const data::bytes &>::make (bytes_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {bytes_type, x}, {bytes_type, y},
-            call::make (built_in_func<bool,
-                const data::bytes &, const data::bytes &>::make (bytes_unequal), {X, Y}));
+        m = m.define (unary_operand::tilda, bytes_type, {bytes_type, x},
+            call::make (built_in_func<data::bytes,
+                const data::bytes &>::make (scriptnum_bit_not), {X}));
 
         // size for string and bytes.
         m = m.define (symbol {"size"}, natural_type, {{bytes_type, x}},
@@ -939,8 +623,7 @@ namespace Diophant {
                     const data::bytes &>::make (scriptnum_bit_not), {X})}));
 
         m = m.define (binary_operand::bit_and, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_bit_and), {X, Y})}));
 
@@ -951,20 +634,17 @@ namespace Diophant {
                 const data::bytes &, const data::bytes &>::make (scriptnum_bit_and), {X, Y})}));
 
         m = m.define (binary_operand::bit_or, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_bit_or), {X, Y})}));
 
         m = m.define (symbol {"bit_or"}, scriptnum_type,
-            {scriptnum_pattern (x),
-                scriptnum_pattern (y)},
+            {scriptnum_pattern (x), scriptnum_pattern (y)},
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_bit_or), {X, Y})}));
 
         m = m.define (binary_operand::bit_xor, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_bit_xor), {X, Y})}));
 
@@ -988,84 +668,66 @@ namespace Diophant {
                     const data::bytes &>::make (scriptnum_bool_not), {X})}));
 
         m = m.define (binary_operand::bool_and, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {
                 call::make (built_in_func<data::bytes,
                     const data::bytes &, const data::bytes &>::make (scriptnum_bool_and), {X, Y})}));
 
         m = m.define (symbol {"and"}, scriptnum_type,
-            {scriptnum_pattern (x),
-                scriptnum_pattern (y)},
+            {scriptnum_pattern (x), scriptnum_pattern (y)},
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_bool_and), {X, Y})}));
 
         m = m.define (binary_operand::bool_or, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_bool_or), {X, Y})}));
 
         m = m.define (symbol {"or"}, scriptnum_type,
-            {scriptnum_pattern (x),
-                scriptnum_pattern (y)},
+            {scriptnum_pattern (x), scriptnum_pattern (y)},
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_bool_or), {X, Y})}));
 
-        // identical
-        m = m.define (binary_operand::identical, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
-                const data::bytes &, const data::bytes &>::make (scriptnum_identical), {X, Y})}));
-
-        m = m.define (symbol {"identical"}, scriptnum_type,
-            {scriptnum_pattern (x),
-                scriptnum_pattern (y)},
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
-                const data::bytes &, const data::bytes &>::make (scriptnum_identical), {X, Y})}));
-
         // comparisons
-        m = m.define (binary_operand::bool_equal, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
-                const data::bytes &, const data::bytes &>::make (scriptnum_equal), {X, Y})}));
+        m = m.define (binary_operand::bool_equal, bool_type,
+            scriptnum_pattern (x), scriptnum_pattern (y),
+            call::make (built_in_func<bool,
+                const data::bytes &, const data::bytes &>::make (scriptnum_equal), {X, Y}));
 
-        m = m.define (binary_operand::bool_unequal, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
-            call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
-                const data::bytes &, const data::bytes &>::make (scriptnum_unequal), {X, Y})}));
+        m = m.define (binary_operand::bool_unequal, bool_type,
+            scriptnum_pattern (x), scriptnum_pattern (y),
+            call::make (built_in_func<bool,
+                const data::bytes &, const data::bytes &>::make (scriptnum_unequal), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_greater_equal), {X, Y})}));
 
         m = m.define (binary_operand::less_equal, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_less_equal), {X, Y})}));
 
         m = m.define (binary_operand::greater, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_greater), {X, Y})}));
 
         m = m.define (binary_operand::less, scriptnum_type,
-            scriptnum_pattern (x),
-            scriptnum_pattern (y),
+            scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
                 const data::bytes &, const data::bytes &>::make (scriptnum_less), {X, Y})}));
 
         // cast scriptnum to bool.
         m = m.define (symbol {"bool"}, bool_type,
-            {scriptnum_pattern (x)},
+            { scriptnum_pattern (x) },
             call::make (built_in_func<bool, const data::bytes &>::make (scriptnum_cast_to_bool), {X}));
+
+        // cast bool to scriptnum.
+        m = m.define (symbol {"scriptnum"}, scriptnum_type, {{bool_type, x}},
+            call::make (symbol::make ("scriptnum"),
+                {call::make (built_in_func<data::bytes, bool>::make (cast_bool_to_scriptnum), {X})}));
 
         // basic arithmetic for bitcoin numbers.
         m = m.define (binary_operand::plus, scriptnum_type,
@@ -1245,31 +907,6 @@ namespace Diophant {
 
         m = m.define (symbol {"Coordinate"}, expression {coord_type});
         m = m.define (symbol {"Secret"}, expression {secret_type});
-
-        // identical
-        m = m.define (binary_operand::identical, bool_type,
-            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (coord_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type,
-            {call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
-                call::make (symbol::make ("coord"), {pattern {natural_type, y}})},
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (coord_equal), {X, Y}));
-
-        m = m.define (binary_operand::identical, bool_type,
-            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (secret_equal), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type,
-            {call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
-                call::make (symbol::make ("secret"), {pattern {natural_type, y}})},
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (secret_equal), {X, Y}));
 
         // comparisons for coordinates
         m = m.define (binary_operand::bool_equal, bool_type,
@@ -1733,22 +1370,6 @@ namespace Diophant {
         m = m.define (symbol {"valid"}, bool_type, {{pubkey_type, x}},
             call::make (built_in_func<bool,
                 const secp256k1::pubkey &>::make (&pubkey_valid), {X}));
-
-        m = m.define (binary_operand::identical, bool_type, {pubkey_type, x}, {pubkey_type, y},
-            call::make (built_in_func<bool,
-                const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_identical), {X, Y}));
-
-        m = m.define (symbol {"identical"}, bool_type, {{pubkey_type, x}, {pubkey_type, y}},
-            call::make (built_in_func<bool,
-                const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_identical), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {pubkey_type, x}, {pubkey_type, y},
-            call::make (built_in_func<bool,
-                const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_unequal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type, {pubkey_type, x}, {pubkey_type, y},
-            call::make (built_in_func<bool,
-                const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_equal), {X, Y}));
 
         m = m.define (symbol {"compress"}, pubkey_type, {{pubkey_type, x}},
             call::make (built_in_func<secp256k1::pubkey,

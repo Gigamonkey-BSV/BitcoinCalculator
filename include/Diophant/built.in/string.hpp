@@ -6,6 +6,11 @@
 
 namespace Diophant {
 
+    data::bytes bit_invert (const data::bytes &);
+    data::bytes bit_xor (const data::bytes &, const data::bytes &);
+    data::bytes bit_or (const data::bytes &, const data::bytes &);
+    data::bytes bit_and (const data::bytes &, const data::bytes &);
+
     bool string_equal (const data::string &x, const data::string &y);
     bool string_unequal (const data::string &x, const data::string &y);
 

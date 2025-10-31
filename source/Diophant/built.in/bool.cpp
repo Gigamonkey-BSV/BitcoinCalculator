@@ -15,6 +15,14 @@ namespace Diophant {
         return x || y;
     }
 
+    bool bool_equal (bool x, bool y) {
+        return x == y;
+    }
+
+    bool bool_unequal (bool x, bool y) {
+        return x != y;
+    }
+
     bool bool_implies (bool x, bool y) {
         return y || !x;
     }
