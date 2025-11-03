@@ -1576,21 +1576,23 @@ namespace Diophant {
             call::make (built_in_func<data::tuple<data::bytes, Bitcoin::net>, const data::string &>::make (address_decode), {X}));
 
         m = m.define (symbol {"WIF_encode"}, string_type,
-            {list::make ({pattern {bytes_type, x}, pattern {net_type, y}, pattern {bool_type, z}})},
+            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+                pattern {net_type, y}, pattern {bool_type, z}})},
             call::make (built_in_func<data::string, const data::N &, Bitcoin::net, bool>::make (WIF_encode), {X, Y, Z}));
 
         m = m.define (symbol {"WIF_encode"}, string_type,
-            {list::make ({pattern {bytes_type, x}, pattern {net_type, y}})},
+            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+                pattern {net_type, y}})},
             call::make (built_in_func<data::string, const data::N &, Bitcoin::net, bool>::make (WIF_encode),
                 {X, Y, leaf<bool>::make (true)}));
 
         m = m.define (symbol {"WIF_encode"}, string_type,
-            {list::make ({pattern {bytes_type, x}})},
+            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}})})},
             call::make (built_in_func<data::string, const data::N &, Bitcoin::net, bool>::make (WIF_encode),
                 {X, net::make (Bitcoin::net::Main), leaf<bool>::make (true)}));
 
         m = m.define (symbol {"WIF_decode"},
-            list::make ({bytes_type, net_type, bool_type}),
+            list::make ({secret_type, net_type, bool_type}),
             {{string_type, x}},
             call::make (built_in_func<data::tuple<data::N, Bitcoin::net, bool>, const data::string &>::make (WIF_decode),
                 {Y, net::make (Bitcoin::net::Main)}));
@@ -1659,9 +1661,10 @@ namespace Diophant {
             call::make (built_in_func<data::string, const data::N &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
                 {X, Y, Z, A, B, C}));
-/*
+
         m = m.define (symbol {"HD_encode"}, string_type,
-            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}, pattern {net_type, z},
+            {list::make ({call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+                pattern {bytes_type, y}, pattern {net_type, z},
                 pattern {bytes_type, a}, pattern {uint32_type, b}})},
             call::make (built_in_func<data::string, const secp256k1::pubkey &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
@@ -1675,7 +1678,8 @@ namespace Diophant {
                 {X, Y, Z, A, B, uint32::make (0)}));
 
         m = m.define (symbol {"HD_encode"}, string_type,
-            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}, pattern {net_type, z},
+            {list::make ({call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+                pattern {bytes_type, y}, pattern {net_type, z},
                 pattern {bytes_type, a}})},
             call::make (built_in_func<data::string, const secp256k1::pubkey &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
@@ -1689,7 +1693,8 @@ namespace Diophant {
                 {X, Y, Z, A, uint32::make (0), uint32::make (0)}));
 
         m = m.define (symbol {"HD_encode"}, string_type,
-            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}, pattern {net_type, z}})},
+            {list::make ({call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+                pattern {bytes_type, y}, pattern {net_type, z}})},
             call::make (built_in_func<data::string, const secp256k1::pubkey &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
                 {X, Y, Z, uint8::make (0), uint32::make (0), uint32::make (0)}));
@@ -1701,7 +1706,8 @@ namespace Diophant {
                 {X, Y, Z, uint8::make (0), uint32::make (0), uint32::make (0)}));
 
         m = m.define (symbol {"HD_encode"}, string_type,
-            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}})},
+            {list::make ({call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+                pattern {bytes_type, y}})},
             call::make (built_in_func<data::string, const secp256k1::pubkey &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
                 {X, Y, leaf<Bitcoin::net>::make (Bitcoin::net::Main),
@@ -1712,7 +1718,7 @@ namespace Diophant {
             call::make (built_in_func<data::string, const data::N &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
                 {X, Y, leaf<Bitcoin::net>::make (Bitcoin::net::Main),
-                    uint8::make (0), uint32::make (0), uint32::make (0)}));*/
+                    uint8::make (0), uint32::make (0), uint32::make (0)}));
 /*
         type xpub_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("pubkey")), {string_type})};
         type xprv_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("secret")), {string_type})};

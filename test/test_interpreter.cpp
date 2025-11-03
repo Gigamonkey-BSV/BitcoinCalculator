@@ -326,8 +326,17 @@ namespace Diophant {
             R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
 
         // WIF
+        test_eval ("WIF.encode [secret 123, net.Main, true]",
+            R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval ("WIF.encode [secret 123, net.Main]",
+            R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval ("WIF.encode [secret 123]",
+            R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
 
         // HD
+
     }
 
     TEST_F (Interpreter, EverythingElse) {
