@@ -175,7 +175,8 @@ namespace Diophant {
         data::stack<pattern> p,
         data::stack<expression> e,
         data::list<machine::autocast> conversions) const {
-        if (size (p) != size (e)) return {no};
+
+            if (size (p) != size (e)) return {no};
 
         match_result result {no};
         while (!empty (p)) {
@@ -271,6 +272,7 @@ namespace Diophant {
         // "unknown" match we return "unknown".
         // TODO we need an option for a set of automatic replacements.
         candidate_result get_candidate (const machine &m, data::stack<mtf> tfs, data::stack<expression> args) {
+
             // we store a potential match here but continue searching to
             // ensure that we do not match twice.
             candidate_result matched {no};
@@ -341,15 +343,19 @@ namespace Diophant {
             return z.Def;
         }
 
-        expression evaluate_binop (const machine &m, const binop &b) {
+        bool evaluate_eq (const machine &m, const data::stack<mtf> *defs, const expression &left, const expression &right);
+        expression evaluate_bin (const machine &m, const data::stack<mtf> *defs, data::stack<expression> body, bool show = false);
 
+        expression evaluate_binop (const machine &m, const binop &b) {
             if (b.Operand == binary_operand::define)
                 throw data::exception {} << "define operator found in expression. This is not allowed!";
+
+            if (b.Body.size () < 2) throw data::exception {"expression is too small (should be impossible)"};
 
             if (b.Operand == binary_operand::apply)
                 return call::make (first (b.Body), rest (b.Body));
 
-            // first we evaluate function and args individually.
+            // evaluate function and args individually.
             bool changed = false;
 
             data::list<expression> body;
@@ -359,68 +365,110 @@ namespace Diophant {
                 body <<= new_arg;
             }
 
-            if (body.size () < 2) throw data::exception {"apply expression is too small (should be impossible)"};
-
             if (b.Operand == binary_operand::identical) {
-                auto res = first (body) == first (rest (body));
+                bool res = true;
+                while (body.size () > 1) {
+                    res = res && first (body) == first (rest (body));
+                    if (!res) break;
+                    body = rest (body);
+                }
                 return boolean::make (res);
             }
 
             if (b.Operand == binary_operand::unidentical) {
-                return boolean::make (first (body) != first (rest (body)));
+                bool res = true;
+                while (size (body) > 1) {
+                    res = res && first (body) != first (rest (body));
+                    if (!res) break;
+                    body = rest (body);
+                }
+                return boolean::make (res);
             }
 
-            // if the operand is dot and the first argument is a struct, then
-            // we interpret the dot as a scope resolution.
+            if (b.Operand == binary_operand::bool_equal) {
+                const data::stack<mtf> *defs = m.BinaryDefinitions.contains (binary_operand::bool_equal);
+
+                expression left;
+                while (true) {
+                    left = first (body);
+                    body = rest (body);
+                    if (size (body) == 0) return boolean::make (true);
+                    if (!evaluate_eq (m, defs, left, first (body))) return boolean::make (false);
+                }
+            }
+
+            if (b.Operand == binary_operand::bool_unequal) {
+                const data::stack<mtf> *defs = m.BinaryDefinitions.contains (binary_operand::bool_equal);
+
+                data::list<expression> new_body;
+                expression left;
+                while (true) {
+                    left = first (body);
+                    body = rest (body);
+                    if (size (body) == 0) return boolean::make (true);
+                    if (evaluate_eq (m, defs, left, first (body))) return boolean::make (false);
+                }
+            }
+
+            expression result;
+
             if (b.Operand == binary_operand::dot) {
-                auto fst = first (body);
-                auto snd = first (rest (body));
-                if (const dstruct *ds = dynamic_cast<const dstruct *> (fst.get ()); ds != nullptr)
-                    for (const auto &[name, val] : ds->Values)
+                while (true) {
+                    if (body.size () == 1) return first (body);
+
+                    auto fst = first (body);
+                    auto snd = first (rest (body));
+                    if (const dstruct *ds = dynamic_cast<const dstruct *> (fst.get ()); ds != nullptr)
                         if (const symbol *x = dynamic_cast<const symbol *> (snd.get ()); x != nullptr)
-                            if (*x == name) return val;
+                            for (const auto &[name, val] : ds->Values)
+                                if (*x == name) {
+                                    changed = true;
+                                    body = data::prepend (data::drop (body, 2), m.evaluate (val));
+                                    goto end_loop;
+                                }
+
+                    break;
+                    end_loop:
+                }
+
             }
 
-            if (const data::stack<mtf> *v = m.BinaryDefinitions.contains (b.Operand); v != nullptr) {
+            // NOTE technically we could have elements
+            // leftover and we'd have to go back and keep trying.
+            result = evaluate_bin (m, m.BinaryDefinitions.contains (b.Operand), body, true);
 
-                data::stack<mtf> tfs = *v;
+            return bool (result) ? result : changed ? binop::make (b.Operand, body) : expression {};
+        }
 
-                candidate_result cx = get_candidate (m, tfs, body);
-                if (intuit (cx) == yes) {
-                    changed = true;
+        expression evaluate_bin (const machine &m, const data::stack<mtf> *defs, data::stack<expression> body, bool show) {
+            if (defs == nullptr) return expression {};
 
-                    if (cx->Result.Def == expression {})
-                        throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                    return m.evaluate (replace (cx->Result.Def, cx->Replacements));
-                }
+            data::stack<mtf> tfs = *defs;
 
-                // we can try again with automatic conversions.
-                if (intuit (cx) == no) {
+            candidate_result cx = get_candidate (m, tfs, body);
+            if (intuit (cx) == yes) {
+                if (cx->Result.Def == expression {})
+                    throw data::exception {} << "Error: attempt to evaluate undefined pattern";
 
-                }
+                    return replace (cx->Result.Def, cx->Replacements);
             }
 
-            if (b.Operand == binary_operand::bool_equal ||
-                b.Operand == binary_operand::bool_unequal) {
-                {
-                    const value *x = dynamic_cast<const value *> (first (body).get ());
-                    const value *y = dynamic_cast<const value *> (first (rest (body)).get ());
+            // we can try again with automatic conversions.
+            if (intuit (cx) == no) {
 
-                    if (x != nullptr && y != nullptr)
-                        return b.Operand == binary_operand::bool_equal ?
-                            boolean::make (*x == *y): boolean::make (*x != *y);
-                }
-                {
-                    const symbol *x = dynamic_cast<const symbol *> (first (body).get ());
-                    const symbol *y = dynamic_cast<const symbol *> (first (rest (body)).get ());
-
-                    if (x != nullptr && y != nullptr)
-                        return b.Operand == binary_operand::bool_equal ?
-                        boolean::make (*x == *y): boolean::make (*x != *y);
-                }
             }
 
-            return changed ? binop::make (b.Operand, body) : expression {};
+            return expression {};
+        }
+
+        bool evaluate_eq (const machine &m, const data::stack<mtf> *defs, const expression &left, const expression &right) {
+
+            expression result = evaluate_bin (m, defs, {left, right});
+            if (!result) return left == right;
+
+            if (const boolean *b = dynamic_cast<const boolean *> (m.evaluate (result).get ()); b != nullptr) {
+                return b->Value;
+            } else throw data::exception {} << "operator == must return bool";
         }
 
         expression evaluate_unop (const machine &m, const unop &u) {

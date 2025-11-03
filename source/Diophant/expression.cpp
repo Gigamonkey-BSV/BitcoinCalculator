@@ -27,7 +27,6 @@ namespace Diophant {
         const node *m = dynamic_cast<const node *> (b);
 
         if (m == nullptr || n == nullptr) throw data::exception {} << "check equality of patterns";
-
         return *n == *m;
     }
 

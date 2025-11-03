@@ -125,7 +125,7 @@ namespace Diophant {
 
         intuit cast_symbol (const machine &m, const node &t, const symbol &x) {
             const symbol *cx = dynamic_cast<const symbol *> (&t);
-            return cx != nullptr && *cx == x ? yes : unknown;
+            return cx != nullptr && *cx == x ? yes : no;
         }
 
         intuit cast_call (const machine &m, const node &t, const call &c) {

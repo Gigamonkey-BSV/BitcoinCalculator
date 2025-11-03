@@ -45,6 +45,12 @@ namespace Diophant {
     bool secret_valid (const data::N &x);
     bool coord_valid (const data::N &x);
 
+    data::bytes cast_secret_to_bytes (const data::N &x);
+    data::bytes cast_coord_to_bytes (const data::N &x);
+
+    data::N read_secret_from_bytes (const data::bytes &x);
+    data::N read_coord_from_bytes (const data::bytes &x);
+
 }
 
 #endif

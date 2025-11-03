@@ -6,10 +6,10 @@
 namespace Diophant {
 
     struct dstruct final : value {
-        data::stack<data::entry<symbol, expression>> Values;
+        data::dispatch<symbol, expression> Values;
 
-        dstruct (data::stack<data::entry<symbol, expression>> l) : Values {l} {}
-        static expression make (data::stack<data::entry<symbol, expression>>);
+        dstruct (data::dispatch<symbol, expression> l) : Values {l} {}
+        static expression make (data::dispatch<symbol, expression>);
 
         bool cast (const machine &, const node &) const final override;
         bool operator == (const node &) const final override;
@@ -17,7 +17,7 @@ namespace Diophant {
         std::ostream &write (std::ostream &o) const final override;
     };
 
-    expression inline dstruct::make (data::stack<data::entry<symbol, expression>> v) {
+    expression inline dstruct::make (data::dispatch<symbol, expression> v) {
         return expression {std::static_pointer_cast<form> (std::make_shared<dstruct> (v))};
     }
 

@@ -572,8 +572,28 @@ namespace Diophant {
         return false;
     }
 
+    namespace {
+
+        template <typename T> struct make_leaf {
+            expression operator () (const T &x) const {
+                return expression {std::static_pointer_cast<node> (std::make_shared<leaf<T>> (x))};
+            }
+        };
+
+        // we return a list rather than a tuple. This is a work around.
+        template <typename ...T> struct make_leaf<std::tuple<T...>> {
+            expression operator () (const std::tuple<T...> &tt) const {
+                data::stack<expression> expr;
+                data::for_each (tt, [&expr] (const auto &x) {
+                    expr >>= make_leaf<data::unconst<data::unref<decltype (x)>>> {} (x);
+                });
+                return list::make (reverse (expr));
+            }
+        };
+    }
+
     template <typename T> expression inline leaf<T>::make (const T &x) {
-        return expression {std::static_pointer_cast<node> (std::make_shared<leaf<T>> (x))};
+        return make_leaf<T> {} (x);
     }
 
     template <typename Y, typename ...X> expression inline leaf<Y (*)(X...)>::make (Y (*x)(X...)) {

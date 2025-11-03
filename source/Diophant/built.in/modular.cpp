@@ -13,6 +13,34 @@ namespace Diophant {
         return x > 0 && x < secp256k1_prime;
     }
 
+    data::bytes cast_secret_to_bytes (const data::N &x) {
+        if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
+        return data::uint256_little {x};
+    }
+
+    data::bytes cast_coord_to_bytes (const data::N &x) {
+        if (x > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
+        return data::uint256_little {x};
+    }
+
+    data::N read_secret_from_bytes (const data::bytes &x) {
+        if (x.size () != 32) throw data::exception {} << "invalid secret size " << x.size ();
+        data::uint256_little z;
+        std::copy (x.begin (), x.end (), z.begin ());
+        data::N n (z);
+        if (n > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
+        return n;
+    }
+
+    data::N read_coord_from_bytes (const data::bytes &x) {
+        if (x.size () != 32) throw data::exception {} << "invalid coord size " << x.size ();
+        data::uint256_little z;
+        std::copy (x.begin (), x.end (), z.begin ());
+        data::N n (z);
+        if (n > secp256k1_prime) throw data::exception {} << "invalid coordinate value " << x;
+        return n;
+    }
+
     bool secret_equal (const data::N &x, const data::N &y) {
         if (x > secp256k1_order) throw data::exception {} << "invalid secret key value " << x;
         if (y > secp256k1_order) throw data::exception {} << "invalid secret key value " << y;

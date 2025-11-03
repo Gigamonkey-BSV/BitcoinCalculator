@@ -5,31 +5,6 @@
 
 namespace Diophant {
 
-    machine m;
-
-    // test whether the parser will accept the given string.
-    void test (std::string input, bool expect_success = true);
-
-    // test whether the exression will be read as a particular expression.
-    void test (std::string input, expression expect_read);
-
-    // test whether the expression will evaluate to a given expression.
-    void test (std::string input, expression expected_read, expression expect_eval);
-
-    // test whether the expression will error when evaluated.
-    void test (std::string input, expression expected_read, bool expect_eval);
-
-    // test whether the expression evaluates to the given expression or throws an error.
-    void test_eval (std::string input, expression expect_eval);
-    void test_eval (std::string input, bool expect_eval = true);
-    void test_eval (std::string input, std::string expect_eval);
-    void test_eval (std::string input, const char *expect_eval);
-
-    // we expect an error to be thrown.
-    void inline test_error (std::string input) {
-        test_eval (input, false);
-    }
-
     expression make_byte (data::byte b) {
         return uint8::make (b);
     }
@@ -80,9 +55,43 @@ namespace Diophant {
         return binop::make (binary_operand::plus, a, b);
     }
 
-    TEST (Interpreter, UnmatchedBrackets) {
+    class Interpreter : public ::testing::Test {
+    protected:
+        static machine Machine;
 
-        m = initialize ();
+        // Runs once before *any* test in this suite runs.
+        static void SetUpTestSuite () {}
+
+        // Runs once after *all* tests in this suite finish.
+        static void TearDownTestSuite () {}
+
+        // test whether the parser will accept the given string.
+        static void test (std::string input, bool expect_success = true);
+
+        // test whether the exression will be read as a particular expression.
+        static void test (std::string input, expression expect_read);
+
+        // test whether the expression will evaluate to a given expression.
+        static void test (std::string input, expression expected_read, expression expect_eval);
+
+        // test whether the expression will error when evaluated.
+        static void test (std::string input, expression expected_read, bool expect_eval);
+
+        // test whether the expression evaluates to the given expression or throws an error.
+        static void test_eval (std::string input, expression expect_eval);
+        static void test_eval (std::string input, bool expect_eval = true);
+        static void test_eval (std::string input, std::string expect_eval);
+        static void test_eval (std::string input, const char *expect_eval);
+
+        // we expect an error to be thrown.
+        static void test_error (std::string input) {
+            test_eval (input, false);
+        }
+    };
+
+    machine Interpreter::Machine = initialize ();
+
+    TEST_F (Interpreter, UnmatchedBrackets) {
 
         // unmatched parentheses
         test_error ("(");
@@ -97,9 +106,7 @@ namespace Diophant {
 
     }
 
-    TEST (Interpreter, Nil) {
-
-        m = initialize ();
+    TEST_F (Interpreter, Nil) {
 
         // expressions that evaluate to nil
         test ("", nil::make (), nil::make ());
@@ -112,9 +119,7 @@ namespace Diophant {
         test ("nil", symbol::make ("nil"), nil::make ());
     }
 
-    TEST (Interpreter, Bool) {
-
-        m = initialize ();
+    TEST_F (Interpreter, Bool) {
 
         // boolean
         test ("true", symbol::make ("true"), True ());
@@ -136,9 +141,7 @@ namespace Diophant {
         test_eval ("false == false", True ());
     }
 
-    TEST (Interpreter, Identical) {
-
-        m = initialize ();
+    TEST_F (Interpreter, Identical) {
 
         test_eval ("nil === nil", "true");
         //test_eval ("nil =!= nil", "false");
@@ -164,9 +167,7 @@ namespace Diophant {
         // NOTE: it is an error to add a definition to ===, =!=, or !=
     }
 
-    TEST (Interpreter, Scriptnum) {
-
-        m = initialize ();
+    TEST_F (Interpreter, Scriptnum) {
 
         // invalid hex number.
         test_error ("0x0");
@@ -187,11 +188,13 @@ namespace Diophant {
 
         test_eval ("0x81 == 0x8001", "true");
         test_eval ("0x81 === 0x8001", "false");
+
+        // divide by zero should throw
+        test_error ("0x01 / 0x");
+        test_error (R"(0x01 % 0x)");
     }
 
-    TEST (Interpreter, ScriptnumBool) {
-
-        m = initialize ();
+    TEST_F (Interpreter, ScriptnumBool) {
 
         // cast to bool
         test_eval ("bool 0x", "false");
@@ -204,9 +207,7 @@ namespace Diophant {
         test_eval ("scriptnum true", "0x01");
     }
 
-    TEST (Interpreter, ScriptnumN) {
-
-        m = initialize ();
+    TEST_F (Interpreter, ScriptnumN) {
 
         // cast to scriptnum and Z.
         test_eval ("scriptnum 0", "0x");
@@ -222,9 +223,92 @@ namespace Diophant {
         test_error ("N 0x81");
     }
 
-    TEST (Interpreter, Addresses) {
+    TEST_F (Interpreter, If) {
 
-        m = initialize ();
+        // if
+        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
+        test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
+    }
+
+    TEST_F (Interpreter, String) {
+
+        // string operations.
+
+        // cat
+        test_eval (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
+        test_eval (R"('00ff' <> 'abab')", bytes::make (*data::encoding::hex::read ("00ffabab")));
+
+        test_eval (R"(cat "abcd" "efgh")", string::make ("abcdefgh"));
+        test_eval (R"(cat '00ff' 'abab')", bytes::make (*data::encoding::hex::read ("00ffabab")));
+
+        test_eval (R"(size "")", "0");
+        test_eval (R"(size "abcd")", "4");
+        test_eval (R"(size '')", "0");
+        test_eval (R"(size 'abcd')", "2");
+
+        // left, right, split
+    }
+
+    TEST_F (Interpreter, Hash) {
+
+        // hash functions
+        test_eval ("SHA1_160 ''", "'da39a3ee5e6b4b0d3255bfef95601890afd80709'");
+        test_eval ("SHA2_256 ''", "'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'");
+        test_eval ("RIPEMD_160 ''", "'9c1185a5c5e9fc54612808977ee8f548b2258d31'");
+    }
+
+    TEST_F (Interpreter, Keys) {
+
+        // valid pubkeys
+        test ("02cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+        test ("03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+        test ("04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523"
+                "42dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915");
+
+        // invalid pubkeys
+        test ("023456", false);
+        test ("034567", false);
+        test ("045678", false);
+
+        // coordinates and secrets
+        test_eval ("-secret 1", "secret 115792089237316195423570985008687907852837564279074904382605163141518161494336");
+
+        test_eval ("-coord 1", "coord 115792089237316195423570985008687907853269984665640564039457584007908834671662");
+
+        test_eval ("coord 1 + coord 2", "coord 3");
+        test_eval ("secret 1 + secret 2", "secret 3");
+
+        // valid and invalid secret keys
+        test_eval ("valid (secret 1)", True ());
+        test_eval ("valid (secret 0)", False ());
+
+        // public keys
+        test_eval ("to_public true (secret 123)", "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+        test_eval ("to_public false (secret 123)",
+            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915");
+
+        test_eval ("compress "
+            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915",
+            "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+
+        // castable to bytes
+        test_eval ("bytes 03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523",
+            "'03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523'");
+        test_eval ("bytes (secret 345678)", "'4e46050000000000000000000000000000000000000000000000000000000000'");
+        test_eval ("bytes (coord 456789)", "'55f8060000000000000000000000000000000000000000000000000000000000'");
+
+        // verify signatures
+        test_eval (
+            R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") )"
+            R"('3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
+            R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')",
+            True ());
+
+        // TODO test key algebra. I think there's something wrong with that.
+
+    }
+
+    TEST_F (Interpreter, Addresses) {
 
         // base 58
         test_eval ("base58.encode 1234", R"("NH")");
@@ -235,22 +319,18 @@ namespace Diophant {
         test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
 
         // addresses
+        test_eval ("address.encode [Hash160 (to_public true (secret 12345))]",
+            R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+
         test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]",
             R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+
+        // WIF
+
+        // HD
     }
 
-    TEST (Interpreter, If) {
-
-        m = initialize ();
-
-        // if
-        test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
-        test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
-    }
-
-    TEST (Interpreter, Interpreter) {
-
-        m = initialize ();
+    TEST_F (Interpreter, EverythingElse) {
 
         // symbols
         test ("x", symbol::make ("x"), symbol::make ("x"));
@@ -323,9 +403,6 @@ namespace Diophant {
         //test_error ("1 / 0");
         //test_error ("1 % 0");
 
-        test_error ("0x01 / 0x");
-        test_error (R"(0x01 % 0x)");
-
         // bytes
         test_eval ("0_u8", make_byte (0));
         test ("0_u8 + 0_u8", "0_u8");
@@ -346,70 +423,6 @@ namespace Diophant {
         test_eval ("~0x", "0x");
         test_eval ("~0x00", "0xff");
         test_eval ("~0x80", "0x7f");
-
-        // string operations.
-
-        // cat
-        test_eval (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
-        test_eval (R"('00ff' <> 'abab')", bytes::make (*data::encoding::hex::read ("00ffabab")));
-
-        test_eval (R"(cat "abcd" "efgh")", string::make ("abcdefgh"));
-        test_eval (R"(cat '00ff' 'abab')", bytes::make (*data::encoding::hex::read ("00ffabab")));
-
-        test_eval (R"(size "")", "0");
-        test_eval (R"(size "abcd")", "4");
-        test_eval (R"(size '')", "0");
-        test_eval (R"(size 'abcd')", "2");
-
-        // left, right, split
-
-        // hash functions
-        test_eval ("SHA1_160 ''", "'da39a3ee5e6b4b0d3255bfef95601890afd80709'");
-        test_eval ("SHA2_256 ''", "'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'");
-        test_eval ("RIPEMD_160 ''", "'9c1185a5c5e9fc54612808977ee8f548b2258d31'");
-
-        // valid pubkeys
-        test ("02cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
-        test ("03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
-        test ("04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523"
-                "42dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915");
-
-        // invalid pubkeys
-        test ("023456", false);
-        test ("034567", false);
-        test ("045678", false);
-
-        // coordinates and secrets
-        test_eval ("-secret 1", "secret 115792089237316195423570985008687907852837564279074904382605163141518161494336");
-
-        test_eval ("-coord 1", "coord 115792089237316195423570985008687907853269984665640564039457584007908834671662");
-
-        test_eval ("coord 1 + coord 2", "coord 3");
-        test_eval ("secret 1 + secret 2", "secret 3");
-
-        // valid and invalid secret keys
-        test_eval ("valid (secret 1)", True ());
-        test_eval ("valid (secret 0)", False ());
-
-        // public keys
-        test_eval ("to_public true (secret 123)", "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
-        test_eval ("to_public false (secret 123)",
-            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915");
-
-        test_eval ("compress "
-            "04cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe3252342dbd5610983c1877f7668b2664196453c29169c6b9182de10feddd82f09b915",
-            "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
-
-        // verify signatures
-        test_eval (
-            R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") )"
-            R"('3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
-            R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')",
-            True ());
-
-        // WIFs
-
-        // HD
 
 /*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5
@@ -481,7 +494,7 @@ namespace Diophant {
     }
 
     // test whether the parser will accept the given string.
-    void test (std::string input, bool expect_success) {
+    void Interpreter::test (std::string input, bool expect_success) {
         if (expect_success) {
             EXPECT_NO_THROW (read_line (input));
         } else {
@@ -497,26 +510,26 @@ namespace Diophant {
     }
 
     // test whether the exression will be read as a particular expression.
-    void test (std::string input, expression expect_read) {
+    void Interpreter::test (std::string input, expression expect_read) {
         test_parse (input, expect_read);
     }
 
     // test whether the expression will evaluate to a given expression.
-    void test (std::string input, expression expect_read, expression expect_eval) {
-        expression ex = m.evaluate (test_parse (input, expect_read));
+    void Interpreter::test (std::string input, expression expect_read, expression expect_eval) {
+        expression ex = Machine.evaluate (test_parse (input, expect_read));
         EXPECT_EQ (ex, expect_eval) << "expected " << input << " to evaluate to " << expect_eval << " but got " << ex;
     }
 
-    void test (std::string input, expression expect_read, bool expect_eval) {
+    void Interpreter::test (std::string input, expression expect_read, bool expect_eval) {
         expression ex = test_parse (input, expect_read);
         if (expect_eval) {
-            EXPECT_NO_THROW (m.evaluate (ex));
+            EXPECT_NO_THROW (Machine.evaluate (ex));
         } else {
-            EXPECT_THROW (m.evaluate (ex), data::exception);
+            EXPECT_THROW (Machine.evaluate (ex), data::exception);
         }
     }
 
-    void test_eval (std::string input, bool expect_eval) {
+    void Interpreter::test_eval (std::string input, bool expect_eval) {
         program n;
         try {
             n = read_line (input);
@@ -525,26 +538,26 @@ namespace Diophant {
             FAIL () << "Expected " << input << " to evaluate to a Diophant expression.";
         }
         if (expect_eval) {
-            EXPECT_NO_THROW (m.evaluate (n)) << "Expected " << input << " to throw no exception but it did.";
+            EXPECT_NO_THROW (Machine.evaluate (n)) << "Expected " << input << " to throw no exception but it did.";
         } else {
             try {
-                m.evaluate (n);
+                Machine.evaluate (n);
                 FAIL () << "Expected " << input << " to throw an exception but it didn't.";
             } catch (...) {}
         }
     }
 
-    void test_eval (std::string input, expression expect_eval) {
-        auto [_, ev] = m.evaluate (read_line (input));
-        auto ex = m.evaluate (expect_eval);
+    void Interpreter::test_eval (std::string input, expression expect_eval) {
+        auto [_, ev] = Machine.evaluate (read_line (input));
+        auto ex = Machine.evaluate (expect_eval);
         EXPECT_EQ (ev, ex) << "expected " << input << " to evaluate to " << expect_eval;
     }
 
-    void test_eval (std::string input, std::string expect_eval) {
+    void Interpreter::test_eval (std::string input, std::string expect_eval) {
         return test_eval (input, first (read_line (expect_eval)).Predicate);
     }
 
-    void test_eval (std::string input, const char *expect_eval) {
+    void Interpreter::test_eval (std::string input, const char *expect_eval) {
         return test_eval (input, std::string {expect_eval});
     }
 

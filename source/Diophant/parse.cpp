@@ -115,7 +115,7 @@ namespace Diophant {
                 if (UnsignedFlag)
                     throw data::exception {} << "No unsigned scriptnum type";
                 else return call::make (symbol::make ("scriptnum"),
-                {bytes::make (Bitcoin::integer::read (Value))});
+                    {bytes::make (Bitcoin::integer::read (Value))});
             }
         }
 

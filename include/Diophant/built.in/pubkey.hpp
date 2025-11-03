@@ -5,36 +5,36 @@
 
 namespace Diophant {
 
-    bool pubkey_equal (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
-    bool pubkey_identical (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
-    bool pubkey_unequal (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
+    bool pubkey_equal (const data::bytes &x, const data::bytes &y);
 
-    bool pubkey_valid (const secp256k1::pubkey &x);
+    bool pubkey_valid (const data::bytes &x);
 
-    secp256k1::pubkey secret_to_public (bool, const data::N &x);
+    data::bytes secret_to_public (bool, const data::N &x);
 
-    bool pubkey_compressed (const secp256k1::pubkey &x);
-    bool pubkey_uncompressed (const secp256k1::pubkey &x);
+    bool pubkey_compressed (const data::bytes &x);
+    bool pubkey_uncompressed (const data::bytes &x);
 
-    secp256k1::pubkey pubkey_compress (const secp256k1::pubkey &x);
-    secp256k1::pubkey pubkey_decompress (const secp256k1::pubkey &x);
+    data::bytes pubkey_compress (const data::bytes &x);
+    data::bytes pubkey_decompress (const data::bytes &x);
 
-    secp256k1::pubkey pubkey_negate (const secp256k1::pubkey &x);
-    secp256k1::pubkey pubkey_plus (const secp256k1::pubkey &x, const secp256k1::pubkey &y);
-    secp256k1::pubkey pubkey_times (const secp256k1::pubkey &x, const data::N &y);
-    secp256k1::pubkey pubkey_times (const data::N x, const secp256k1::pubkey &y);
+    data::bytes pubkey_negate (const data::bytes &x);
+    data::bytes pubkey_plus (const data::bytes &x, const data::bytes &y);
+    data::bytes pubkey_times (const data::bytes &x, const data::N &y);
+    data::bytes pubkey_times (const data::N x, const data::bytes &y);
 
-    data::uint160_little address_hash (const secp256k1::pubkey &);
+    data::uint160_little address_hash (const data::bytes &);
 
-    data::string address_from_pubkey (const secp256k1::pubkey &, Bitcoin::net = Bitcoin::net::Main);
+    data::string address_from_pubkey (const data::bytes &, Bitcoin::net = Bitcoin::net::Main);
     data::string address_from_secret (const data::N &, Bitcoin::net = Bitcoin::net::Main, bool compressed = true);
 
     data::string address_from_WIF (const data::string &);
 
     data::bytes sign (const data::N &key, const data::uint256_little &digest);
-    bool verify (const secp256k1::pubkey &x, const data::bytes &digest, const data::bytes &sig);
+    bool verify (const data::bytes &x, const data::bytes &digest, const data::bytes &sig);
 
     data::bytes sign_with_WIF (const data::string &wif, const data::uint256_little &digest);
+
+    data::bytes cast_pubkey_to_bytes (const data::bytes &);
 
 }
 

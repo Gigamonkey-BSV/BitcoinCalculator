@@ -116,14 +116,6 @@ namespace Diophant {
             call::make (built_in_func<bool,
                 const data::N &, const data::Z &>::make (natint_equal), {X, Y}));
 
-        m = m.define (binary_operand::bool_unequal, bool_type, {integer_type, x}, {natural_type, y},
-            call::make (built_in_func<bool,
-                const data::N &, const data::Z &>::make (natint_unequal), {Y, X}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type, {natural_type, x}, {integer_type, y},
-            call::make (built_in_func<bool,
-                const data::N &, const data::Z &>::make (natint_unequal), {X, Y}));
-
         // basic arithmetic for unbounded types.
         m = m.define (binary_operand::plus, natural_type, {natural_type, x}, {natural_type, y},
             call::make (built_in_func<data::N, const data::N &, const data::N &>::make (natural_plus), {X, Y}));
@@ -710,11 +702,6 @@ namespace Diophant {
             call::make (built_in_func<bool,
                 const data::bytes &, const data::bytes &>::make (scriptnum_equal), {X, Y}));
 
-        m = m.define (binary_operand::bool_unequal, bool_type,
-            scriptnum_pattern (x), scriptnum_pattern (y),
-            call::make (built_in_func<bool,
-                const data::bytes &, const data::bytes &>::make (scriptnum_unequal), {X, Y}));
-
         m = m.define (binary_operand::greater_equal, scriptnum_type,
             scriptnum_pattern (x), scriptnum_pattern (y),
             call::make (symbol::make ("scriptnum"), {call::make (built_in_func<data::bytes,
@@ -787,8 +774,6 @@ namespace Diophant {
         m = m.define (symbol {"N"}, natural_type,
             {scriptnum_pattern (x)},
                 call::make (built_in_func<data::N, const data::bytes &>::make (cast_scriptnum_to_N), {X}));
-
-        // TODO indexing for bitcoin number types.
 
         // size and indexing. We have many types that support indexing.
         // we do not have a special char type for strings but we use a uint32 because
@@ -931,12 +916,6 @@ namespace Diophant {
             call::make (built_in_func<bool,
                 const data::N &, const data::N &>::make (coord_equal), {X, Y}));
 
-        m = m.define (binary_operand::bool_unequal, bool_type,
-            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
-            call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (coord_unequal), {X, Y}));
-
         m = m.define (binary_operand::greater_equal, bool_type,
             call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
             call::make (symbol::make ("coord"), {pattern {natural_type, y}}),
@@ -967,12 +946,6 @@ namespace Diophant {
             call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
             call::make (built_in_func<bool,
                 const data::N &, const data::N &>::make (coord_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_unequal, bool_type,
-            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
-            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
-            call::make (built_in_func<bool,
-                const data::N &, const data::N &>::make (coord_unequal), {X, Y}));
 
         m = m.define (binary_operand::greater_equal, bool_type,
             call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
@@ -1348,7 +1321,8 @@ namespace Diophant {
                 const data::bytes &, const data::N &>::make (&scriptnum_power), {X, Y})}));
 
         m = m.define (binary_operand::power, coord_type,
-            call::make (symbol::make ("coord"), {pattern {natural_type, x}}), {integer_type, y},
+            call::make (symbol::make ("coord"), {pattern {natural_type, x}}),
+            {integer_type, y},
             call::make (symbol::make ("coord"), {call::make (built_in_func<data::N,
                 const data::N &, const data::Z &>::make (&coord_power), {X, Y})}));
 
@@ -1358,7 +1332,8 @@ namespace Diophant {
                 const data::N &, const data::Z &>::make (&coord_power), {X, Y})}));
 
         m = m.define (binary_operand::power, secret_type,
-            call::make (symbol::make ("secret"), {pattern {natural_type, x}}), {integer_type, y},
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            {integer_type, y},
             call::make (symbol::make ("secret"), {call::make (built_in_func<data::N,
                 const data::N &, const data::Z &>::make (&secret_power), {X, Y})}));
 
@@ -1383,66 +1358,106 @@ namespace Diophant {
         // define a pubkey type
         type pubkey_type {symbol::make ("pubkey")};
 
-        m = m.define (symbol {"valid"}, bool_type, {{pubkey_type, x}},
+        m = m.define (symbol {"valid"}, bool_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
             call::make (built_in_func<bool,
-                const secp256k1::pubkey &>::make (&pubkey_valid), {X}));
+                const data::bytes &>::make (&pubkey_valid), {X}));
 
-        m = m.define (symbol {"compress"}, pubkey_type, {{pubkey_type, x}},
-            call::make (built_in_func<secp256k1::pubkey,
-                const secp256k1::pubkey &>::make (&pubkey_compress), {X}));
-
-        m = m.define (symbol {"deompress"}, pubkey_type, {{pubkey_type, x}},
-            call::make (built_in_func<secp256k1::pubkey,
-                const secp256k1::pubkey &>::make (&pubkey_decompress), {X}));
-
-        m = m.define (symbol {"compressed"}, bool_type, {{pubkey_type, x}},
+        m = m.define (binary_operand::bool_equal, bool_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, y}})},
             call::make (built_in_func<bool,
-                const secp256k1::pubkey &>::make (&pubkey_compressed), {X}));
+                const data::bytes &, const data::bytes &>::make (pubkey_equal), {X, Y}));
 
-        m = m.define (symbol {"uncompressed"}, bool_type, {{pubkey_type, x}},
+        m = m.define (symbol {"compress"}, pubkey_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
+            call::make (symbol {"pubkey"}, {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (&pubkey_compress), {X})}));
+
+        m = m.define (symbol {"deompress"}, pubkey_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
+            call::make (symbol {"pubkey"}, {
+                call::make (built_in_func<data::bytes,
+                    const data::bytes &>::make (&pubkey_decompress), {X})}));
+
+        m = m.define (symbol {"compressed"}, bool_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
             call::make (built_in_func<bool,
-                const secp256k1::pubkey &>::make (&pubkey_compressed), {X}));
+                const data::bytes &>::make (&pubkey_compressed), {X}));
+
+        m = m.define (symbol {"uncompressed"}, bool_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
+            call::make (built_in_func<bool,
+                const data::bytes &>::make (&pubkey_compressed), {X}));
 
         m = m.define (symbol {"to_public"}, pubkey_type,
-            {{bool_type, x},
-                call::make (symbol::make ("secret"), {pattern {natural_type, y}})},
-            call::make (built_in_func<secp256k1::pubkey,
-                bool, const data::N &>::make (&secret_to_public), {X, Y}));
+            {{bool_type, x}, call::make (symbol::make ("secret"), {pattern {natural_type, y}})},
+            call::make (symbol {"pubkey"}, {
+                call::make (built_in_func<data::bytes,
+                    bool, const data::N &>::make (&secret_to_public), {X, Y})}));
 
-        m = m.define (unary_operand::negate, pubkey_type, {pubkey_type, x},
-            call::make (built_in_func<secp256k1::pubkey,
-                const secp256k1::pubkey &>::make (&pubkey_negate), {X}));
+        // key algebra
+        m = m.define (unary_operand::negate, pubkey_type,
+            call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+            call::make (symbol::make ("pubkey"),
+                {call::make (built_in_func<data::bytes,
+                const data::bytes &>::make (&pubkey_negate), {X})}));
 
-        m = m.define (binary_operand::plus, pubkey_type, {pubkey_type, x}, {pubkey_type, y},
-            call::make (built_in_func<secp256k1::pubkey,
-                const secp256k1::pubkey &, const secp256k1::pubkey &>::make (&pubkey_plus), {X, Y}));
+        m = m.define (binary_operand::plus, pubkey_type,
+            call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+            call::make (symbol::make ("pubkey"), {pattern {bytes_type, y}}),
+            call::make (symbol::make ("pubkey"),
+                {call::make (built_in_func<data::bytes,
+                    const data::bytes &, const data::bytes &>::make (&pubkey_plus), {X, Y})}));
 
-        m = m.define (binary_operand::times, pubkey_type, {secret_type, x}, {pubkey_type, y},
-            call::make (built_in_func<secp256k1::pubkey,
-                const data::N, const secp256k1::pubkey &>::make (&pubkey_times), {X, Y}));
+        m = m.define (binary_operand::times, pubkey_type,
+            call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+            call::make (symbol::make ("pubkey"), {pattern {bytes_type, y}}),
+            call::make (symbol::make ("pubkey"),
+                {call::make (built_in_func<data::bytes,
+                    const data::N, const data::bytes &>::make (&pubkey_times), {X, Y})}));
 
-        m = m.define (binary_operand::times, pubkey_type, {pubkey_type, x}, {secret_type, y},
-            call::make (built_in_func<secp256k1::pubkey,
-                const secp256k1::pubkey &, const data::N &>::make (&pubkey_times), {X, Y}));
+        m = m.define (binary_operand::times, pubkey_type,
+            call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+            call::make (symbol::make ("secret"), {pattern {natural_type, y}}),
+            call::make (symbol::make ("pubkey"),
+                {call::make (built_in_func<data::bytes,
+                    const data::bytes &, const data::N &>::make (&pubkey_times), {X, Y})}));
 
-        //m = m.define (symbol {"Satoshi"}, call::make (symbol::make ("sats"), {int64_little_type}));
-        m = m.define (symbol {"Pubkey"}, call::make (symbol::make ("pubkey"), {bytes_type}));
-        m = m.define (symbol {"ScriptNum"}, call::make (symbol::make ("scriptnum"), {bytes_type}));
+        // pubkey, secret, and coord castable to bytes and vice versa.
+        m = m.define (symbol {"bytes"}, bytes_type,
+            {{call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})}}, X);
+
+        m = m.define (symbol {"bytes"}, bytes_type, {{call::make (symbol::make ("coord"), {pattern {natural_type, x}})}},
+            call::make (built_in_func<data::bytes, const data::N &>::make (cast_coord_to_bytes), {X}));
+
+        m = m.define (symbol {"bytes"}, bytes_type, {{call::make (symbol::make ("secret"), {pattern {natural_type, x}})}},
+            call::make (built_in_func<data::bytes, const data::N &>::make (cast_secret_to_bytes), {X}));
+
+        m = m.define (symbol {"coord"}, coord_type, {{bytes_type, x}},
+            call::make (symbol {"coord"}, {call::make (
+                built_in_func<data::N, const data::bytes &>::make (read_coord_from_bytes), {X})}));
+
+        m = m.define (symbol {"secret"}, secret_type, {{bytes_type, x}},
+            call::make (symbol {"secret"}, {call::make (
+                built_in_func<data::N, const data::bytes &>::make (read_secret_from_bytes), {X})}));
 
         // push
-        m = m.define (symbol {"push"}, scriptnum_type, {scriptnum_type, x},
+        m = m.define (symbol {"push"}, scriptnum_type, {{scriptnum_type, x}},
             call::make (built_in_func<data::bytes,
                 const Bitcoin::integer &>::make (&push), {X}));
 
-        m = m.define (symbol {"push"}, scriptnum_type, {string_type, x},
+        m = m.define (symbol {"push"}, scriptnum_type, {{string_type, x}},
             call::make (built_in_func<data::bytes,
                 const data::bytes &>::make (&push), {X}));
 
-        m = m.define (symbol {"push"}, scriptnum_type, {secret_type, x},
+        m = m.define (symbol {"push"}, scriptnum_type, {{secret_type, x}},
             call::make (built_in_func<data::bytes,
                 const data::uint256_little &>::make (&push), {X}));
 
-        m = m.define (symbol {"push"}, scriptnum_type, {pubkey_type, x},
+        m = m.define (symbol {"push"}, scriptnum_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
             call::make (built_in_func<data::bytes,
                 const secp256k1::pubkey &>::make (&push), {X}));
 
@@ -1452,9 +1467,11 @@ namespace Diophant {
             call::make (built_in_func<data::bytes,
                 const data::N &, const data::uint256_little &>::make (&sign), {X, Y}));
 
-        m = m.define (symbol {"verify"}, bool_type, {{pubkey_type, x}, {bytes_type, y}, {bytes_type, z}},
-            call::make (built_in_func<bool,
-                const secp256k1::pubkey &, const data::bytes &, const data::bytes &>::make (verify), {X, Y, Z}));
+        m = m.define (symbol {"verify"}, bool_type, {
+                call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+                {bytes_type, y}, {bytes_type, z}
+            }, call::make (built_in_func<bool,
+                const data::bytes &, const data::bytes &, const data::bytes &>::make (verify), {X, Y, Z}));
 
         // hash functions
         m = m.define (symbol {"SHA1_160"}, bytes_type, {{bytes_type, x}},
@@ -1484,8 +1501,9 @@ namespace Diophant {
         m = m.define (symbol {"Hash160"}, bytes_type, {{bytes_type, x}},
             call::make (built_in_func<data::bytes, const data::bytes &>::make (Hash160), {X}));
 
-        m = m.define (symbol {"Hash160"}, bytes_type, {{pubkey_type, x}},
-            call::make (built_in_func<data::bytes, const secp256k1::pubkey &>::make (Hash160), {X}));
+        m = m.define (symbol {"Hash160"}, bytes_type,
+            {call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}})},
+            call::make (built_in_func<data::bytes, const data::bytes &>::make (Hash160), {X}));
 
         m = m.define (symbol {"Hash160"}, bytes_type, {{string_type, x}},
             call::make (built_in_func<data::bytes, const data::string &>::make (Hash160), {X}));
@@ -1497,11 +1515,11 @@ namespace Diophant {
             call::make (built_in_func<data::bytes, const data::string &>::make (Hash256), {X}));
 
         // base 58
-        m = m.define (symbol {"base58_decode"}, integer_type, {{string_type, x}},
+        m = m.define (symbol {"base58_decode"}, natural_type, {{string_type, x}},
             call::make (built_in_func<data::N,
                 const data::string &>::make (&decode_base_58), {X}));
 
-        m = m.define (symbol {"base58_encode"}, string_type, {{integer_type, x}},
+        m = m.define (symbol {"base58_encode"}, string_type, {{natural_type, x}},
             call::make (built_in_func<data::string,
                 const data::N &>::make (&encode_base_58), {X}));
 
@@ -1526,7 +1544,7 @@ namespace Diophant {
         }));
 
         // net
-        type net_type {symbol::make ("net")};
+        type net_type {symbol::make ("network")};
 
         m = m.define (binary_operand::dot, net_type,
             symbol::make ("net"),
@@ -1600,9 +1618,10 @@ namespace Diophant {
         type address_type {call::make (symbol::make ("address"), {string_type})};
 
         // addresses from pubkeys and wifs.
+
         m = m.define (symbol {"address"}, address_type,
-            {{net_type, x}, {pubkey_type, y}},
-            call::make (built_in_func<data::string, const secp256k1::pubkey &, Bitcoin::net>::make (address_from_pubkey), {Y, X}));
+            {{net_type, x}, call::make (symbol::make ("pubkey"), {pattern {bytes_type, y}})},
+            call::make (built_in_func<data::string, const data::bytes &, Bitcoin::net>::make (address_from_pubkey), {Y, X}));
 
         m = m.define (symbol {"address"}, address_type,
             {{bool_type, x}, {net_type, y}, call::make (symbol {"secret"}, {pattern {natural_type, z}})},
@@ -1616,7 +1635,7 @@ namespace Diophant {
         m = m.define (symbol {"sign"}, scriptnum_type, {{secret_type, x}, {secret_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::string &, const data::uint256_little &>::make (&sign_with_WIF), {X, Y}));
-/*
+
         expression A = symbol::make ("a");
         expression B = symbol::make ("b");
         expression C = symbol::make ("c");
@@ -1626,19 +1645,21 @@ namespace Diophant {
         Symbol c = dynamic_cast<Symbol> (*C.get ());
 
         m = m.define (symbol {"HD_encode"}, string_type,
-            {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}, pattern {net_type, z},
+            {list::make ({call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
+                pattern {bytes_type, y}, pattern {net_type, z},
                 pattern {bytes_type, a}, pattern {uint32_type, b}, pattern {uint32_type, c}})},
             call::make (built_in_func<data::string, const secp256k1::pubkey &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
                 {X, Y, Z, A, B, C}));
 
         m = m.define (symbol {"HD_encode"}, string_type,
-            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}), pattern {bytes_type, y}, pattern {net_type, z},
+            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
+                pattern {bytes_type, y}, pattern {net_type, z},
                 pattern {uint8_type, a}, pattern {uint32_type, b}, pattern {uint32_type, c}})},
             call::make (built_in_func<data::string, const data::N &,
                 const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
                 {X, Y, Z, A, B, C}));
-
+/*
         m = m.define (symbol {"HD_encode"}, string_type,
             {list::make ({pattern {pubkey_type, x}, pattern {bytes_type, y}, pattern {net_type, z},
                 pattern {bytes_type, a}, pattern {uint32_type, b}})},
