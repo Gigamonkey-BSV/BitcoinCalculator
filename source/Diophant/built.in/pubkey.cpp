@@ -48,7 +48,7 @@ namespace Diophant {
     data::bytes pubkey_plus (const data::bytes &x, const data::bytes &y) {
         if (!secp256k1::pubkey::valid (x)) throw data::exception {} << "invalid public key";
         if (!secp256k1::pubkey::valid (y)) throw data::exception {} << "invalid public key";
-        return secp256k1::pubkey::plus_pubkey (x, y);
+        return secp256k1::pubkey::plus (x, y);
     }
 
     data::bytes pubkey_times (const data::bytes &x, const data::N &y) {

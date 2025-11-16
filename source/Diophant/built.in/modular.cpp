@@ -138,7 +138,7 @@ namespace Diophant {
 
     data::N secret_invert (const data::N &x) {
         if (!secret_valid (x)) throw data::exception {} << "invalid secret key value" << x;
-        return *data::invert_mod (x, data::math::nonzero {secp256k1_order});
+        return *data::invert_mod (data::Z (x), data::math::nonzero {data::Z (secp256k1_order)});
     }
 
     data::N secret_divide (const data::N &x, const data::N &y) {
@@ -177,7 +177,7 @@ namespace Diophant {
 
     data::N coord_invert (const data::N &x) {
         if (!coord_valid (x)) throw data::exception {} << "invalid coordinate value";
-        return *data::invert_mod (x, data::math::nonzero {secp256k1_prime});
+        return *data::invert_mod (data::Z (x), data::math::nonzero {data::Z (secp256k1_prime)});
     }
 
     data::N coord_divide (const data::N &x, const data::N &y) {

@@ -1,6 +1,7 @@
 #ifndef BITCOIN_CALCULATOR_BUILTIN_HD
 #define BITCOIN_CALCULATOR_BUILTIN_HD
 
+#include <data/tuple.hpp>
 #include <Diophant/built.in/pubkey.hpp>
 
 namespace Diophant {

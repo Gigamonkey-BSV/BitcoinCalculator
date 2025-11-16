@@ -1,6 +1,7 @@
 #ifndef BITCOIN_CALCULATOR_VALUE_LEAF
 #define BITCOIN_CALCULATOR_VALUE_LEAF
 
+#include <data/tuple.hpp>
 #include <data/encoding/endian.hpp>
 #include <Diophant/value.hpp>
 #include <Diophant/values/list.hpp>

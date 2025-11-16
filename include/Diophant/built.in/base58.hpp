@@ -1,6 +1,7 @@
 #ifndef BITCOIN_CALCULATOR_BUILTIN_BASE58
 #define BITCOIN_CALCULATOR_BUILTIN_BASE58
 
+#include <data/tuple.hpp>
 #include <Diophant/built.in/string.hpp>
 
 namespace Diophant {

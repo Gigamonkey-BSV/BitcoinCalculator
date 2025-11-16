@@ -246,7 +246,21 @@ namespace Diophant {
         test_eval (R"(size '')", "0");
         test_eval (R"(size 'abcd')", "2");
 
-        // left, right, split
+        // left, right
+        test_eval (R"(left "" 0)", R"("")");
+        test_error (R"(left "" 1)");
+
+        test_eval (R"(left '' 0x)", R"('')");
+        test_error (R"(left '' 0x01)");
+
+        test_eval (R"(right "" 0)", R"("")");
+        test_error (R"(right "" 1)");
+
+        test_eval (R"(right '' 0x)", R"('')");
+        test_error (R"(right '' 0x01)");
+
+        // TODO split
+
     }
 
     TEST_F (Interpreter, Hash) {
@@ -304,6 +318,8 @@ namespace Diophant {
             R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')",
             True ());
 
+        // TODO test sign
+
         // TODO test key algebra. I think there's something wrong with that.
 
     }
@@ -324,6 +340,18 @@ namespace Diophant {
 
         test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]",
             R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+/*
+        test_eval (R"("address.decode 1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")",
+            "[Hash160 (to_public true (secret 12345)), net.Main]");
+
+        test_eval ("encode (address (Hash160 (to_public true (secret 12345))))",
+            R"(address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+
+        test_eval ("encode (address (Hash160 (to_public true (secret 12345))) net.Main)",
+            R"(address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+
+        test_eval (R"(decode (address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg"))",
+            "address (Hash160 (to_public true (secret 12345))) net.Main");
 
         // WIF
         test_eval ("WIF.encode [secret 123, net.Main, true]",
@@ -335,7 +363,51 @@ namespace Diophant {
         test_eval ("WIF.encode [secret 123]",
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
 
+        test_eval ("encode (WIF [secret 123, net.Main, true])",
+            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval ("encode (WIF [secret 123, net.Main])",
+            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval ("encode (WIF [secret 123])",
+            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval (R"(WIF.decode "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")",
+            R"([secret 123, net.Main, true])");
+
+        test_eval (R"(decode (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
+            R"(WIF (secret 123) net.Main true)");
+
+        // address from wif.
+        test_eval (R"(address (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
+            R"("13EuEN7yHdxEB187aknyNuewMDNoFinXaw")");
+
+        // TODO sign with WIF.
+
+        test_eval (
+            R"(verify (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ") )"
+            R"((SHA2_256 "Hola, babe!") )"
+            R"('3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
+            R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')",
+            "true");
+
         // HD
+        test_eval (R"(HD.secret [secret 123, SHA2_256 "chain_code"])",
+            R"(HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
+
+        // to public
+        test_eval (
+            R"(to_public (HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))"
+            R"( == HD.pubkey [to_public true (secret 123), SHA2_256 "chain_code"])", "true");
+
+        // TODO secret and pubkey from HD
+        test_eval (R"(secret (HD.secret)"
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))");
+
+        test_eval (R"(pubkey (to_public (HD.secret)"
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))");*/
+
+        // TODO derivations
 
     }
 
