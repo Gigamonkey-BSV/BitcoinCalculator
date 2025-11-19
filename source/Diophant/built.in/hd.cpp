@@ -5,7 +5,7 @@ namespace Diophant {
     namespace HD = Gigamonkey::HD;
 
     data::string encode_HD_pubkey (
-        const secp256k1::pubkey &p,
+        const data::bytes &p,
         const data::bytes &chain_code,
         Bitcoin::net network,
         data::byte depth,
@@ -14,7 +14,7 @@ namespace Diophant {
         if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
         HD::chain_code cc;
         std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
-        return HD::BIP_32::pubkey {p, cc,
+        return HD::BIP_32::pubkey {Bitcoin::pubkey {p}, cc,
             network, depth, parent, sequence}.write ();
     }
 
@@ -32,8 +32,8 @@ namespace Diophant {
             network, depth, parent, sequence}.write ();
     }
 
-    data::tuple<secp256k1::pubkey, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
-    decode_HD_pubkey (const std::string &x) {
+    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
+    decode_HD_pubkey (const data::string &x) {
         auto k = HD::BIP_32::pubkey::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
         data::bytes b (32);
@@ -42,7 +42,7 @@ namespace Diophant {
     }
 
     data::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
-    decode_HD_secret (const std::string &x) {
+    decode_HD_secret (const data::string &x) {
         auto k = HD::BIP_32::secret::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD secret";
         data::bytes b (32);
@@ -50,34 +50,85 @@ namespace Diophant {
         return {data::N (k.Secret.Value), b, k.Network, k.Depth, k.Parent, k.Sequence};
     }
 
-    data::bytes sign (const std::string &key, const data::uint256_little &digest) {
-        auto k = HD::BIP_32::secret::read (key);
-        if (!k.valid ()) throw data::exception {} << "invalid HD secret";
-        return k.sign (digest);
-    }
-
-    bool verify (const std::string &x, const data::uint256_little &digest, const data::bytes &sig) {
-        auto k = HD::BIP_32::pubkey::read (x);
-        if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
-        return k.Pubkey.verify (digest, secp256k1::signature {sig});
-    }
-
-    data::string hd_secret_to_public (const data::string &x) {
+    data::string HD_secret_to_public (const data::string &x) {
         auto k = HD::BIP_32::secret::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD secret";
         return k.to_public ().write ();
     }
 
-    data::string hd_pubkey_derive (const data::string &x, data::list<data::uint32> d) {
+    data::string HD_pubkey_derive (const data::string &x, const data::N n) {
         auto k = HD::BIP_32::pubkey::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
-        return k.derive (d).write ();
+        int32_t d;
+        try {
+            d = int32_t (n);
+        } catch (...) {
+            throw data::exception {} << "invalid derivation";
+        }
+        return k.derive ({static_cast<uint32_t> (d)}).write ();
     }
 
-    data::string hd_secret_derive (const data::string &x, data::list<data::uint32> d) {
+    data::string HD_secret_derive (const data::string &x, const data::N n) {
         auto k = HD::BIP_32::secret::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD secret";
-        return k.derive (d).write ();
+        int32_t d;
+        try {
+            d = int32_t (n);
+        } catch (...) {
+            throw data::exception {} << "invalid derivation";
+        }
+        return k.derive ({static_cast<uint32_t> (d)}).write ();
+    }
+
+    data::string HD_secret_derive_hardened (const data::string &x, const data::N n) {
+        auto k = HD::BIP_32::secret::read (x);
+        if (!k.valid ()) throw data::exception {} << "invalid HD secret";
+        int32_t d;
+        try {
+            d = int32_t (n);
+        } catch (...) {
+            throw data::exception {} << "invalid derivation";
+        }
+        return k.derive ({HD::BIP_32::harden (static_cast<uint32_t> (d))}).write ();
+    }
+
+    data::bytes sign_with_HD (const data::string &xprv, const data::bytes &digest) {
+        if (digest.size () != 32) throw data::exception {} << "invalid digest size";
+        auto k = HD::BIP_32::secret::read (xprv);
+        if (!k.valid ()) throw data::exception {} << "invalid HD secret";
+        data::uint256_little dig {};
+        std::copy (digest.begin (), digest.end (), dig.begin ());
+        return Bitcoin::secret (k).sign (dig);
+    }
+
+    bool verify_with_HD (const data::string &xpub, const data::bytes &digest, const data::bytes &sig) {
+        if (digest.size () != 32) throw data::exception {} << "invalid digest size";
+        auto k = HD::BIP_32::pubkey::read (xpub);
+        if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
+        data::uint256_little dig {};
+        std::copy (digest.begin (), digest.end (), dig.begin ());
+        return k.Pubkey.verify (dig, secp256k1::signature {sig});
+    }
+
+    data::N HD_get_secret (const data::string &xprv) {
+        auto k = HD::BIP_32::secret::read (xprv);
+        if (!k.valid ()) throw data::exception {} << "invalid HD secret";
+        return data::N (k.Secret.Value);
+    }
+
+    data::bytes HD_get_pubkey (const data::string &xpub) {
+        auto k = HD::BIP_32::pubkey::read (xpub);
+        if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
+        return k.Pubkey;
+    }
+
+    data::string address_from_HD (const data::string &x) {
+        HD::BIP_32::pubkey xpub;
+        auto xprv = HD::BIP_32::secret::read (x);
+        if (!xprv.valid ()) xpub = HD::BIP_32::pubkey::read (x);
+        else xpub = xprv.to_public ();
+        if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
+        return Bitcoin::address::decoded (xpub).encode ();
     }
 
 }

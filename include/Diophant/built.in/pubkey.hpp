@@ -10,6 +10,7 @@ namespace Diophant {
     bool pubkey_valid (const data::bytes &x);
 
     data::bytes secret_to_public (bool, const data::N &x);
+    data::bytes WIF_to_public (const data::string &x);
 
     bool pubkey_compressed (const data::bytes &x);
     bool pubkey_uncompressed (const data::bytes &x);
@@ -29,10 +30,8 @@ namespace Diophant {
 
     data::string address_from_WIF (const data::string &);
 
-    data::bytes sign (const data::N &key, const data::uint256_little &digest);
+    data::bytes sign (const data::N &key, const data::bytes &digest);
     bool verify (const data::bytes &x, const data::bytes &digest, const data::bytes &sig);
-
-    data::bytes sign_with_WIF (const data::string &wif, const data::uint256_little &digest);
 
     data::bytes cast_pubkey_to_bytes (const data::bytes &);
 

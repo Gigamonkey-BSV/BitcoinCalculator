@@ -340,18 +340,9 @@ namespace Diophant {
 
         test_eval ("address.encode [Hash160 (to_public true (secret 12345)), net.Main]",
             R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
-/*
-        test_eval (R"("address.decode 1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")",
+
+        test_eval (R"(address.decode "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")",
             "[Hash160 (to_public true (secret 12345)), net.Main]");
-
-        test_eval ("encode (address (Hash160 (to_public true (secret 12345))))",
-            R"(address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
-
-        test_eval ("encode (address (Hash160 (to_public true (secret 12345))) net.Main)",
-            R"(address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
-
-        test_eval (R"(decode (address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg"))",
-            "address (Hash160 (to_public true (secret 12345))) net.Main");
 
         // WIF
         test_eval ("WIF.encode [secret 123, net.Main, true]",
@@ -362,22 +353,10 @@ namespace Diophant {
 
         test_eval ("WIF.encode [secret 123]",
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
-
-        test_eval ("encode (WIF [secret 123, net.Main, true])",
-            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
-
-        test_eval ("encode (WIF [secret 123, net.Main])",
-            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
-
-        test_eval ("encode (WIF [secret 123])",
-            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
-
+/*
         test_eval (R"(WIF.decode "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")",
-            R"([secret 123, net.Main, true])");
-
-        test_eval (R"(decode (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
-            R"(WIF (secret 123) net.Main true)");
-
+            R"([secret 123, net.Main, true])");*/
+/*
         // address from wif.
         test_eval (R"(address (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
             R"("13EuEN7yHdxEB187aknyNuewMDNoFinXaw")");

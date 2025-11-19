@@ -65,8 +65,11 @@ namespace Diophant {
         return secp256k1::pubkey::times (y, z.Value);
     }
 
-    data::bytes sign (const data::N &key, const data::uint256_little &digest) {
-        return secp256k1::secret {data::uint256_little {key}}.sign (digest);
+    data::bytes sign (const data::N &key, const data::bytes &digest) {
+        if (digest.size () != 32) throw data::exception {} << "invalid digest size";
+        data::uint256_little dig {};
+        std::copy (digest.begin (), digest.end (), dig.begin ());
+        return secp256k1::secret {data::uint256_little {key}}.sign (dig);
     }
 
     bool verify (const data::bytes &x, const data::bytes &digest, const data::bytes &sig) {
@@ -88,11 +91,17 @@ namespace Diophant {
         return address_from_pubkey (secret_to_public (compressed, n), mainnet);
     }
 
-    data::bytes sign_with_WIF (const data::string &wif, const data::uint256_little &digest) {
-        return Bitcoin::WIF::decode (wif).sign (digest);
+    data::bytes sign_with_WIF (const data::string &wif, const data::bytes &digest) {
+        if (digest.size () != 32) throw data::exception {} << "invalid digest size";
+        data::uint256_little dig {};
+        std::copy (digest.begin (), digest.end (), dig.begin ());
+        return Bitcoin::WIF::decode (wif).sign (dig);
     }
 
     data::string address_from_WIF (const data::string &wif) {
         return Bitcoin::WIF::decode (wif).address ().encode ();
+    }
+    data::bytes WIF_to_public (const data::string &wif) {
+        return Bitcoin::WIF::decode (wif).to_public ();
     }
 }

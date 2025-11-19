@@ -19,6 +19,8 @@ namespace Diophant {
     data::string WIF_encode (const data::N &, Bitcoin::net = Bitcoin::net::Main, bool compressed = true);
     data::tuple<data::N, Bitcoin::net, bool> WIF_decode (const data::string &);
 
+    data::bytes sign_with_WIF (const data::string &wif, const data::bytes &digest);
+
 }
 
 #endif
