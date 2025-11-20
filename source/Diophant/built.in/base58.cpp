@@ -48,7 +48,6 @@ namespace Diophant {
 
     data::tuple<data::N, Bitcoin::net, bool> WIF_decode (const data::string &wif) {
         auto decoded = Bitcoin::WIF::decode (wif);
-        auto xl = decoded.Secret.Value.begin ();
         return {data::N (decoded.Secret.Value), decoded.Network, decoded.Compressed};
     }
 

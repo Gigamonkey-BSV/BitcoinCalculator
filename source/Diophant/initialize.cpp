@@ -905,22 +905,22 @@ namespace Diophant {
         m = m.define (symbol {"split"}, list::make ({bytes_type, bytes_type}),
             {{bytes_type, x}, {natural_type, y}},
             call::make (built_in_func<std::tuple<data::bytes, data::bytes>,
-                const data::bytes &, const data::N &>::make (&bytes_split), {X, Y}));
+                const data::bytes &, const data::N>::make (&bytes_split), {X, Y}));
 
         m = m.define (symbol {"split"}, list::make ({bytes_type, bytes_type}),
             {{bytes_type, x}, {integer_type, y}},
             call::make (built_in_func<std::tuple<data::bytes, data::bytes>,
-                const data::bytes &, const data::Z &>::make (&bytes_split), {X, Y}));
+                const data::bytes &, const data::Z>::make (&bytes_split), {X, Y}));
 
         m = m.define (symbol {"split"}, list::make ({string_type, string_type}),
-            {{string_type, x}, {integer_type, y}},
+            {{string_type, x}, {natural_type, y}},
             call::make (built_in_func<std::tuple<data::string, data::string>,
-                const data::string &, const data::bytes &>::make (&string_split), {X, Y}));
+                const data::string &, const data::N>::make (&string_split), {X, Y}));
 
         m = m.define (symbol {"split"}, list::make ({string_type, string_type}),
             {{string_type, x}, {scriptnum_type, y}},
             call::make (built_in_func<std::tuple<data::string, data::string>,
-                const data::string &, const data::N &>::make (&string_split), {X, Y}));
+                const data::string &, const data::N>::make (&string_split), {X, Y}));
 
         // basic string operations for scriptnum
         m = m.define (binary_operand::cat, scriptnum_type,
@@ -941,9 +941,9 @@ namespace Diophant {
 
         m = m.define (symbol {"split"}, list::make ({scriptnum_type, scriptnum_type}),
             {scriptnum_pattern (x), scriptnum_pattern (y)},
-            let::make ({{symbol {"parts"},
+            let::make ({{symbol {"part"},
                 call::make (built_in_func<std::tuple<data::bytes, data::bytes>,
-                    const data::bytes &, const data::Z &>::make (bytes_split), {X, Y})}},
+                    const data::bytes &, const data::Z>::make (bytes_split), {X, Y})}},
                 read_expression ("[scriptnum part.0, scriptnum part.1]")));
 
         // bit shifts for bytes and strings.
@@ -1642,8 +1642,7 @@ namespace Diophant {
             list::make ({secret_type, net_type, bool_type}),
             {{string_type, x}},
             let::make ({{symbol {"decoded"},
-                call::make (built_in_func<data::tuple<data::N, Bitcoin::net, bool>, const data::string &>::make (WIF_decode),
-                    {X, net::make (Bitcoin::net::Main)})}},
+                call::make (built_in_func<data::tuple<data::N, Bitcoin::net, bool>, const data::string &>::make (WIF_decode), {X})}},
                 read_expression ("[secret (decoded.0), decoded.1, decoded.2]")));
 
         // NOTE: we cannot have versions of these for HD.
@@ -1792,12 +1791,12 @@ namespace Diophant {
         auto xprv_pattern_string = [&] (Symbol z) -> pattern {
             return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("secret")}), {pattern {string_type, z}});
         };
-/*
+
         // addresses, WIFs, and HD types to strings
         m = m.define (symbol {"string"}, string_type, {address_pattern_string (x)}, X);
         m = m.define (symbol {"string"}, string_type, {WIF_pattern_string (x)}, X);
-        m = m.define (symbol {"string"}, string_type, {xpub_pattern_string (x)}, X);
-        m = m.define (symbol {"string"}, string_type, {xprv_pattern_string (x)}, X);
+        //m = m.define (symbol {"string"}, string_type, {xpub_pattern_string (x)}, X);
+        //m = m.define (symbol {"string"}, string_type, {xprv_pattern_string (x)}, X);
 
         // addresses from pubkeys and wifs.
         m = m.define (symbol {"address"}, address_type,
@@ -1814,7 +1813,7 @@ namespace Diophant {
             {WIF_pattern_string (x)},
             call::make (symbol::make ("address"), {
                 call::make (built_in_func<data::string, const data::string &>::make (address_from_WIF), {X})}));
-
+/*
         m = m.define (symbol {"address"}, address_type,
             {xpub_pattern_string (x)},
             call::make (symbol::make ("address"), {
@@ -1835,24 +1834,24 @@ namespace Diophant {
                 {call::make (built_in_func<data::bytes, const data::string &>::make (HD_get_pubkey), {X})}));
 
         // to_public for WIF and HD.
-/*
+
         m = m.define (symbol {"to_public"}, pubkey_type,
             {WIF_pattern_string (x)},
             call::make (symbol {"pubkey"}, {
                 call::make (built_in_func<data::bytes,
                     const data::string &>::make (&WIF_to_public), {X})}));
-
+/*
         m = m.define (symbol {"to_public"}, xpub_type,
             {xprv_pattern_string (x)},
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
                 {call::make (built_in_func<data::string,
-                    const data::string &>::make (&HD_secret_to_public), {X})}));
+                    const data::string &>::make (&HD_secret_to_public), {X})}));*/
 
         // WIF and HD sign and verify
         m = m.define (symbol {"sign"}, bytes_type, {WIF_pattern_string (x), {bytes_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::N &, const data::bytes &>::make (&sign), {X, Y}));
-
+/*
         m = m.define (symbol {"sign"}, bytes_type, {xprv_pattern_string (x), {bytes_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::N &, const data::bytes &>::make (&sign), {X, Y}));

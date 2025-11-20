@@ -418,17 +418,24 @@ namespace Diophant {
 
                     auto fst = first (body);
                     auto snd = first (rest (body));
-                    if (const dstruct *ds = dynamic_cast<const dstruct *> (fst.get ()); ds != nullptr)
+                    if (const dstruct *ds = dynamic_cast<const dstruct *> (fst.get ()); ds != nullptr) {
                         if (const symbol *x = dynamic_cast<const symbol *> (snd.get ()); x != nullptr)
                             for (const auto &[name, val] : ds->Values)
                                 if (*x == name) {
                                     changed = true;
                                     body = data::prepend (data::drop (body, 2), m.evaluate (val));
-                                    goto end_loop;
+                                    goto continue_evaluate_dot;
                                 }
+                    } else if (const list *ls = dynamic_cast<const list *> (fst.get ()); ls != nullptr) {
+                        if (const natural *x = dynamic_cast<const natural *> (snd.get ()); x != nullptr) {
+                            changed = true;
+                            body = data::prepend (data::drop (body, 2), m.evaluate (ls->List[size_t (x->Value)]));
+                            continue;
+                        }
+                    }
 
                     break;
-                    end_loop:
+                    continue_evaluate_dot:
                 }
 
             }
@@ -673,9 +680,9 @@ namespace Diophant {
 
         machine::symbol_defs def (Machine m, machine::symbol_defs defs, symbol x, type of, data::stack<pattern> arg, expression as) {
             return defs.insert (x, machine::definition {data::stack<mtf> {mtf {arg, casted {of, as}}}},
-                [m, x] (const machine::definition &prev, const machine::definition &next) {
+                [m, x, arg] (const machine::definition &prev, const machine::definition &next) {
                     data::exception excp {};
-                    excp << "symbol " << x << " is already defined";
+                    excp << "symbol " << x << " is already defined for args " << arg;
                     // if it's not a stack then it's an incompatible definition.
                     if (!std::holds_alternative<data::stack<mtf>> (prev)) throw excp;
                     const data::stack<mtf> ps = std::get<data::stack<mtf>> (prev);

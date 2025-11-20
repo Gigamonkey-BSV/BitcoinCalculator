@@ -11,6 +11,9 @@ endif ()
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake" CACHE STRING "Modules for CMake" FORCE)
 
+# ---------------------------------------------------------
+#  Project info
+# ---------------------------------------------------------
 project (
   BitcoinCalc
   VERSION 0.0.2
@@ -19,6 +22,69 @@ project (
 
 set (CMAKE_CXX_STANDARD 23)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ---------------------------------------------------------
+#  Build type setup (default to Debug for single-config)
+# ---------------------------------------------------------
+if (NOT CMAKE_CONFIGURATION_TYPES)   # True for Make/Ninja
+    if (NOT CMAKE_BUILD_TYPE)
+        set (CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type." FORCE)
+    endif ()
+endif ()
+
+# List of supported build types
+set(_supported_build_types
+    "Debug"
+    "Release"
+    "RelWithDebInfo"
+    "MinSizeRel"
+)
+
+set(_build_type_descriptions
+    "Debug          - For development. Enables debug symbols, sanitizers, and minimal optimization."
+    "Release        - For distribution. Full optimization, no debug symbols, no assertions."
+    "RelWithDebInfo - Optimized but retains debug info. Good for profiling and crash investigation."
+    "MinSizeRel     - Focuses on shrinking the binary. Useful for constrained environments."
+)
+
+# ---------------------------------------------------------
+#  User message explaining usage
+# ---------------------------------------------------------
+message (STATUS "")
+message (STATUS "Build type selected: ${CMAKE_BUILD_TYPE}")
+message (STATUS "To choose a different build type, configure with:")
+message (STATUS "    cmake -DCMAKE_BUILD_TYPE=<type> ..")
+message (STATUS "Available build types:")
+foreach (line IN LISTS _build_type_descriptions)
+    message(STATUS "  • ${line}")
+endforeach()
+message (STATUS "")
+
+# ---------------------------------------------------------
+#  Compiler flags
+# ---------------------------------------------------------
+
+# Base flags for each type (C and C++)
+set (CMAKE_C_FLAGS_RELEASE        "-O3 -DNDEBUG")
+set (CMAKE_CXX_FLAGS_RELEASE      "-O3 -DNDEBUG")
+
+set (CMAKE_C_FLAGS_RELWITHDEBINFO   "-O2 -g -DNDEBUG")
+set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
+
+set (CMAKE_C_FLAGS_DEBUG        "-O1 -g3 -fno-omit-frame-pointer")
+set (CMAKE_CXX_FLAGS_DEBUG      "-O1 -g3 -fno-omit-frame-pointer")
+
+# ---------------------------------------------------------
+#  Sanitizers (enabled only in Debug)
+# ---------------------------------------------------------
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message (STATUS "Enabling sanitizers for Debug build.")
+
+    set (_san_flags "-fsanitize=address,undefined")
+
+    add_compile_options (${_san_flags})
+    add_link_options (${_san_flags})
+endif ()
 
 find_package (Boost 1.86 COMPONENTS thread chrono log_setup log REQUIRED)
 # if we do not have boost
@@ -181,14 +247,3 @@ if (PACKAGE_TESTS)
   enable_testing ()
   add_subdirectory (test)
 endif ()
-
-# Default to Debug if no build type is specified
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set (CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
-endif ()
-
-# Optional: Show message
-message (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-
-set (CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-set (CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")

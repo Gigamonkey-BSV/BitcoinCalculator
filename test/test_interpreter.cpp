@@ -119,6 +119,42 @@ namespace Diophant {
         test ("nil", symbol::make ("nil"), nil::make ());
     }
 
+    TEST_F (Interpreter, Call) {
+
+        // symbols
+        test ("x", symbol::make ("x"), symbol::make ("x"));
+        test_eval ("x := 2");
+        test_eval ("x123 := 2");
+        test_error ("123 := 3");
+
+        // call that doesn't evaluate to anything
+        test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
+        test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
+
+        test ("f");
+        test ("f;");
+        test ("f _a;");
+        test_error ("f _a");
+        test ("f _a := x");
+        test ("f _a := x;");
+        test ("f _a := x; y");
+    }
+
+    TEST_F (Interpreter, Constructs) {
+
+        // lists
+        test (R"([])", list::make ({}), list::make ({}));
+        test (R"([x, 21, "hi"])");
+        test_eval (R"([x, 21, "hi"].1)", "21");
+
+        // structs
+        test_eval (R"({x -> 3, y -> 5}.x)", "3");
+
+        // lambda
+        test_eval ("(@ x y -> y x) a b", "b a");
+        test_eval ("@ x y -> y x $ a $ b", "b a");
+    }
+
     TEST_F (Interpreter, Bool) {
 
         // boolean
@@ -249,17 +285,32 @@ namespace Diophant {
         // left, right
         test_eval (R"(left "" 0)", R"("")");
         test_error (R"(left "" 1)");
+        test_eval (R"(left "ab" 0)", R"("")");
+        test_eval (R"(left "ab" 1)", R"("a")");
 
         test_eval (R"(left '' 0x)", R"('')");
         test_error (R"(left '' 0x01)");
+        test_eval (R"(left '1234' 0)", R"('')");
+        test_eval (R"(left '1234' 1)", R"('12')");
 
         test_eval (R"(right "" 0)", R"("")");
         test_error (R"(right "" 1)");
+        test_eval (R"(right "ab" 0)", R"("")");
+        test_eval (R"(right "ab" 1)", R"("b")");
 
         test_eval (R"(right '' 0x)", R"('')");
         test_error (R"(right '' 0x01)");
+        test_eval (R"(right '1234' 0)", R"('')");
+        test_eval (R"(right '1234' 1)", R"('34')");
 
-        // TODO split
+        // split
+        test_eval (R"(split "" 0)", R"(["", ""])");
+        test_eval (R"(split '' 0)", R"(['', ''])");
+        test_error (R"(split "" 1)");
+        test_eval (R"(split "ab" 0)", R"(["", "ab"])");
+        test_eval (R"(split '1234' 0)", R"(['', '1234'])");
+        test_eval (R"(split "ab" 1)", R"(["a", "b"])");
+        test_eval (R"(split '1234' 1)", R"(['12', '34'])");
 
     }
 
@@ -324,7 +375,7 @@ namespace Diophant {
 
     }
 
-    TEST_F (Interpreter, Addresses) {
+    TEST_F (Interpreter, Address) {
 
         // base 58
         test_eval ("base58.encode 1234", R"("NH")");
@@ -353,23 +404,21 @@ namespace Diophant {
 
         test_eval ("WIF.encode [secret 123]",
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
-/*
-        test_eval (R"(WIF.decode "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")",
-            R"([secret 123, net.Main, true])");*/
-/*
+
         // address from wif.
         test_eval (R"(address (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
-            R"("13EuEN7yHdxEB187aknyNuewMDNoFinXaw")");
+            R"(address "13EuEN7yHdxEB187aknyNuewMDNoFinXaw")");
 
         // TODO sign with WIF.
 
-        test_eval (
-            R"(verify (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ") )"
-            R"((SHA2_256 "Hola, babe!") )"
-            R"('3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
-            R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')",
-            "true");
+        // to_public with WIF
+        test_eval (R"(to_public (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
+            "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
 
+        // decode WIF
+        test_eval (R"(WIF.decode "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")",
+            R"([secret 123, net.Main, true])");
+/*
         // HD
         test_eval (R"(HD.secret [secret 123, SHA2_256 "chain_code"])",
             R"(HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
@@ -392,24 +441,6 @@ namespace Diophant {
 
     TEST_F (Interpreter, EverythingElse) {
 
-        // symbols
-        test ("x", symbol::make ("x"), symbol::make ("x"));
-        test_eval ("x := 2");
-        test_eval ("x123 := 2");
-        test_error ("123 := 3");
-
-        // call that doesn't evaluate to anything
-        test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
-        test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
-
-        test ("f");
-        test ("f;");
-        test ("f _a;");
-        test_error ("f _a");
-        test ("f _a := x");
-        test ("f _a := x;");
-        test ("f _a := x; y");
-
         // number formats.
         test ("0", make_natural (0), make_natural (0));
         test ("9876543", make_natural (9876543), make_natural (9876543));
@@ -417,18 +448,7 @@ namespace Diophant {
         // invalid dec number
         test_error ("0923");
 
-        // lists
-        test (R"([])", list::make ({}), list::make ({}));
-        test (R"([x, 21, "hi"])");
-
-        // structs
-        test_eval (R"({x -> 3, y -> 5}.x)", "3");
-
-        // lambda
-        test_eval ("(@ x y -> y x) a b", "b a");
-        test_eval ("@ x y -> y x $ a $ b", "b a");
-
-        // empty string
+        // strings
         test (R"("")");
         test (R"("abcd")");
         test (R"("_x2")");

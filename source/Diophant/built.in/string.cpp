@@ -229,13 +229,17 @@ namespace Diophant {
         return {data::string (first), data::string (second)};
     }
 
-    std::tuple<data::string, data::string> string_split (const data::string &x, const data::N &y) {
+    std::tuple<data::string, data::string> string_split (const data::string &x, const data::Z y) {
         if (x.size () == 0) {
             if (y == 0) return std::tuple<data::string, data::string> {};
             throw data::exception {} << "cannot take " << y << " bytes from empty string";
         }
         auto [first, second] = Bitcoin::split (x, size_t (y % x.size ()));
         return {data::string (first), data::string (second)};
+    }
+
+    std::tuple<data::string, data::string> string_split (const data::string &x, const data::N y) {
+        return string_split (x, data::Z (y));
     }
 
     std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::bytes &y) {
@@ -247,11 +251,11 @@ namespace Diophant {
         return {data::bytes (first), data::bytes (second)};
     }
 
-    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::N &y) {
+    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::N y) {
         return bytes_split (x, data::Z (y));
     }
 
-    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::Z &y) {
+    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::Z y) {
         if (x.size () == 0) {
             if (y == 0) return std::tuple<data::bytes, data::bytes> {};
             throw data::exception {} << "cannot take " << y << " bytes from empty string";

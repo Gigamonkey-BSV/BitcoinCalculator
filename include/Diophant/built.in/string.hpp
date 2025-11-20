@@ -41,8 +41,8 @@ namespace Diophant {
     data::string string_right (const data::string &x, const data::Z &y);
 
     std::tuple<data::string, data::string> string_split (const data::string &x, const data::bytes &y);
-    std::tuple<data::string, data::string> string_split (const data::string &x, const data::N &y);
-    std::tuple<data::string, data::string> string_split (const data::string &x, const data::Z &y);
+    std::tuple<data::string, data::string> string_split (const data::string &x, const data::N y);
+    std::tuple<data::string, data::string> string_split (const data::string &x, const data::Z y);
 
     data::bytes bytes_left (const data::bytes &x, const data::bytes &y);
     data::bytes bytes_right (const data::bytes &x, const data::bytes &y);
@@ -52,8 +52,8 @@ namespace Diophant {
     data::bytes bytes_right (const data::bytes &x, const data::Z &y);
 
     std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::bytes &y);
-    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::N &y);
-    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::Z &y);
+    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::N y);
+    std::tuple<data::bytes, data::bytes> bytes_split (const data::bytes &x, const data::Z y);
 
     data::bytes bytes_left_shift (const data::bytes &x, const data::bytes &y);
     data::bytes bytes_right_shift (const data::bytes &x, const data::bytes &y);

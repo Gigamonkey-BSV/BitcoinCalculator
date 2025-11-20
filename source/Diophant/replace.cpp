@@ -7,6 +7,7 @@ namespace Diophant {
 
     // return null if no replacement is made.
     expression replace_inner (Expression e, replacements rr) {
+
         const form *p = e.get ();
         if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
             const expression *r = rr.contains (*x);
@@ -36,6 +37,7 @@ namespace Diophant {
             for (const expression z : ls->List) {
                 expression replaced = replace_inner (z, rr);
                 if (replaced != expression {}) {
+                    replacement_was_made = true;
                     new_list >>= replaced;
                 } else new_list >>= z;
             }
@@ -60,7 +62,7 @@ namespace Diophant {
             }
 
             if (!replacement_was_made) return expression {};
-            return binop::make (b->Operand, new_list);
+            return binop::make (b->Operand, reverse (new_list));
         }
 
         if (const unop *u = dynamic_cast<const unop *> (p); u != nullptr) {
