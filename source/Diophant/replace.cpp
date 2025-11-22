@@ -172,6 +172,16 @@ namespace Diophant {
             return is_castable == yes ? r : mr {is_castable};
         }
 
+        if (const default_value *dv = dynamic_cast<const default_value *> (z); dv != nullptr) {
+            mr r = match (m, dv->Match, evaluated);
+            if (intuit (r) != yes) return r;
+            try {
+                return *r | dv->Default;
+            } catch (replacements::key_already_exists) {
+                return no;
+            }
+        }
+
         // note here we check the expression first .
         if (const symbol *x = dynamic_cast<const symbol *> (n); x != nullptr) {
             const symbol *y = dynamic_cast<const symbol *> (z);
@@ -189,9 +199,18 @@ namespace Diophant {
         }
 
         if (const binop *b = dynamic_cast<const binop *> (z); b != nullptr) {
-            const binop *c = dynamic_cast<const binop *> (n);
-            if (c == nullptr || b->Operand != c->Operand) return {no};
-            return m.match (b->Body, c->Body);
+            if (const binop *c = dynamic_cast<const binop *> (n); c != nullptr) {
+                if (b->Operand != c->Operand) return {no};
+                return m.match (b->Body, c->Body);
+            }
+
+            if (b->Operand == binary_operand::intuitionistic_or) {
+                for (const auto &p : b->Body) {
+                    mr r = match (m, p, evaluated);
+                    if (intuit (r) == no) continue;
+                    return r;
+                }
+            }
         }
 
         if (const call *fx = dynamic_cast<const call *> (z); fx != nullptr) {

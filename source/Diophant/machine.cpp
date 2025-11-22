@@ -700,8 +700,8 @@ namespace Diophant {
 
         machine::binary_defs def (Machine m, machine::binary_defs defs, binary_operand op, type of, pattern left, pattern right, expression as) {
             return defs.insert (op, data::stack<mtf> {mtf {{left, right}, casted {of, as}}},
-                [m, op] (const data::stack<mtf> &prev, const data::stack<mtf> &next) {
-                    return insert_def_into_stack (m, data::exception {} << "op " << op << " is already defined", prev, first (next));
+                [m, op, left, right] (const data::stack<mtf> &prev, const data::stack<mtf> &next) {
+                    return insert_def_into_stack (m, data::exception {} << "op " << op << " is already defined for " << left << " and " << right, prev, first (next));
                 });
         }
 

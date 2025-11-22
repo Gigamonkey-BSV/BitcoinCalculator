@@ -21,6 +21,8 @@ namespace Diophant {
 
     using Symbol = const symbol &;
 
+    using replacements = data::map<symbol, expression>;
+
     expression inline symbol::make (const std::string &x) {
         return expression {std::static_pointer_cast<form> (std::make_shared<symbol> (x))};
     }

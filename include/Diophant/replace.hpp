@@ -5,8 +5,6 @@
 
 namespace Diophant {
 
-    using replacements = data::map<symbol, expression>;
-
     // replace symbols in exp according to the given replacements.
     expression replace (Expression exp, replacements);
 

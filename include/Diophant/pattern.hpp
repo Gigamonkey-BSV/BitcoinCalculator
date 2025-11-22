@@ -27,6 +27,8 @@ namespace Diophant {
 
     bool operator == (Pattern, Pattern);
 
+    expression operator | (Expression, Expression);
+
     impartial_ordering compare (Machine, Pattern, Pattern);
 
     std::ostream &operator << (std::ostream &, const pattern &);
@@ -50,6 +52,15 @@ namespace Diophant {
         typed (Type r, Pattern m): Match {m}, Required {r} {}
 
         static pattern make (Type, Pattern);
+    };
+
+    struct default_value : form {
+        pattern Match;
+        replacements Default;
+        default_value (Pattern m, replacements def): Match {m}, Default {def} {}
+        static pattern make (Pattern m, replacements def) {
+            return pattern {std::static_pointer_cast<form> (std::make_shared<default_value> (m, def))};
+        }
     };
 
     // a blank pattern.

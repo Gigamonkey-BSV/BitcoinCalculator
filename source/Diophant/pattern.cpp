@@ -138,6 +138,9 @@ namespace Diophant {
         return pattern_compare (m, A, B);
     }
 
+    expression operator | (Expression a, Expression b) {
+        return binop::make (binary_operand::intuitionistic_or, {a, b});
+    }
 
 }
 

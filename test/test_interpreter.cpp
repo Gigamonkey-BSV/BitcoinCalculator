@@ -395,6 +395,26 @@ namespace Diophant {
         test_eval (R"(address.decode "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")",
             "[Hash160 (to_public true (secret 12345)), net.Main]");
 
+        // address equal
+        test_eval (R"((address [Hash160 (to_public true (secret 12345)), net.Main]) == (address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg"))",
+            "true");
+
+        test_eval (R"((address [Hash160 (to_public true (secret 12345))]) == (address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg"))",
+            "true");
+
+        // address to string
+        test_eval (R"(string (address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg"))",
+            R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+
+        test_eval (R"(string (address [Hash160 (to_public true (secret 12345)), net.Main]))",
+            R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+
+        test_eval (R"(encode (address [Hash160 (to_public true (secret 12345)), net.Main]))",
+            R"(address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
+
+        test_eval (R"(decode (address "1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg"))",
+            R"(address [Hash160 (to_public true (secret 12345)), net.Main])");
+
         // WIF
         test_eval ("WIF.encode [secret 123, net.Main, true]",
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
@@ -403,6 +423,16 @@ namespace Diophant {
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
 
         test_eval ("WIF.encode [secret 123]",
+            R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        // decode WIF
+        test_eval (R"(WIF.decode "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")",
+            R"([secret 123, net.Main, true])");
+
+        test_eval (R"(string (WIF [secret 123, net.Main, true]))",
+            R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval (R"(string (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
 
         // address from wif.
@@ -415,18 +445,31 @@ namespace Diophant {
         test_eval (R"(to_public (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
             "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
 
-        // decode WIF
-        test_eval (R"(WIF.decode "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")",
-            R"([secret 123, net.Main, true])");
+        test_eval ("to_public (WIF [secret 123, net.Main, true])",
+            "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
 /*
         // HD
-        test_eval (R"(HD.secret [secret 123, SHA2_256 "chain_code"])",
-            R"(HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
+        test_eval (R"(HD.secret.encode [secret 123, SHA2_256 "chain_code"])",
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
+
+        test_eval (R"(HD.secret.decode ")
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")",
+            R"([secret 123, SHA2_256 "chain_code"])");
 
         // to public
         test_eval (
             R"(to_public (HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))"
-            R"( == HD.pubkey [to_public true (secret 123), SHA2_256 "chain_code"])", "true");
+            R"( == HD.pubkey (HD_encode_pubkey [to_public true (secret 123), SHA2_256 "chain_code"]))", "true");
+
+        test_eval (R"(string (HD.secret )"
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
+
+        test_eval (
+            R"(string (to_public (HD.secret )"
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))",
+            R"("")");*/
+/*
 
         // TODO secret and pubkey from HD
         test_eval (R"(secret (HD.secret)"

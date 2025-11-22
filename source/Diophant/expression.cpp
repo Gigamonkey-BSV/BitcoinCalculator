@@ -86,6 +86,9 @@ namespace Diophant {
         if (const typed *y = dynamic_cast<const typed *> (n); y != nullptr)
             return o << y->Match << " : " << y->Required;
 
+        if (const default_value *dv = dynamic_cast<const default_value *> (n); dv != nullptr)
+            return o << "{" << dv->Match << " \\ " << dv->Default << "}";
+
         throw data::exception {} << "incomplete method: << expression; expression.cpp.";
     }
 

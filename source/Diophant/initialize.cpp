@@ -1609,45 +1609,16 @@ namespace Diophant {
             net::make (Bitcoin::net::Invalid));
 
         m = m.define (symbol {"address_encode"}, string_type,
-            {list::make ({pattern {bytes_type, y}, pattern {net_type, x}})},
-            call::make (built_in_func<data::string, const data::bytes &, Bitcoin::net>::make (address_encode), {Y, X}));
-
-        m = m.define (symbol {"address_encode"}, string_type,
-            {list::make ({pattern {bytes_type, y}})},
-            call::make (built_in_func<data::string, const data::bytes &, Bitcoin::net>::make (address_encode),
-                {Y, net::make (Bitcoin::net::Main)}));
+            {list::make ({pattern {bytes_type, x}, pattern {net_type, y}}) |
+                default_value::make (list::make ({pattern {bytes_type, x}}),
+                    replacements {{y, net::make (Bitcoin::net::Main)}})},
+            call::make (built_in_func<data::string, const data::bytes &, Bitcoin::net>::make (address_encode), {X, Y}));
 
         m = m.define (symbol {"address_decode"},
             list::make ({bytes_type, net_type}),
             {{string_type, x}},
             call::make (built_in_func<data::tuple<data::bytes, Bitcoin::net>, const data::string &>::make (address_decode), {X}));
 
-        m = m.define (symbol {"WIF_encode"}, string_type,
-            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
-                pattern {net_type, y}, pattern {bool_type, z}})},
-            call::make (built_in_func<data::string, const data::N &, Bitcoin::net, bool>::make (WIF_encode), {X, Y, Z}));
-
-        m = m.define (symbol {"WIF_encode"}, string_type,
-            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
-                pattern {net_type, y}})},
-            call::make (built_in_func<data::string, const data::N &, Bitcoin::net, bool>::make (WIF_encode),
-                {X, Y, leaf<bool>::make (true)}));
-
-        m = m.define (symbol {"WIF_encode"}, string_type,
-            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}})})},
-            call::make (built_in_func<data::string, const data::N &, Bitcoin::net, bool>::make (WIF_encode),
-                {X, net::make (Bitcoin::net::Main), leaf<bool>::make (true)}));
-
-        m = m.define (symbol {"WIF_decode"},
-            list::make ({secret_type, net_type, bool_type}),
-            {{string_type, x}},
-            let::make ({{symbol {"decoded"},
-                call::make (built_in_func<data::tuple<data::N, Bitcoin::net, bool>, const data::string &>::make (WIF_decode), {X})}},
-                read_expression ("[secret (decoded.0), decoded.1, decoded.2]")));
-
-        // NOTE: we cannot have versions of these for HD.
-        // instead, below we define a series of encode and decode
-        // functions for addresses, WIFs, and hd keys.
         m = m.define (binary_operand::dot,
             symbol::make ("address"),
             symbol::make ("decode"),
@@ -1658,6 +1629,60 @@ namespace Diophant {
             symbol::make ("encode"),
             symbol::make ("address_encode"));
 
+        type address_type {call::make (symbol::make ("address"), {
+            string_type |
+            list::make ({bytes_type}) |
+            list::make ({bytes_type, net_type})})};
+
+        auto address_pattern_string = [&] (Symbol z) -> pattern {
+            return call::make (symbol::make ("address"), {pattern {string_type, z}});
+        };
+
+        auto address_pattern_params = [&] (Symbol x) -> pattern {
+            return call::make (symbol::make ("address"), {
+                pattern {list::make ({bytes_type}), x} |
+                pattern {list::make ({bytes_type, net_type}), x}});
+        };
+
+        // addresses to strings
+        m = m.define (symbol {"string"}, string_type, {address_pattern_string (x)}, X);
+
+        m = m.define (symbol {"string"}, string_type, {address_pattern_params (x)},
+            call::make (symbol {"address_encode"}, {X}));
+
+        // decoded to encoded form and back.
+        m = m.define (symbol {"decode"}, address_type, {address_pattern_string (x)},
+            call::make (symbol {"address"}, {call::make (symbol {"address_decode"}, {X})}));
+
+        m = m.define (symbol {"encode"}, address_type, {address_pattern_params (x)},
+            call::make (symbol {"address"}, {call::make (symbol {"address_encode"}, {X})}));
+
+        // equality for addresses types.
+        m = m.define (binary_operand::bool_equal, bool_type,
+            pattern {address_type, x},
+            pattern {address_type, y},
+            binop::make (binary_operand::bool_equal, {call::make (symbol {"string"}, {X}), call::make (symbol {"string"}, {Y})}));
+
+        auto WIF_params_pattern = [&] (Symbol x, Symbol y, Symbol z) {
+            return list::make ({secret_pattern (x), pattern {net_type, y}, pattern {bool_type, z}}) |
+                default_value::make (list::make ({secret_pattern (x), pattern {net_type, y}}),
+                    {{z, leaf<bool>::make (true)}}) |
+                default_value::make (list::make ({secret_pattern (x)}),
+                    {{y, net::make (Bitcoin::net::Main)}, {z, leaf<bool>::make (true)}});
+        };
+
+        // WIFs
+        m = m.define (symbol {"WIF_encode"}, string_type, {WIF_params_pattern (x, y, z)},
+            call::make (built_in_func<data::string, const data::N &, Bitcoin::net, bool>::make (WIF_encode),
+                {X, Y, Z}));
+
+        m = m.define (symbol {"WIF_decode"},
+            list::make ({secret_type, net_type, bool_type}),
+            {{string_type, x}},
+            let::make ({{symbol {"decoded"},
+                call::make (built_in_func<data::tuple<data::N, Bitcoin::net, bool>, const data::string &>::make (WIF_decode), {X})}},
+                read_expression ("[secret (decoded.0), decoded.1, decoded.2]")));
+
         m = m.define (binary_operand::dot,
             symbol::make ("WIF"),
             symbol::make ("decode"),
@@ -1667,6 +1692,44 @@ namespace Diophant {
             symbol::make ("WIF"),
             symbol::make ("encode"),
             symbol::make ("WIF_encode"));
+
+        type WIF_type {call::make (symbol::make ("WIF"), {
+            string_type |
+            list::make ({secret_type}) |
+            list::make ({secret_type, net_type}) |
+            list::make ({secret_type, net_type, bool_type})})};
+
+        auto WIF_pattern_string = [&] (Symbol z) -> pattern {
+            return call::make (symbol::make ("WIF"), {pattern {string_type, z}});
+        };
+
+        auto WIF_pattern_params = [&] (Symbol x) -> pattern {
+            return call::make (symbol::make ("WIF"), {
+                pattern {list::make ({secret_type}), x} |
+                pattern {list::make ({secret_type, net_type}), x} |
+                pattern {list::make ({secret_type, net_type, bool_type}), x}});
+        };
+
+        m = m.define (symbol {"string"}, string_type, {WIF_pattern_string (x)}, X);
+
+        m = m.define (symbol {"string"}, string_type, {WIF_pattern_params (x)},
+            call::make (symbol {"WIF_encode"}, {X}));
+
+        m = m.define (binary_operand::bool_equal, bool_type,
+            pattern {WIF_type, x},
+            pattern {WIF_type, y},
+            call::make (built_in_func<bool, const data::string &, const data::string &>::make (string_equal), {X, Y}));
+
+        // to_public for WIF.
+        m = m.define (symbol {"to_public"}, pubkey_type,
+            {WIF_pattern_string (x)},
+            call::make (symbol {"pubkey"}, {
+                call::make (built_in_func<data::bytes,
+                    const data::string &>::make (&WIF_to_public), {X})}));
+
+        m = m.define (symbol {"to_public"}, pubkey_type,
+            {call::make (symbol {"WIF"}, {WIF_params_pattern (x, y, z)})},
+            read_expression ("to_public z (secret x)"));
 
         expression A = symbol::make ("a");
         expression B = symbol::make ("b");
@@ -1769,18 +1832,6 @@ namespace Diophant {
                     {X})}},
                 read_expression ("[secret (decoded.0), decoded.1, decoded.2, decoded.3, decoded.4, decoded.5]")));
 
-        type address_type {call::make (symbol::make ("address"), {string_type})};
-
-        auto address_pattern_string = [&] (Symbol z) -> pattern {
-            return call::make (symbol::make ("address"), {pattern {string_type, z}});
-        };
-
-        type WIF_type {call::make (symbol::make ("WIF"), {string_type})};
-
-        auto WIF_pattern_string = [&] (Symbol z) -> pattern {
-            return call::make (symbol::make ("WIF"), {pattern {string_type, z}});
-        };
-
         type xpub_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("pubkey")), {string_type})};
         type xprv_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("secret")), {string_type})};
 
@@ -1791,10 +1842,18 @@ namespace Diophant {
         auto xprv_pattern_string = [&] (Symbol z) -> pattern {
             return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("secret")}), {pattern {string_type, z}});
         };
+/*
+        m = m.define (binary_operand::bool_equal, bool_type,
+            xprv_pattern_string (x),
+            xprv_pattern_string (y),
+            call::make (built_in_func<bool, const data::string &, const data::string &>::make (string_equal), {X, Y}));
+
+        m = m.define (binary_operand::bool_equal, bool_type,
+            xpub_pattern_string (x),
+            xpub_pattern_string (y),
+            call::make (built_in_func<bool, const data::string &, const data::string &>::make (string_equal), {X, Y}));*/
 
         // addresses, WIFs, and HD types to strings
-        m = m.define (symbol {"string"}, string_type, {address_pattern_string (x)}, X);
-        m = m.define (symbol {"string"}, string_type, {WIF_pattern_string (x)}, X);
         //m = m.define (symbol {"string"}, string_type, {xpub_pattern_string (x)}, X);
         //m = m.define (symbol {"string"}, string_type, {xprv_pattern_string (x)}, X);
 
@@ -1832,14 +1891,6 @@ namespace Diophant {
         m = m.define (symbol {"pubkey"}, pubkey_type, {xpub_pattern_string (x)},
             call::make (symbol::make ("pubkey"),
                 {call::make (built_in_func<data::bytes, const data::string &>::make (HD_get_pubkey), {X})}));
-
-        // to_public for WIF and HD.
-
-        m = m.define (symbol {"to_public"}, pubkey_type,
-            {WIF_pattern_string (x)},
-            call::make (symbol {"pubkey"}, {
-                call::make (built_in_func<data::bytes,
-                    const data::string &>::make (&WIF_to_public), {X})}));
 /*
         m = m.define (symbol {"to_public"}, xpub_type,
             {xprv_pattern_string (x)},
