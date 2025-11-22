@@ -9,13 +9,14 @@ namespace Diophant {
         const data::bytes &chain_code,
         Bitcoin::net network,
         data::byte depth,
-        data::uint32 parent,
-        data::uint32 sequence) {
+        data::N parent,
+        data::N sequence) {
         if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
         HD::chain_code cc;
         std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
-        return HD::BIP_32::pubkey {Bitcoin::pubkey {p}, cc,
-            network, depth, parent, sequence}.write ();
+        return HD::BIP_32::pubkey {
+            Bitcoin::pubkey {p}, cc,
+            network, depth, data::uint32 (parent), data::uint32 (sequence)}.write ();
     }
 
     data::string encode_HD_secret (
@@ -23,16 +24,17 @@ namespace Diophant {
         const data::bytes &chain_code,
         Bitcoin::net network,
         data::byte depth,
-        data::uint32 parent,
-        data::uint32 sequence) {
+        data::N parent,
+        data::N sequence) {
         if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
         HD::chain_code cc;
         std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
-        return HD::BIP_32::secret {secp256k1::secret {data::uint256_little {x}}, cc,
-            network, depth, parent, sequence}.write ();
+        return HD::BIP_32::secret {
+            secp256k1::secret {data::uint256_little {x}}, cc,
+            network, depth, data::uint32 (parent), data::uint32 (sequence)}.write ();
     }
 
-    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
+    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::N, data::N>
     decode_HD_pubkey (const data::string &x) {
         auto k = HD::BIP_32::pubkey::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
@@ -41,7 +43,7 @@ namespace Diophant {
         return {k.Pubkey, b, k.Network, k.Depth, k.Parent, k.Sequence};
     }
 
-    data::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
+    data::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::N, data::N>
     decode_HD_secret (const data::string &x) {
         auto k = HD::BIP_32::secret::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD secret";

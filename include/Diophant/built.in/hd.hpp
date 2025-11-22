@@ -11,21 +11,21 @@ namespace Diophant {
         const data::bytes &chain_code,
         Bitcoin::net network,
         data::byte depth,
-        data::uint32 parent,
-        data::uint32 sequence);
+        data::N parent,
+        data::N sequence);
 
     data::string encode_HD_secret (
         const data::N &,
         const data::bytes &chain_code,
         Bitcoin::net network,
         data::byte depth,
-        data::uint32 parent,
-        data::uint32 sequence);
+        data::N parent,
+        data::N sequence);
 
-    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
+    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::N, data::N>
     decode_HD_pubkey (const data::string &);
 
-    data::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>
+    data::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::N, data::N>
     decode_HD_secret (const data::string &);
 
     data::string address_from_HD (const data::string &);

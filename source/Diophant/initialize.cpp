@@ -1731,132 +1731,6 @@ namespace Diophant {
             {call::make (symbol {"WIF"}, {WIF_params_pattern (x, y, z)})},
             read_expression ("to_public z (secret x)"));
 
-        expression A = symbol::make ("a");
-        expression B = symbol::make ("b");
-        expression C = symbol::make ("c");
-
-        Symbol a = dynamic_cast<Symbol> (*A.get ());
-        Symbol b = dynamic_cast<Symbol> (*B.get ());
-        Symbol c = dynamic_cast<Symbol> (*C.get ());
-
-        m = m.define (symbol {"HD_encode_pubkey"}, string_type,
-            {list::make ({pubkey_pattern (x),
-                pattern {bytes_type, y}, pattern {net_type, z},
-                pattern {bytes_type, a}, pattern {uint32_type, b}, pattern {uint32_type, c}})},
-            call::make (built_in_func<data::string, const data::bytes &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
-                {X, Y, Z, A, B, C}));
-
-        m = m.define (symbol {"HD_encode_secret"}, string_type,
-            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
-                pattern {bytes_type, y}, pattern {net_type, z},
-                pattern {uint8_type, a}, pattern {uint32_type, b}, pattern {uint32_type, c}})},
-            call::make (built_in_func<data::string, const data::N &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
-                {X, Y, Z, A, B, C}));
-
-        m = m.define (symbol {"HD_encode_pubkey"}, string_type,
-            {list::make ({call::make (symbol::make ("pubkey"), {pattern {bytes_type, x}}),
-                pattern {bytes_type, y}, pattern {net_type, z},
-                pattern {bytes_type, a}, pattern {uint32_type, b}})},
-            call::make (built_in_func<data::string, const data::bytes &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
-                {X, Y, Z, A, B, uint32::make (0)}));
-
-        m = m.define (symbol {"HD_encode_secret"}, string_type,
-            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}), pattern {bytes_type, y}, pattern {net_type, z},
-                pattern {uint8_type, a}, pattern {uint32_type, b}})},
-            call::make (built_in_func<data::string, const data::N &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
-                {X, Y, Z, A, B, uint32::make (0)}));
-
-        m = m.define (symbol {"HD_encode_pubkey"}, string_type,
-            {list::make ({pubkey_pattern (x),
-                pattern {bytes_type, y}, pattern {net_type, z},
-                pattern {bytes_type, a}})},
-            call::make (built_in_func<data::string, const data::bytes &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
-                {X, Y, Z, A, uint32::make (0), uint32::make (0)}));
-
-        m = m.define (symbol {"HD_encode_secret"}, string_type,
-            {list::make ({secret_pattern (x), pattern {bytes_type, y}, pattern {net_type, z},
-                pattern {uint8_type, a}})},
-            call::make (built_in_func<data::string, const data::N &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
-                {X, Y, Z, A, uint32::make (0), uint32::make (0)}));
-
-        m = m.define (symbol {"HD_encode_pubkey"}, string_type,
-            {list::make ({pubkey_pattern (x),
-                pattern {bytes_type, y}, pattern {net_type, z}})},
-            call::make (built_in_func<data::string, const data::bytes &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
-                {X, Y, Z, uint8::make (0), uint32::make (0), uint32::make (0)}));
-
-        m = m.define (symbol {"HD_encode_secret"}, string_type,
-            {list::make ({
-                call::make (symbol::make ("secret"), {pattern {natural_type, x}}),
-                pattern {bytes_type, y}, pattern {net_type, z}})},
-            call::make (built_in_func<data::string, const data::N &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
-                {X, Y, Z, uint8::make (0), uint32::make (0), uint32::make (0)}));
-
-        m = m.define (symbol {"HD_encode_pubkey"}, string_type,
-            {list::make ({pubkey_pattern (x), pattern {bytes_type, y}})},
-            call::make (built_in_func<data::string, const data::bytes &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_pubkey),
-                {X, Y, leaf<Bitcoin::net>::make (Bitcoin::net::Main),
-                    uint8::make (0), uint32::make (0), uint32::make (0)}));
-
-        m = m.define (symbol {"HD_encode_secret"}, string_type,
-            {list::make ({call::make (symbol::make ("secret"), {pattern {natural_type, x}}), pattern {bytes_type, y}})},
-            call::make (built_in_func<data::string, const data::N &,
-                const data::bytes &, Bitcoin::net, data::byte, data::uint32, data::uint32>::make (encode_HD_secret),
-                {X, Y, leaf<Bitcoin::net>::make (Bitcoin::net::Main),
-                    uint8::make (0), uint32::make (0), uint32::make (0)}));
-
-        m = m.define (symbol {"HD_decode_pubkey"},
-            list::make ({pubkey_type, bytes_type, net_type, uint8_type, uint32_type, uint32_type}),
-            {string_type, x},
-            let::make ({{symbol {"decoded"},
-                call::make (built_in_func<std::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>,
-                        const data::string &>::make (decode_HD_pubkey),
-                    {X})}},
-                read_expression ("[pubkey (decoded.0), decoded.1, decoded.2, decoded.3, decoded.4, decoded.5]")));
-
-        m = m.define (symbol {"HD_decode_secret"},
-            list::make ({secret_type, bytes_type, net_type, uint8_type, uint32_type, uint32_type}),
-            {string_type, x},
-            let::make ({{symbol {"decoded"},
-                call::make (built_in_func<std::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::uint32, data::uint32>,
-                        const data::string &>::make (decode_HD_secret),
-                    {X})}},
-                read_expression ("[secret (decoded.0), decoded.1, decoded.2, decoded.3, decoded.4, decoded.5]")));
-
-        type xpub_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("pubkey")), {string_type})};
-        type xprv_type {call::make (binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("secret")), {string_type})};
-
-        auto xpub_pattern_string = [&] (Symbol z) -> pattern {
-            return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("pubkey")}), {pattern {string_type, z}});
-        };
-
-        auto xprv_pattern_string = [&] (Symbol z) -> pattern {
-            return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("secret")}), {pattern {string_type, z}});
-        };
-/*
-        m = m.define (binary_operand::bool_equal, bool_type,
-            xprv_pattern_string (x),
-            xprv_pattern_string (y),
-            call::make (built_in_func<bool, const data::string &, const data::string &>::make (string_equal), {X, Y}));
-
-        m = m.define (binary_operand::bool_equal, bool_type,
-            xpub_pattern_string (x),
-            xpub_pattern_string (y),
-            call::make (built_in_func<bool, const data::string &, const data::string &>::make (string_equal), {X, Y}));*/
-
-        // addresses, WIFs, and HD types to strings
-        //m = m.define (symbol {"string"}, string_type, {xpub_pattern_string (x)}, X);
-        //m = m.define (symbol {"string"}, string_type, {xprv_pattern_string (x)}, X);
-
         // addresses from pubkeys and wifs.
         m = m.define (symbol {"address"}, address_type,
             {{net_type, x}, pubkey_pattern (y)},
@@ -1872,6 +1746,180 @@ namespace Diophant {
             {WIF_pattern_string (x)},
             call::make (symbol::make ("address"), {
                 call::make (built_in_func<data::string, const data::string &>::make (address_from_WIF), {X})}));
+
+        auto xprv_params_pattern = [&] (Symbol key, Symbol chain_code, Symbol network, Symbol depth, Symbol parent, Symbol sequence) {
+            return list::make ({
+                        secret_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network},
+                        pattern {natural_type, depth},
+                        pattern {natural_type, parent},
+                        pattern {natural_type, sequence}}) |
+                default_value::make (list::make ({
+                        secret_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network},
+                        pattern {natural_type, depth},
+                        pattern {natural_type, parent}}),
+                    {{sequence, natural::make (0)}}) |
+                default_value::make (list::make ({
+                        secret_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network},
+                        pattern {natural_type, depth}}),
+                    {{parent, natural::make (0)},
+                     {sequence, natural::make (0)}}) |
+                default_value::make (list::make ({
+                        secret_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network}}),
+                    {{depth, natural::make (0)},
+                     {parent, natural::make (0)},
+                     {sequence, natural::make (0)}}) |
+                default_value::make (list::make ({
+                        secret_pattern (key),
+                        pattern {bytes_type, chain_code}}),
+                    {{network, net::make (Bitcoin::net::Main)},
+                     {depth, natural::make (0)},
+                     {parent, natural::make (0)},
+                     {sequence, natural::make (0)}});
+        };
+
+        auto xpub_params_pattern = [&] (Symbol key, Symbol chain_code, Symbol network, Symbol depth, Symbol parent, Symbol sequence) {
+            return list::make ({
+                        pubkey_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network},
+                        pattern {natural_type, depth},
+                        pattern {natural_type, parent},
+                        pattern {natural_type, sequence}}) |
+                default_value::make (list::make ({
+                        pubkey_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network},
+                        pattern {natural_type, depth},
+                        pattern {natural_type, parent}}),
+                    {{sequence, natural::make (0)}}) |
+                default_value::make (list::make ({
+                        pubkey_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network},
+                        pattern {natural_type, depth}}),
+                    {{parent, natural::make (0)},
+                     {sequence, natural::make (0)}}) |
+                default_value::make (list::make ({
+                        pubkey_pattern (key),
+                        pattern {bytes_type, chain_code},
+                        pattern {net_type, network}}),
+                    {{depth, natural::make (0)},
+                     {parent, natural::make (0)},
+                     {sequence, natural::make (0)}}) |
+                default_value::make (list::make ({
+                        pubkey_pattern (key),
+                        pattern {bytes_type, chain_code}}),
+                    {{network, net::make (Bitcoin::net::Main)},
+                     {depth, natural::make (0)},
+                     {parent, natural::make (0)},
+                     {sequence, natural::make (0)}});
+        };
+
+        expression A = symbol::make ("a");
+        expression B = symbol::make ("b");
+        expression C = symbol::make ("c");
+
+        Symbol a = dynamic_cast<Symbol> (*A.get ());
+        Symbol b = dynamic_cast<Symbol> (*B.get ());
+        Symbol c = dynamic_cast<Symbol> (*C.get ());
+
+        m = m.define (symbol {"HD_encode_secret"}, string_type,
+            {xprv_params_pattern (x, y, z, a, b, c)},
+            call::make (built_in_func<data::string, const data::N &,
+                const data::bytes &, Bitcoin::net, data::byte, data::N, data::N>::make (encode_HD_secret),
+                {X, Y, Z, A, B, C}));
+
+        m = m.define (symbol {"HD_encode_pubkey"}, string_type,
+            {xpub_params_pattern (x, y, z, a, b, c)},
+            call::make (built_in_func<data::string, const data::bytes &,
+                const data::bytes &, Bitcoin::net, data::byte, data::N, data::N>::make (encode_HD_pubkey),
+                {X, Y, Z, A, B, C}));
+
+        m = m.define (symbol {"HD_decode_pubkey"},
+            list::make ({pubkey_type, bytes_type, net_type, uint8_type, natural_type, natural_type}),
+            {string_type, x},
+            let::make ({{symbol {"decoded"},
+                call::make (built_in_func<std::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::N, data::N>,
+                        const data::string &>::make (decode_HD_pubkey),
+                    {X})}},
+                read_expression ("[pubkey (decoded.0), decoded.1, decoded.2, decoded.3, decoded.4, decoded.5]")));
+
+        m = m.define (symbol {"HD_decode_secret"},
+            list::make ({secret_type, bytes_type, net_type, uint8_type, natural_type, natural_type}),
+            {string_type, x},
+            let::make ({{symbol {"decoded"},
+                call::make (built_in_func<std::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::N, data::N>,
+                        const data::string &>::make (decode_HD_secret),
+                    {X})}},
+                read_expression ("[secret (decoded.0), decoded.1, decoded.2, decoded.3, decoded.4, decoded.5]")));
+
+        auto xpub_params =
+            list::make ({pubkey_type, bytes_type}) |
+            list::make ({pubkey_type, bytes_type, net_type}) |
+            list::make ({pubkey_type, bytes_type, net_type, uint8_type}) |
+            list::make ({pubkey_type, bytes_type, net_type, uint8_type, natural_type}) |
+            list::make ({pubkey_type, bytes_type, net_type, uint8_type, natural_type, natural_type});
+
+        auto xprv_params =
+            list::make ({secret_type, bytes_type}) |
+            list::make ({secret_type, bytes_type, net_type}) |
+            list::make ({secret_type, bytes_type, net_type, uint8_type}) |
+            list::make ({secret_type, bytes_type, net_type, uint8_type, natural_type}) |
+            list::make ({secret_type, bytes_type, net_type, uint8_type, natural_type, natural_type});
+
+        type xpub_type {call::make (
+            binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("pubkey")), {string_type | xpub_params})};
+
+        type xprv_type {call::make (
+            binop::make (binary_operand::dot, symbol::make ("HD"), symbol::make ("secret")), {string_type | xprv_params})};
+
+        auto xpub_pattern_params = [&] (Symbol z) -> pattern {
+            return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("pubkey")}),
+                {pattern {xpub_params, z}});
+        };
+
+        auto xprv_pattern_params = [&] (Symbol z) -> pattern {
+            return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("secret")}),
+                {pattern {xprv_params, z}});
+        };
+
+        auto xpub_pattern_string = [&] (Symbol z) -> pattern {
+            return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("pubkey")}), {pattern {string_type, z}});
+        };
+
+        auto xprv_pattern_string = [&] (Symbol z) -> pattern {
+            return call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("secret")}), {pattern {string_type, z}});
+        };
+
+        m = m.define (symbol {"string"}, string_type, {xprv_pattern_string (x)}, X);
+
+        m = m.define (symbol {"string"}, string_type, {xprv_pattern_params (x)},
+            call::make (symbol {"HD_encode_secret"}, {X}));
+
+        m = m.define (symbol {"string"}, string_type, {xpub_pattern_string (x)}, X);
+
+        m = m.define (symbol {"string"}, string_type, {xpub_pattern_params (x)},
+            call::make (symbol {"HD_encode_pubkey"}, {X}));
+
+        m = m.define (binary_operand::bool_equal, bool_type,
+            pattern {xprv_type, x},
+            pattern {xprv_type, y},
+            read_expression ("(string x) == (string y)"));
+
+        m = m.define (binary_operand::bool_equal, bool_type,
+            pattern {xpub_type, x},
+            pattern {xpub_type, y},
+            read_expression ("(string x) == (string y)"));
+
+        // addresses, WIFs, and HD types to strings
 /*
         m = m.define (symbol {"address"}, address_type,
             {xpub_pattern_string (x)},
@@ -1882,7 +1930,7 @@ namespace Diophant {
             {xprv_pattern_string (x)},
             call::make (symbol::make ("address"), {
                 call::make (built_in_func<data::string, const data::string &>::make (address_from_HD), {X})}));*/
-
+/*
         // HD keys to regular keys
         m = m.define (symbol {"secret"}, secret_type, {xprv_pattern_string (x)},
             call::make (symbol::make ("secret"),
@@ -1890,18 +1938,18 @@ namespace Diophant {
 
         m = m.define (symbol {"pubkey"}, pubkey_type, {xpub_pattern_string (x)},
             call::make (symbol::make ("pubkey"),
-                {call::make (built_in_func<data::bytes, const data::string &>::make (HD_get_pubkey), {X})}));
+                {call::make (built_in_func<data::bytes, const data::string &>::make (HD_get_pubkey), {X})}));*/
 /*
         m = m.define (symbol {"to_public"}, xpub_type,
             {xprv_pattern_string (x)},
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
                 {call::make (built_in_func<data::string,
                     const data::string &>::make (&HD_secret_to_public), {X})}));*/
-
+/*
         // WIF and HD sign and verify
         m = m.define (symbol {"sign"}, bytes_type, {WIF_pattern_string (x), {bytes_type, y}},
             call::make (built_in_func<data::bytes,
-                const data::N &, const data::bytes &>::make (&sign), {X, Y}));
+                const data::N &, const data::bytes &>::make (&sign), {X, Y}));*/
 /*
         m = m.define (symbol {"sign"}, bytes_type, {xprv_pattern_string (x), {bytes_type, y}},
             call::make (built_in_func<data::bytes,
@@ -1935,6 +1983,14 @@ namespace Diophant {
         m = m.define (symbol {"sighash_single"}, byte::make (data::byte (3)));
         m = m.define (symbol {"sighash_anyone_can_pay"}, byte::make (data::byte (0x80)));
         m = m.define (symbol {"sighash_forkid"}, byte::make (data::byte (0x40)));
+
+        // Bitcoin signatures
+
+        // op codes
+
+        // script machine
+
+        //
 
         return m;
     }
