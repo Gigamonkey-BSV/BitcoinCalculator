@@ -58,7 +58,7 @@ namespace Diophant {
     }
 
     void parser::close_struct () {
-        Exp = prepend (first (Back), dstruct::make (reverse (data::map_thread ([] (const symbol &x, const expression &p) {
+        Exp = prepend (first (Back), dstruct::make (reverse (data::lift ([] (const symbol &x, const expression &p) {
             return data::entry<symbol, expression> {x, p};
         }, first (Symbols), Exp))));
         Symbols = rest (Symbols);
@@ -72,7 +72,7 @@ namespace Diophant {
     }
 
     void parser::let_close () {
-        Exp = prepend (first (Back), let::make (reverse (data::map_thread ([] (const symbol &x, const expression &p) {
+        Exp = prepend (first (Back), let::make (reverse (data::lift ([] (const symbol &x, const expression &p) {
             return data::entry<const symbol, expression> {x, p};
         }, first (Symbols), rest (Exp))), first (Exp)));
         Symbols = rest (Symbols);

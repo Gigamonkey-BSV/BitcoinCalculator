@@ -23,7 +23,7 @@ namespace Diophant {
                 if (rr.contains (x)) 
                     removed >>= x;
 
-            for (const symbol &x : removed) rr = data::remove (rr, x);
+            for (const symbol &x : removed) rr = remove (rr, x);
 
             if (expression replaced = replace_inner (q->Body, rr); replaced != nullptr)
                 return lambda::make (q->Args, replaced);

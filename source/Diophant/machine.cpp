@@ -716,7 +716,10 @@ namespace Diophant {
             // already and which should come before the new one.
             data::stack<mtf> back;
 
+            // the return type
             const type &of = new_def.Value.Cast;
+
+            // the arguments.
             const data::stack<pattern> args = new_def.Arguments;
 
             while (true) {
@@ -739,18 +742,21 @@ namespace Diophant {
 
                     data::stack<pattern> new_args = args;
 
-                    impartial_ordering comparison = compare (m, first (new_args), first (old_args));
+                    // The whole set of patterns does not naturally satisfy an ordering relation.
+                    // We require that all patterns defined for a symbol be partially orderable
+                    // by the subset relation. Thus, they must either be equal, be sub- or supersets
+                    // of each other, or be disjoint.
+                    impartial_ordering comparison {impartial_ordering::equal};
 
-                    // we require that the impartial
                     while (true) {
+                        comparison = comparison && compare (m, first (new_args), first (old_args));
+
                         if (comparison == impartial_ordering::disjoint) break;
 
                         new_args = data::rest (new_args);
                         old_args = data::rest (old_args);
 
                         if (data::empty (new_args)) break;
-
-                        comparison = comparison && compare (m, first (new_args), first (old_args));
                     }
 
                     if (comparison == impartial_ordering::nonempty_complements) throw excp;
@@ -761,9 +767,8 @@ namespace Diophant {
                     }
 
                     // we have to check if one definition is nil or if both are equal.
-                    if (comparison == impartial_ordering::equal) {
+                    if (comparison == impartial_ordering::equal)
                         throw excp; // for now we just throw the exception!
-                    }
                 }
 
                 back >>= first (defs);

@@ -27,12 +27,12 @@ namespace Diophant {
             return pattern_compare (m, u->Body, v->Body);
         }
 
-        if (const binop *b = dynamic_cast<const binop *> (a); b != nullptr) {
-            const binop *c = dynamic_cast<const binop *> (b);
-            if (c == nullptr) return impartial_ordering::disjoint;
-            if (b->Operand != c->Operand) return impartial_ordering::disjoint;
-            data::stack<expression> j = b->Body;
-            data::stack<expression> k = c->Body;
+        if (const binop *bi = dynamic_cast<const binop *> (a); bi != nullptr) {
+            const binop *ci = dynamic_cast<const binop *> (b);
+            if (ci == nullptr) return impartial_ordering::disjoint;
+            if (bi->Operand != ci->Operand) return impartial_ordering::disjoint;
+            data::stack<expression> j = bi->Body;
+            data::stack<expression> k = ci->Body;
             if (j.size () != k.size ()) return impartial_ordering::disjoint;
             impartial_ordering compare = impartial_ordering::equal;
             while (!empty (j)) {
@@ -62,7 +62,6 @@ namespace Diophant {
 
         if (const call *fx = dynamic_cast<const call *> (a); fx != nullptr) {
             const call *gx = dynamic_cast<const call *> (b);
-
             if (gx == nullptr) return impartial_ordering::disjoint;
             if (data::size (fx->Args) != data::size (gx->Args)) return impartial_ordering::disjoint;
 

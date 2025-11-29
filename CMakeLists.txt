@@ -33,14 +33,14 @@ if (NOT CMAKE_CONFIGURATION_TYPES)   # True for Make/Ninja
 endif ()
 
 # List of supported build types
-set(_supported_build_types
+set (_supported_build_types
     "Debug"
     "Release"
     "RelWithDebInfo"
     "MinSizeRel"
 )
 
-set(_build_type_descriptions
+set (_build_type_descriptions
     "Debug          - For development. Enables debug symbols, sanitizers, and minimal optimization."
     "Release        - For distribution. Full optimization, no debug symbols, no assertions."
     "RelWithDebInfo - Optimized but retains debug info. Good for profiling and crash investigation."

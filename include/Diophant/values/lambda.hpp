@@ -36,7 +36,7 @@ namespace Diophant {
         if (ll == nullptr || data::size (Args) != data::size (ll->Args)) return false;
         return replace (Body, data::fold ([] (auto &&rep, auto &&entry) {
             return rep.insert (entry);
-        }, replacements {}, data::map_thread ([] (auto &&left, auto &&right) {
+        }, replacements {}, data::lift ([] (auto &&left, auto &&right) {
             return data::entry<const symbol, expression> {left, symbol::make (right)};
         }, Args, ll->Args))) == ll->Body;
     }

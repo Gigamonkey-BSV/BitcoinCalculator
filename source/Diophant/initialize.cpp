@@ -1650,7 +1650,7 @@ namespace Diophant {
         m = m.define (symbol {"string"}, string_type, {address_pattern_params (x)},
             call::make (symbol {"address_encode"}, {X}));
 
-        // decoded to encoded form and back.
+        // decoded to encoded form and back for addresses.
         m = m.define (symbol {"decode"}, address_type, {address_pattern_string (x)},
             call::make (symbol {"address"}, {call::make (symbol {"address_decode"}, {X})}));
 
@@ -1746,6 +1746,13 @@ namespace Diophant {
             {WIF_pattern_string (x)},
             call::make (symbol::make ("address"), {
                 call::make (built_in_func<data::string, const data::string &>::make (address_from_WIF), {X})}));
+
+        // decoded to encoded form and back for addresses.
+        m = m.define (symbol {"decode"}, WIF_type, {WIF_pattern_string (x)},
+            call::make (symbol {"WIF"}, {call::make (symbol {"WIF_decode"}, {X})}));
+
+        m = m.define (symbol {"encode"}, WIF_type, {WIF_pattern_params (x)},
+            call::make (symbol {"WIF"}, {call::make (symbol {"WIF_encode"}, {X})}));
 
         auto xprv_params_pattern = [&] (Symbol key, Symbol chain_code, Symbol network, Symbol depth, Symbol parent, Symbol sequence) {
             return list::make ({
@@ -1919,8 +1926,24 @@ namespace Diophant {
             pattern {xpub_type, y},
             read_expression ("(string x) == (string y)"));
 
+        m = m.define (symbol {"decode"}, xprv_type, {xprv_pattern_string (x)},
+            call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("secret")}),
+                {call::make (symbol {"HD_decode_secret"}, {X})}));
+
+        m = m.define (symbol {"encode"}, xprv_type, {xprv_pattern_params (x)},
+            call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("secret")}),
+                {call::make (symbol {"HD_encode_secret"}, {X})}));
+
+        m = m.define (symbol {"decode"}, xpub_type, {xpub_pattern_string (x)},
+            call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("pubkey")}),
+                {call::make (symbol {"HD_decode_pubkey"}, {X})}));
+
+        m = m.define (symbol {"encode"}, xpub_params, {xpub_pattern_params (x)},
+            call::make (binop::make (binary_operand::dot, {symbol::make ("HD"), symbol::make ("pubkey")}),
+                {call::make (symbol {"HD_encode_pubkey"}, {X})}));
+
         // addresses, WIFs, and HD types to strings
-/*
+
         m = m.define (symbol {"address"}, address_type,
             {xpub_pattern_string (x)},
             call::make (symbol::make ("address"), {
@@ -1929,8 +1952,8 @@ namespace Diophant {
         m = m.define (symbol {"address"}, address_type,
             {xprv_pattern_string (x)},
             call::make (symbol::make ("address"), {
-                call::make (built_in_func<data::string, const data::string &>::make (address_from_HD), {X})}));*/
-/*
+                call::make (built_in_func<data::string, const data::string &>::make (address_from_HD), {X})}));
+
         // HD keys to regular keys
         m = m.define (symbol {"secret"}, secret_type, {xprv_pattern_string (x)},
             call::make (symbol::make ("secret"),
@@ -1938,19 +1961,19 @@ namespace Diophant {
 
         m = m.define (symbol {"pubkey"}, pubkey_type, {xpub_pattern_string (x)},
             call::make (symbol::make ("pubkey"),
-                {call::make (built_in_func<data::bytes, const data::string &>::make (HD_get_pubkey), {X})}));*/
-/*
+                {call::make (built_in_func<data::bytes, const data::string &>::make (HD_get_pubkey), {X})}));
+
         m = m.define (symbol {"to_public"}, xpub_type,
             {xprv_pattern_string (x)},
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
                 {call::make (built_in_func<data::string,
-                    const data::string &>::make (&HD_secret_to_public), {X})}));*/
-/*
+                    const data::string &>::make (&HD_secret_to_public), {X})}));
+
         // WIF and HD sign and verify
         m = m.define (symbol {"sign"}, bytes_type, {WIF_pattern_string (x), {bytes_type, y}},
             call::make (built_in_func<data::bytes,
-                const data::N &, const data::bytes &>::make (&sign), {X, Y}));*/
-/*
+                const data::N &, const data::bytes &>::make (&sign), {X, Y}));
+
         m = m.define (symbol {"sign"}, bytes_type, {xprv_pattern_string (x), {bytes_type, y}},
             call::make (built_in_func<data::bytes,
                 const data::N &, const data::bytes &>::make (&sign), {X, Y}));
@@ -1958,7 +1981,7 @@ namespace Diophant {
         m = m.define (symbol {"verify"}, bool_type, {xpub_pattern_string (x), {bytes_type, y}, {bytes_type, z}},
             call::make (built_in_func<bool,
                 const data::bytes &, const data::bytes &, const data::bytes &>::make (verify), {X, Y, Z}));
-
+/*
         // HD derive
         m = m.define (binary_operand::divide, xpub_type,
             xpub_pattern_string (x),

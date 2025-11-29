@@ -70,7 +70,7 @@ namespace Diophant {
         if (a == impartial_ordering::disjoint || b == impartial_ordering::disjoint) return impartial_ordering::disjoint;
 
         if (a == impartial_ordering::equal) return b;
-        if (b == impartial_ordering::equal) return b;
+        if (b == impartial_ordering::equal) return a;
 
         return impartial_ordering::nonempty_complements;
     }

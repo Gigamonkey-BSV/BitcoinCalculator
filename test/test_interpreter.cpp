@@ -429,11 +429,19 @@ namespace Diophant {
         test_eval (R"(WIF.decode "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")",
             R"([secret 123, net.Main, true])");
 
+        // WIF to string
         test_eval (R"(string (WIF [secret 123, net.Main, true]))",
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
 
         test_eval (R"(string (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
             R"("L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        // encode and decode WIF
+        test_eval ("encode (WIF [secret 123, net.Main, true])",
+            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval (R"(decode (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
+            R"(WIF ([secret 123, net.Main, true]))");
 
         // address from wif.
         test_eval (R"(address (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
@@ -448,10 +456,20 @@ namespace Diophant {
         test_eval ("to_public (WIF [secret 123, net.Main, true])",
             "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
 /*
-        // to public
+        // HD
+        test_eval (R"(encode (HD.secret [secret 123, SHA2_256 "chain_code"]))",
+            R"(HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
+
+        test_eval (R"(decode (HD.secret )"
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
+            R"(HD.secret [secret 123, SHA2_256 "chain_code"])");
+
+        // to public with HD
         test_eval (
             R"(to_public (HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))"
             R"( == HD.pubkey (HD_encode_pubkey [to_public true (secret 123), SHA2_256 "chain_code"]))", "true");
+
+        // to public
 
         test_eval (R"(string (HD.secret )"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
@@ -468,14 +486,6 @@ namespace Diophant {
 
         test_eval (R"(pubkey (to_public (HD.secret)"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))");*/
-/*
-        // HD
-        test_eval (R"(HD.secret.encode [secret 123, SHA2_256 "chain_code"])",
-            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
-
-        test_eval (R"(HD.secret.decode ")
-            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")",
-            R"([secret 123, SHA2_256 "chain_code"])");*/
 
         // TODO derivations
 
