@@ -152,7 +152,6 @@ namespace Diophant {
     using mr = match_result;
 
     mr match_inner (Machine m, Pattern patt, Expression evaluated) {
-
         const form *z = patt.get ();
         const form *n = evaluated.get ();
 
@@ -199,11 +198,6 @@ namespace Diophant {
         }
 
         if (const binop *b = dynamic_cast<const binop *> (z); b != nullptr) {
-            if (const binop *c = dynamic_cast<const binop *> (n); c != nullptr) {
-                if (b->Operand != c->Operand) return {no};
-                return m.match (b->Body, c->Body);
-            }
-
             if (b->Operand == binary_operand::intuitionistic_or) {
                 for (const auto &p : b->Body) {
                     mr r = match (m, p, evaluated);
@@ -211,13 +205,20 @@ namespace Diophant {
                     return r;
                 }
             }
+
+            if (const binop *c = dynamic_cast<const binop *> (n); c != nullptr) {
+                if (b->Operand != c->Operand) return {no};
+                return m.match (b->Body, c->Body);
+            }
         }
 
         if (const call *fx = dynamic_cast<const call *> (z); fx != nullptr) {
             const call *gx = dynamic_cast<const call *> (n);
             if (gx == nullptr) return {no};
+
             auto rf = match (m, fx->Fun, gx->Fun);
             if (intuit (rf) != yes) return rf;
+
             auto rx = m.match (data::stack<pattern> (fx->Args), gx->Args);
             if (intuit (rx) != yes) return rx;
             try {
@@ -231,10 +232,10 @@ namespace Diophant {
         if (const list *jk = dynamic_cast<const list *> (z); jk != nullptr) {
             const list *mn = dynamic_cast<const list *> (n);
             if (mn == nullptr || jk->List.size () != mn->List.size ()) return {no};
-
             replacements r {};
             auto jkl = jk->List;
             auto mno = mn->List;
+
             while (!empty (jkl)) {
                 auto rr = match (m, pattern (first (jkl)), first (mno));
                 if (intuit (rr) != yes) return rr;
@@ -261,6 +262,7 @@ namespace Diophant {
 
     // we need a machine because we need to look up definitions.
     match_result match (Machine m, Pattern patt, Expression expr) {
+        // this is why we see the evaluate message repeated so many times!
         return match_inner (m, patt, m.evaluate (expr));
     }
 

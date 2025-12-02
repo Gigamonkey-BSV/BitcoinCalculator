@@ -42,6 +42,7 @@ namespace Diophant {
         bool less_equal (Machine, Type) const;
         bool greater_equal (Machine, Type) const;
 
+        // can we cast the given expression as this type?
         intuit castable (Machine, Expression) const;
 
         static impartial_ordering compare (Machine, const node &, Type);

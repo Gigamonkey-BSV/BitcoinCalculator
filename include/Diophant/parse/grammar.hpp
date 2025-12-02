@@ -231,36 +231,37 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct identical_op : seq<ws, string<'=','=','='>, ws, identical_expr<atom>> {};
     template <typename atom> struct identical_expr : seq<bool_or_expr<atom>, opt<identical_op<atom>>> {};
 
-    struct type;
-    struct cast : seq<type, ws, one<':'>> {};
-    template <typename atom> struct cast_expr : seq<opt<seq<at<cast>, cast, ws>>, identical_expr<atom>> {};
-
-    template <typename atom> struct lambda_body : cast_expr<atom> {};
-
     template <typename atom> struct apply_expr;
     template <typename atom> struct apply_op : seq<ws, one<'$'>, ws, apply_expr<atom>> {};
     template <typename atom> struct apply_expr : seq<identical_expr<atom>, opt<apply_op<atom>>> {};
 
-    template <typename atom> struct expression : apply_expr<atom> {};
+    struct type;
+    template <typename atom> struct element_expr;
+    template <typename atom> struct element_op :
+        seq<ws, sor<string<':',':'>,
+            seq<string<'i', 's'>, not_at<symbol_char>>>, ws, type> {};
+    template <typename atom> struct element_expr : seq<apply_expr<atom>, opt<element_op<atom>>> {};
+
+    template <typename atom> struct cast_op : seq<ws, string<':', '>'>, ws, element_expr<atom>> {};
+
+    struct cast : seq<type, ws, string<':','>'>> {};
+
+    template <typename atom> struct cast_expr : sor<seq<at<cast>, type, cast_op<atom>>, element_expr<atom>> {};
+
+    template <typename atom> struct lambda_body : cast_expr<atom> {};
+
+    template <typename atom> struct expression : cast_expr<atom> {};
 
     struct atom : sor<pubkey_lit, number_lit, hex_string_lit, string_lit, symbol,
         dif<atom>, parenthetical<atom>, list<atom>, let<atom>, lambda<atom>, dstruct<atom>> {};
 
     // a pattern atom
-    struct pattom : sor<number_lit, pubkey_lit, hex_string_lit, string_lit, var,
-        symbol,
+    struct pattom : sor<number_lit, pubkey_lit, hex_string_lit, string_lit, var, symbol,
         dif<pattom>, parenthetical<pattom>, list<pattom>, let<pattom>, lambda<pattom>, dstruct<pattom>> {};
 
     struct object : expression<atom> {};
 
     struct pattern : expression<pattom> {};
-
-    template <typename atom> struct element_expr;
-    template <typename atom> struct element_op :
-        seq<ws, sor<string<'-',':'>,
-            seq<string<'i', 's'>, not_at<symbol_char>>>, ws, element_expr<atom>> {};
-
-    template <typename atom> struct element_expr : seq<apply_expr<atom>, opt<element_op<atom>>> {};
 
     template <typename atom> struct equal_expr;
     template <typename atom> struct unequal_expr;

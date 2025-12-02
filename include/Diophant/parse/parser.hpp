@@ -452,6 +452,13 @@ namespace Diophant {
             }
         };
 
+        template <typename atom> struct read_expression<tao_pegtl_grammar::cast_op<atom>> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                eval.binary (binary_operand::cast);
+            }
+        };
+
         template <> struct read_expression<tao_pegtl_grammar::such_that_op> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {

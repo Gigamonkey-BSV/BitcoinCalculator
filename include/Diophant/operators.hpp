@@ -43,9 +43,10 @@ namespace Diophant {
         equal,
         unequal,
         identical,        // ===
-        unidentical,
+        unidentical,      // =!=
         apply,
-        element,
+        element,          // ::
+        cast,
         colon,
         double_implication,
         intuitionistic_and,

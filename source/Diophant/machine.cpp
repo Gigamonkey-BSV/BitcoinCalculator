@@ -176,7 +176,7 @@ namespace Diophant {
         data::stack<expression> e,
         data::list<machine::autocast> conversions) const {
 
-            if (size (p) != size (e)) return {no};
+        if (size (p) != size (e)) return {no};
 
         match_result result {no};
         while (!empty (p)) {
@@ -286,7 +286,9 @@ namespace Diophant {
                 auto &tf = first (tfs);
                 if (size (tf.Arguments) > size (args)) return matched;
                 auto match_args = take (args, size (tf.Arguments));
+
                 match_result r = m.match (tf.Arguments, match_args);
+
                 if (intuit (r) == yes) {
                     if (intuit (matched) == yes)
                         throw data::exception {} << "no unique match: for args " << args << ", confused by patterns " <<
@@ -408,6 +410,27 @@ namespace Diophant {
                     if (size (body) == 0) return boolean::make (true);
                     if (evaluate_eq (m, defs, left, first (body))) return boolean::make (false);
                 }
+            }
+
+            if (b.Operand == binary_operand::element) {
+                if (size (b.Body) != 2) throw data::exception {":: is a non-associative operator"};
+
+                std::cout << " try to cast " << b.Body[0] << " as " << b.Body[1] << std::endl;
+                intuit x = type {b.Body[1]}.castable (m, b.Body[0]);
+
+                if (x == yes) return boolean::make (true);
+                if (x == no) return boolean::make (false);
+                return expression {};
+            }
+
+            if (b.Operand == binary_operand::cast) {
+                if (size (b.Body) != 2) throw data::exception {":> is a non-associative operator"};
+
+                std::cout << " try to cast " << b.Body[0] << " as " << b.Body[1] << std::endl;
+                intuit x = type {b.Body[0]}.castable (m, b.Body[1]);
+
+                if (x == yes) return b.Body[1];
+                throw data::exception {} << "Failed cast " << b.Body[0] << " to " << b.Body[1];
             }
 
             expression result;
@@ -537,7 +560,7 @@ namespace Diophant {
                     changed = true;
                 }
 
-                // if the head is a lambda, we can evaluate it completely lazily.
+                // if the head is a lambda, we can evaluate it lazily.
                 if (const lambda *n = dynamic_cast<const lambda *> (p); n != nullptr) {
                     if (size (n->Args) > size (args)) break;
 
@@ -701,7 +724,8 @@ namespace Diophant {
         machine::binary_defs def (Machine m, machine::binary_defs defs, binary_operand op, type of, pattern left, pattern right, expression as) {
             return defs.insert (op, data::stack<mtf> {mtf {{left, right}, casted {of, as}}},
                 [m, op, left, right] (const data::stack<mtf> &prev, const data::stack<mtf> &next) {
-                    return insert_def_into_stack (m, data::exception {} << "op " << op << " is already defined for " << left << " and " << right, prev, first (next));
+                    return insert_def_into_stack (m, data::exception {} << "op " << op <<
+                        " is already defined for " << left << " and " << right, prev, first (next));
                 });
         }
 

@@ -314,6 +314,57 @@ namespace Diophant {
 
     }
 
+
+    TEST_F (Interpreter, Types) {
+
+        // the reason this and others fail is that
+        // we don't evaluate the expression.
+        //test_eval (R"(-2 :: Z)", "true");
+        test_eval (R"(2 :: N)", "true");
+        test_eval (R"("string" :: string)", "true");
+        test_eval (R"("string" :: string | Z)", "true");
+        //test_eval (R"(-5 :: string | Z)", "true");
+        //test_eval (R"(true :: boolean)", "true");
+        test_eval (R"(-2 :: string)", "false");
+        test_eval (R"(2 :: boolean)", "false");
+        test_eval (R"("string" :: N)", "false");
+        test_eval (R"(true :: Z)", "false");
+        //test_eval (R"(false :: string | Z)", "false");
+
+        //test_eval (R"(-2 :> Z)");
+        test_eval (R"(2 :> N)");
+        test_eval (R"("string" :> string)");
+        test_eval (R"("string" :> string | Z)");
+        //test_eval (R"(-5 :> string | Z)");
+        //test_eval (R"(true :> boolean)");
+        test_error (R"(-2 :> string)");
+        test_error (R"(2 :> boolean)");
+        test_error (R"("string" :> N)");
+        test_error (R"(true :> Z)");
+        //test_error (R"(false :> string | Z)");
+    }
+/*
+    TEST_F (Interpreter, Functions) {
+        test_eval (R"(square x := x * x; [square 0, square 1, square -1, square 2, square -2, square "up"])",
+            R"([0, 1, 1, 4, 4, "up" * "up"])");
+
+        test_eval (R"(z x:N := x * x; [z 0, z 1, z 2, z "up"])", R"([0, 1, 4, z "up"])");
+
+        test_eval (R"(double x:N := x * x; double x:string := x <> x; [double 0, double 1, double 2, double "up"])",
+            R"([0, 1, 4, "upup"])");
+    }
+
+    TEST_F (Interpreter, Variables) {
+        // error because x is an undefined variable.
+        test_error ("x; x");
+        // not an error because y is just a symbol.
+        test_eval ("y");
+        // error because y is a symbol.
+        test_eval ("y := 2;");
+
+        test_eval ("lever := on | off; is_on [_on] := true; is_on[_off] := false; lever -> bool :: is_on", "true");
+    }*/
+
     TEST_F (Interpreter, Hash) {
 
         // hash functions
@@ -455,6 +506,8 @@ namespace Diophant {
 
         test_eval ("to_public (WIF [secret 123, net.Main, true])",
             "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
+
+        // the reason these don't work is that we don't yet evaluate or types.
 /*
         // HD
         test_eval (R"(encode (HD.secret [secret 123, SHA2_256 "chain_code"]))",

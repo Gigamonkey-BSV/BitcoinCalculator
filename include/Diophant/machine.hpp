@@ -19,6 +19,7 @@ namespace Diophant {
 
     using program = data::stack<statement>;
 
+    // TODO get rid of this. We are not going to use this.
     struct casted final : node {
         type Cast;
 

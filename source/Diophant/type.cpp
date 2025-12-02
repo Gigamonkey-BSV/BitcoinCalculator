@@ -55,6 +55,7 @@ namespace Diophant {
 
     // note: this is not the final version.
     impartial_ordering type::compare (Machine m, const node &a, Type b) {
+        std::cout << " compare to type " << b << std::endl;
         const form *y = b.get ();
 
         if (y == nullptr) return impartial_ordering::subset;
@@ -93,12 +94,12 @@ namespace Diophant {
         if (this->get () == nullptr) return yes;
         if (e == nullptr) return unknown;
 
-        // in this case we should try match rather than cast.
         const node *en = dynamic_cast<const node *> (e);
         if (en == nullptr)
             throw data::exception {} << "Invalid cast.";
 
         const node *tn = dynamic_cast<const node *> (t);
+        // in this case we should try match rather than cast.
         if (tn == nullptr) return match (m, pattern (*this), E);
 
         if (const value *v = dynamic_cast<const value *> (e); v != nullptr)
@@ -147,12 +148,35 @@ namespace Diophant {
             return yes;
         }
 
-        intuit cast_binop (const machine &, const node &t, const binop &E) {
-            throw data::exception {} << "cast_binop: ";
+        intuit cast_binop (const machine &m, const node &t, const binop &E) {
+            const binop *bn = dynamic_cast<const binop *> (&t);
+            if (bn == nullptr) return no;
+
+            if (bn->Operand != E.Operand) return no;
+
+            auto ba = bn->Body;
+            auto bb = E.Body;
+            if (size (ba) != size (bb)) return no;
+
+            while (size (ba) > 0) {
+                if (!type {first (ba)}.castable (m, first (bb))) return no;
+
+                ba = rest (ba);
+                bb = rest (bb);
+            }
+
+            return yes;
         }
 
-        intuit cast_unop (const machine &, const node &t, const unop &E) {
-            throw data::exception {} << "cast_unop: ";
+        intuit cast_unop (const machine &m, const node &t, const unop &E) {
+            const unop *un = dynamic_cast<const unop *> (&t);
+            if (un == nullptr) return no;
+
+            if (un->Operand != E.Operand) return no;
+
+            if (!type {un->Body}.castable (m, E.Body)) return no;
+
+            return yes;
         }
     }
 
