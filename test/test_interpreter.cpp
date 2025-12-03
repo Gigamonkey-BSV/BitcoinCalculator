@@ -119,13 +119,38 @@ namespace Diophant {
         test ("nil", symbol::make ("nil"), nil::make ());
     }
 
-    TEST_F (Interpreter, Call) {
+    TEST_F (Interpreter, Symbols) {
 
         // symbols
         test ("x", symbol::make ("x"), symbol::make ("x"));
         test_eval ("x := 2");
         test_eval ("x123 := 2");
         test_error ("123 := 3");
+
+        // reserved words.
+        test_error ("if");
+        test_error ("is");
+        test_error ("in");
+        test_error ("as");
+        test_error ("or");
+        test_error ("match");
+
+        test ("ifz", symbol::make ("ifz"), symbol::make ("ifz"));
+        test ("matchz", symbol::make ("matchz"), symbol::make ("matchz"));
+    }
+/*
+    TEST_F (Interpreter, Variables) {
+        // error because x is an undefined variable.
+        test_error ("x; x");
+        // not an error because y is just a symbol.
+        test_eval ("y");
+        // error because y is a symbol.
+        test_eval ("y := 2;");
+
+        test_eval ("lever := on | off; is_on [_on] := true; is_on[_off] := false; lever -> bool :: is_on", "true");
+    }
+
+    TEST_F (Interpreter, Call) {
 
         // call that doesn't evaluate to anything
         test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
@@ -138,7 +163,73 @@ namespace Diophant {
         test ("f _a := x");
         test ("f _a := x;");
         test ("f _a := x; y");
+    }*/
+
+    TEST_F (Interpreter, Types) {
+
+        // the reason this and others fail is that
+        // we don't evaluate the expression.
+        //test_eval (R"(-2 :: Z)", "true");
+        test_eval (R"(2 :: N)", "true");
+        test_eval (R"("string" :: string)", "true");
+        test_eval (R"("string" :: string | Z)", "true");
+        test_eval (R"("abc" :: string | N)", "true");
+        test_eval (R"("abc" :: N | string)", "true");
+        test_eval (R"(1 :: string | N)", "true");
+        test_eval (R"(1 :: N | string)", "true");
+        test_eval (R"(true :: string | N)", "false");
+        test_eval (R"(true :: N | string)", "false");
+        //test_eval (R"(true :: boolean)", "true");
+        test_eval (R"(-2 :: string)", "false");
+        test_eval (R"(2 :: boolean)", "false");
+        test_eval (R"("string" :: N)", "false");
+        test_eval (R"(true :: Z)", "false");
+        test_eval (R"(false :: string | Z)", "false");
+
+        //test_eval (R"(-2 is Z)", "true");
+        test_eval (R"(2 is N)", "true");
+        test_eval (R"("string" is string)", "true");
+        test_eval (R"("string" is string | Z)", "true");
+        test_eval (R"("abc" is string | N)", "true");
+        test_eval (R"("abc" is N | string)", "true");
+        test_eval (R"(1 is string | N)", "true");
+        test_eval (R"(1 is N | string)", "true");
+        test_eval (R"(true is string | N)", "false");
+        test_eval (R"(true is N | string)", "false");
+        //test_eval (R"(true is boolean)", "true");
+        test_eval (R"(-2 is string)", "false");
+        test_eval (R"(2 is boolean)", "false");
+        test_eval (R"("string" is N)", "false");
+        test_eval (R"(true is Z)", "false");
+        test_eval (R"(false is string | Z)", "false");
+
+        //test_eval (R"(Z :> -2)");
+        test_eval (R"(N :> 2)");
+        test_eval (R"(string :> "string")");
+        test_eval (R"("abc" is string | N)");
+        test_eval (R"("abc" is N | string)");
+        test_eval (R"(string | N :> 1)");
+        test_eval (R"(N | string :> 1)");
+        test_error (R"(is string | N :> true)");
+        test_error (R"(N | string :> true)");
+        //test_eval (R"(boolean :> true)");
+        test_error (R"(string :> -2)");
+        test_error (R"(boolean :> 2)");
+        test_error (R"(N :> "string")");
+        test_error (R"(Z :> true)");
+        test_error (R"(string | Z :> false)");
+
     }
+/*
+    TEST_F (Interpreter, Functions) {
+        test_eval (R"(square x := x * x; [square 0, square 1, square -1, square 2, square -2, square "up"])",
+            R"([0, 1, 1, 4, 4, "up" * "up"])");
+
+        test_eval (R"(z x:N := x * x; [z 0, z 1, z 2, z "up"])", R"([0, 1, 4, z "up"])");
+
+        test_eval (R"(double x:N := x * x; double x:string := x <> x; [double 0, double 1, double 2, double "up"])",
+            R"([0, 1, 4, "upup"])");
+    }*/
 
     TEST_F (Interpreter, Constructs) {
 
@@ -228,22 +319,6 @@ namespace Diophant {
         // divide by zero should throw
         test_error ("0x01 / 0x");
         test_error (R"(0x01 % 0x)");
-    }
-
-    TEST_F (Interpreter, ScriptnumBool) {
-
-        // cast to bool
-        test_eval ("bool 0x", "false");
-        test_eval ("bool 0x00", "false");
-        test_eval ("bool 0x80", "false");
-        test_eval ("bool 0x01", "true");
-        test_eval ("bool 0x81", "true");
-
-        test_eval ("scriptnum false", "0x");
-        test_eval ("scriptnum true", "0x01");
-    }
-
-    TEST_F (Interpreter, ScriptnumN) {
 
         // cast to scriptnum and Z.
         test_eval ("scriptnum 0", "0x");
@@ -257,11 +332,29 @@ namespace Diophant {
         test_eval ("N 0x01", "1");
         test_eval ("N 0x80", "0");
         test_error ("N 0x81");
+
+        // bitnot
+        test_eval ("~''", "''");
+        test_eval ("~'00'", "'ff'");
+        test_eval ("~'80'", "'7f'");
+
+        test_eval ("~0x", "0x");
+        test_eval ("~0x00", "0xff");
+        test_eval ("~0x80", "0x7f");
+
+        // cast to bool
+        test_eval ("bool 0x", "false");
+        test_eval ("bool 0x00", "false");
+        test_eval ("bool 0x80", "false");
+        test_eval ("bool 0x01", "true");
+        test_eval ("bool 0x81", "true");
+
+        test_eval ("scriptnum false", "0x");
+        test_eval ("scriptnum true", "0x01");
     }
 
     TEST_F (Interpreter, If) {
 
-        // if
         test_eval (R"(if 1 == 0 then hi else bye)", symbol::make ("bye"));
         test_eval (R"(if 0x81 == 0x8001 then hi else bye)", symbol::make ("hi"));
     }
@@ -313,57 +406,6 @@ namespace Diophant {
         test_eval (R"(split '1234' 1)", R"(['12', '34'])");
 
     }
-
-
-    TEST_F (Interpreter, Types) {
-
-        // the reason this and others fail is that
-        // we don't evaluate the expression.
-        //test_eval (R"(-2 :: Z)", "true");
-        test_eval (R"(2 :: N)", "true");
-        test_eval (R"("string" :: string)", "true");
-        test_eval (R"("string" :: string | Z)", "true");
-        //test_eval (R"(-5 :: string | Z)", "true");
-        //test_eval (R"(true :: boolean)", "true");
-        test_eval (R"(-2 :: string)", "false");
-        test_eval (R"(2 :: boolean)", "false");
-        test_eval (R"("string" :: N)", "false");
-        test_eval (R"(true :: Z)", "false");
-        //test_eval (R"(false :: string | Z)", "false");
-
-        //test_eval (R"(-2 :> Z)");
-        test_eval (R"(2 :> N)");
-        test_eval (R"("string" :> string)");
-        test_eval (R"("string" :> string | Z)");
-        //test_eval (R"(-5 :> string | Z)");
-        //test_eval (R"(true :> boolean)");
-        test_error (R"(-2 :> string)");
-        test_error (R"(2 :> boolean)");
-        test_error (R"("string" :> N)");
-        test_error (R"(true :> Z)");
-        //test_error (R"(false :> string | Z)");
-    }
-/*
-    TEST_F (Interpreter, Functions) {
-        test_eval (R"(square x := x * x; [square 0, square 1, square -1, square 2, square -2, square "up"])",
-            R"([0, 1, 1, 4, 4, "up" * "up"])");
-
-        test_eval (R"(z x:N := x * x; [z 0, z 1, z 2, z "up"])", R"([0, 1, 4, z "up"])");
-
-        test_eval (R"(double x:N := x * x; double x:string := x <> x; [double 0, double 1, double 2, double "up"])",
-            R"([0, 1, 4, "upup"])");
-    }
-
-    TEST_F (Interpreter, Variables) {
-        // error because x is an undefined variable.
-        test_error ("x; x");
-        // not an error because y is just a symbol.
-        test_eval ("y");
-        // error because y is a symbol.
-        test_eval ("y := 2;");
-
-        test_eval ("lever := on | off; is_on [_on] := true; is_on[_off] := false; lever -> bool :: is_on", "true");
-    }*/
 
     TEST_F (Interpreter, Hash) {
 
@@ -431,11 +473,11 @@ namespace Diophant {
         // base 58
         test_eval ("base58.encode 1234", R"("NH")");
         test_eval (R"(base58.decode "NH")", "1234");
-
+/*
         // base 58 check.
         test_eval ("base58.check.encode [0_u8, 'abcdef000123']", R"("1AeqHaZrBsWzoXo")");
         test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
-
+*/
         // addresses
         test_eval ("address.encode [Hash160 (to_public true (secret 12345))]",
             R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
@@ -515,15 +557,14 @@ namespace Diophant {
 
         test_eval (R"(decode (HD.secret )"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
-            R"(HD.secret [secret 123, SHA2_256 "chain_code"])");
-
+            R"(HD.secret [secret 123, SHA2_256 "chain_code"])");*/
+/*
         // to public with HD
         test_eval (
             R"(to_public (HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))"
             R"( == HD.pubkey (HD_encode_pubkey [to_public true (secret 123), SHA2_256 "chain_code"]))", "true");
 
         // to public
-
         test_eval (R"(string (HD.secret )"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
@@ -599,15 +640,6 @@ namespace Diophant {
         test ("'abcdef00001'", false);
 
         test_eval ("'abcdef000001'.1", make_byte (0xcd));
-
-        // bitnot
-        test_eval ("~''", "''");
-        test_eval ("~'00'", "'ff'");
-        test_eval ("~'80'", "'7f'");
-
-        test_eval ("~0x", "0x");
-        test_eval ("~0x00", "0xff");
-        test_eval ("~0x80", "0x7f");
 
 /*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5

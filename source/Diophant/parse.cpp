@@ -29,11 +29,9 @@ namespace Diophant {
         expression x = first (Exp);
         expression z = first (rest (Exp));
         if (is_associative (op)) {
-            if (const auto *bb = dynamic_cast<const binop *> (x.get ()); bb != nullptr) {
-                if (bb->Operand == op) {
-                    Exp = prepend (rest (rest (Exp)), binop::make (op, prepend (bb->Body, z)));
-                    return;
-                }
+            if (const auto *bb = dynamic_cast<const binop *> (x.get ()); bb != nullptr && bb->Operand == op) {
+                Exp = prepend (rest (rest (Exp)), binop::make (op, prepend (bb->Body, z)));
+                return;
             }
         }
 
@@ -41,11 +39,11 @@ namespace Diophant {
     }
 
     void parser::complete_lambda () {
-
         // remove all previous expressions from the stack.
         // This is done in case we start to read one lambda
         // format and then find out that it isn't valid and
         // read the other one instead.
+        // NOTE: that shouldn't happen if the grammar is defined correctly.
         Exp = prepend (first (Back), lambda::make (reverse (first (Symbols)), first (Exp)));
         Symbols = rest (Symbols);
         Back = rest (Back);

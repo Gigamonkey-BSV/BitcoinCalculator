@@ -44,9 +44,9 @@ namespace Diophant {
         unequal,
         identical,        // ===
         unidentical,      // =!=
-        apply,
         element,          // ::
         cast,
+        apply,
         colon,
         double_implication,
         intuitionistic_and,
@@ -91,8 +91,10 @@ namespace Diophant {
             case binary_operand::equal : return "=";
             case binary_operand::unequal : return "/=";
             case binary_operand::identical : return "===";
+            case binary_operand::unidentical : return "=!=";
             case binary_operand::apply : return "$";
-            case binary_operand::element : return "-:";
+            case binary_operand::element : return "::";
+            case binary_operand::cast : return ":>";
             case binary_operand::double_implication : return "<==>";
             case binary_operand::intuitionistic_and : return "^";
             case binary_operand::intuitionistic_or : return "|";
@@ -104,7 +106,9 @@ namespace Diophant {
     }
 
     constexpr bool inline is_associative (binary_operand x) {
-        return x != binary_operand::element && x >= binary_operand::dot && x <= binary_operand::define && (x <= binary_operand::times || x > binary_operand::divmod);
+        return x != binary_operand::element && x != binary_operand::cast &&
+            x > binary_operand::dot && x <= binary_operand::define &&
+            (x <= binary_operand::times || x > binary_operand::divmod);
     }
 
     std::ostream inline &operator << (std::ostream &o, unary_operand u) {

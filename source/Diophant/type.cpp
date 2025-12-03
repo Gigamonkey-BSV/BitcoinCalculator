@@ -55,7 +55,6 @@ namespace Diophant {
 
     // note: this is not the final version.
     impartial_ordering type::compare (Machine m, const node &a, Type b) {
-        std::cout << " compare to type " << b << std::endl;
         const form *y = b.get ();
 
         if (y == nullptr) return impartial_ordering::subset;
@@ -101,6 +100,21 @@ namespace Diophant {
         const node *tn = dynamic_cast<const node *> (t);
         // in this case we should try match rather than cast.
         if (tn == nullptr) return match (m, pattern (*this), E);
+
+        // check for alternatives
+        if (const binop *bt = dynamic_cast<const binop *> (tn); bt != nullptr) {
+            if (bt->Operand == binary_operand::intuitionistic_or) {
+                for (const auto &x : bt->Body) {
+                    intuit casted = type {x}.castable (m, E);
+                    if (casted == no) continue;
+                    return casted;
+                }
+            } else if (bt->Operand == binary_operand::intuitionistic_implies) {
+                throw data::method::unimplemented {"cast to => "};
+            } else if (bt->Operand == binary_operand::intuitionistic_and) {
+                throw data::method::unimplemented {"cast to & "};
+            }
+        }
 
         if (const value *v = dynamic_cast<const value *> (e); v != nullptr)
             return v->cast (m, *tn) ? yes : no;

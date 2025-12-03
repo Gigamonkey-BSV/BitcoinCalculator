@@ -226,6 +226,7 @@ namespace Diophant {
         expression evaluate_let (const machine &m, const let &);
 
         expression evaluate_round (const machine &m, const node &n) {
+
             if (const symbol *x = dynamic_cast<const symbol *> (&n); x != nullptr)
                 return evaluate_symbol (m, *x);
 
@@ -415,7 +416,6 @@ namespace Diophant {
             if (b.Operand == binary_operand::element) {
                 if (size (b.Body) != 2) throw data::exception {":: is a non-associative operator"};
 
-                std::cout << " try to cast " << b.Body[0] << " as " << b.Body[1] << std::endl;
                 intuit x = type {b.Body[1]}.castable (m, b.Body[0]);
 
                 if (x == yes) return boolean::make (true);
@@ -426,7 +426,6 @@ namespace Diophant {
             if (b.Operand == binary_operand::cast) {
                 if (size (b.Body) != 2) throw data::exception {":> is a non-associative operator"};
 
-                std::cout << " try to cast " << b.Body[0] << " as " << b.Body[1] << std::endl;
                 intuit x = type {b.Body[0]}.castable (m, b.Body[1]);
 
                 if (x == yes) return b.Body[1];
