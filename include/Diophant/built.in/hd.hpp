@@ -41,7 +41,7 @@ namespace Diophant {
 
     data::string address_from_HD (const data::string &);
 
-    data::string address_from_HD (
+    data::tuple<data::bytes, Bitcoin::net> address_from_HD (
         const data::N &,
         const data::bytes &chain_code,
         Bitcoin::net network,
@@ -49,7 +49,7 @@ namespace Diophant {
         const data::N &parent,
         const data::N &sequence);
 
-    data::string address_from_HD (
+    data::tuple<data::bytes, Bitcoin::net> address_from_HD (
         const data::bytes &,
         const data::bytes &chain_code,
         Bitcoin::net network,
@@ -57,15 +57,12 @@ namespace Diophant {
         const data::N &parent,
         const data::N &sequence);
 
-    data::string HD_pubkey_derive (const data::string &, const data::N);
-    data::string HD_secret_derive (const data::string &, const data::N);
-    data::string HD_secret_derive_hardened (const data::string &, const data::N);
+    data::string HD_pubkey_derive (const data::string &, const data::N &);
+    data::string HD_secret_derive (const data::string &, const data::N &);
+    data::string HD_secret_derive_hardened (const data::string &, const data::N &);
 
     data::bytes sign_with_HD (const data::string &xprv, const data::bytes &digest);
     bool verify_with_HD (const data::string &xpub, const data::bytes &digest, const data::bytes &sig);
-
-    data::N HD_get_secret (const data::string &xprv);
-    data::bytes HD_get_pubkey (const data::string &xpub);
 
 }
 

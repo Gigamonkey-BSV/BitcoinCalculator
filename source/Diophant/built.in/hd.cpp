@@ -87,7 +87,7 @@ namespace Diophant {
         return Bitcoin::address::decoded (xpub).encode ();
     }
 
-    data::string address_from_HD (
+    data::tuple<data::bytes, Bitcoin::net> address_from_HD (
         const data::N &x,
         const data::bytes &chain_code,
         Bitcoin::net network,
@@ -102,10 +102,11 @@ namespace Diophant {
             secp256k1::secret {data::uint256_little {x}}, cc,
             network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.to_public ();
         if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
-        return Bitcoin::address::decoded (xpub).encode ();
+        auto addr = Bitcoin::address::decoded (xpub);
+        return {addr.Digest, addr.Network};
     }
 
-    data::string address_from_HD (
+    data::tuple<data::bytes, Bitcoin::net> address_from_HD (
         const data::bytes &pubkey,
         const data::bytes &chain_code,
         Bitcoin::net network,
@@ -119,8 +120,9 @@ namespace Diophant {
         auto xpub = HD::BIP_32::pubkey {
             secp256k1::pubkey {pubkey}, cc, network,
             data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)};
-        if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
-        return Bitcoin::address::decoded (xpub).encode ();
+            if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
+            auto addr = Bitcoin::address::decoded (xpub);
+            return {addr.Digest, addr.Network};
     }
 
     data::string HD_pubkey_derive (const data::string &x, const data::N n) {

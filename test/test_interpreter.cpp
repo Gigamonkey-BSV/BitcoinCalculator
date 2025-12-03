@@ -552,8 +552,6 @@ namespace Diophant {
         test_eval ("to_public (WIF [secret 123, net.Main, true])",
             "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
 
-        // the reason these don't work is that we don't yet evaluate or types.
-
         // HD
         test_eval (R"(encode (HD.secret [secret 123, SHA2_256 "chain_code"]))",
             R"(HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
@@ -571,7 +569,7 @@ namespace Diophant {
             R"(string (HD.pubkey )"
             R"("xpub661MyMwAqRbcF87XSeG9urAAL2EeLeJ1PP33YxkTV8TFevAXga9jQUKDoFd4si53SFqkN6iBaSEnFRX7Xe4ghSM3KdevekFjLGPLetVpsUg"))",
             R"("xpub661MyMwAqRbcF87XSeG9urAAL2EeLeJ1PP33YxkTV8TFevAXga9jQUKDoFd4si53SFqkN6iBaSEnFRX7Xe4ghSM3KdevekFjLGPLetVpsUg")");
-/*
+
         test_eval (R"(string (HD.secret )"
             R"([secret 123, SHA2_256 "chain_code"]))",
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
@@ -579,20 +577,68 @@ namespace Diophant {
         test_eval (
             R"(string (HD.pubkey )"
             R"([to_public true (secret 123), SHA2_256 "chain_code"]))",
-            R"("xpub661MyMwAqRbcF87XSeG9urAAL2EeLeJ1PP33YxkTV8TFevAXga9jQUKDoFd4si53SFqkN6iBaSEnFRX7Xe4ghSM3KdevekFjLGPLetVpsUg")");*/
-
-        // TODO test HD equality.
+            R"("xpub661MyMwAqRbcF87XSeG9urAAL2EeLeJ1PP33YxkTV8TFevAXga9jQUKDoFd4si53SFqkN6iBaSEnFRX7Xe4ghSM3KdevekFjLGPLetVpsUg")");
 
         // to public
         test_eval (
             R"(to_public (HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))"
             R"( == HD.pubkey (HD_encode_pubkey [to_public true (secret 123), SHA2_256 "chain_code"]))", "true");
-/*
+
         test_eval (
             R"(to_public (HD.secret [secret 123, SHA2_256 "chain_code"]))"
-            R"( == HD.pubkey [to_public true (secret 123), SHA2_256 "chain_code", net.Main, 0, 0, 0])", "true");
+            R"( == HD.pubkey [to_public true (secret 123), SHA2_256 "chain_code"])", "true");
 
-        // TODO addresses
+        // addresses
+        test_eval (
+            R"(address (HD.secret [secret 123, SHA2_256 "nyuub"]))",
+            R"(address ['1891424275f9a324554fe98a71a7deb80349efe6', net.Main])");
+
+        test_eval (
+            R"(address (encode (HD.secret [secret 123, Hash256 "zoobnoob"])))",
+            R"(address "13EuEN7yHdxEB187aknyNuewMDNoFinXaw")");
+
+        test_eval (
+            R"(address (to_public (HD.secret [secret 123, SHA2_256 "nyuub"])))",
+            R"(address ['1891424275f9a324554fe98a71a7deb80349efe6', net.Main])");
+
+        test_eval (
+            R"(address (encode (to_public (HD.secret [secret 123, Hash256 "zoobnoob"]))))",
+            R"(address "13EuEN7yHdxEB187aknyNuewMDNoFinXaw")");
+
+        // pubkey
+        test_eval (
+            R"(pubkey (HD.secret [secret 123, SHA2_256 "nyuub"]))",
+            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+
+        test_eval (
+            R"(pubkey (encode (HD.secret [secret 123, Hash256 "zoobnoob"])))",
+            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+
+        test_eval (
+            R"(pubkey (to_public (HD.secret [secret 123, SHA2_256 "nyuubcube"])))",
+            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+
+        test_eval (
+            R"(pubkey (encode (to_public (HD.secret [secret 123, Hash256 "wfdldldf"]))))",
+            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+
+        test_eval (
+            R"(secret (HD.secret [secret 123, SHA2_256 "nyuub"]))",
+            R"(secret 123)");
+
+        test_eval (
+            R"(secret (encode (HD.secret [secret 123, Hash256 "zoobnoob"])))",
+            R"(secret 123)");
+
+        // WIF from HD
+        test_eval (
+            R"(WIF (HD.secret [secret 123, SHA2_256 "nyuub"]) == WIF [secret 123])", "true");
+
+        test_eval (
+            R"(WIF (encode (HD.secret [secret 123, Hash256 "zoobnoob"])) == WIF [secret 123])", "true");
+
+        //test_eval ();
+/*
         // secret and pubkey from HD keys.
         test_eval (R"(secret (HD.secret)"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
