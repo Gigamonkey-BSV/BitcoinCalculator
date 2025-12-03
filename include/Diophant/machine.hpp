@@ -33,7 +33,6 @@ namespace Diophant {
         static expression make (Type, Expression);
 
         bool operator == (const node &n) const final override {
-            std::cout << " test casted equality " << std::endl;
             const casted *x = dynamic_cast<const casted *> (&n);
             return x != nullptr && this->Cast == x->Cast && this->Def == x->Def;
         }

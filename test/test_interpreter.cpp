@@ -473,11 +473,11 @@ namespace Diophant {
         // base 58
         test_eval ("base58.encode 1234", R"("NH")");
         test_eval (R"(base58.decode "NH")", "1234");
-/*
+
         // base 58 check.
         test_eval ("base58.check.encode [0_u8, 'abcdef000123']", R"("1AeqHaZrBsWzoXo")");
         test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
-*/
+
         // addresses
         test_eval ("address.encode [Hash160 (to_public true (secret 12345))]",
             R"("1tto6zacx5cwTbZgUnDLnnRQWBFBvzoJg")");
@@ -539,6 +539,9 @@ namespace Diophant {
         // address from wif.
         test_eval (R"(address (WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ"))",
             R"(address "13EuEN7yHdxEB187aknyNuewMDNoFinXaw")");
+/*
+        test_eval (R"(address (WIF [secret 123, net.Main, true]))",
+            R"(address [Hash160 (to_public true (secret 123)), net.Main])");*/
 
         // TODO sign with WIF.
 
@@ -550,33 +553,57 @@ namespace Diophant {
             "03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523");
 
         // the reason these don't work is that we don't yet evaluate or types.
-/*
+
         // HD
         test_eval (R"(encode (HD.secret [secret 123, SHA2_256 "chain_code"]))",
             R"(HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
 
         test_eval (R"(decode (HD.secret )"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
-            R"(HD.secret [secret 123, SHA2_256 "chain_code"])");*/
-/*
-        // to public with HD
-        test_eval (
-            R"(to_public (HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))"
-            R"( == HD.pubkey (HD_encode_pubkey [to_public true (secret 123), SHA2_256 "chain_code"]))", "true");
+            R"(HD.secret [secret 123, SHA2_256 "chain_code", net.Main, 0, 0, 0])");
 
-        // to public
+        // string
         test_eval (R"(string (HD.secret )"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
 
         test_eval (
-            R"(string (to_public (HD.secret )"
-            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))",
-            R"("")");
+            R"(string (HD.pubkey )"
+            R"("xpub661MyMwAqRbcF87XSeG9urAAL2EeLeJ1PP33YxkTV8TFevAXga9jQUKDoFd4si53SFqkN6iBaSEnFRX7Xe4ghSM3KdevekFjLGPLetVpsUg"))",
+            R"("xpub661MyMwAqRbcF87XSeG9urAAL2EeLeJ1PP33YxkTV8TFevAXga9jQUKDoFd4si53SFqkN6iBaSEnFRX7Xe4ghSM3KdevekFjLGPLetVpsUg")");
+/*
+        test_eval (R"(string (HD.secret )"
+            R"([secret 123, SHA2_256 "chain_code"]))",
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")");
 
-        // TODO secret and pubkey from HD
+        test_eval (
+            R"(string (HD.pubkey )"
+            R"([to_public true (secret 123), SHA2_256 "chain_code"]))",
+            R"("xpub661MyMwAqRbcF87XSeG9urAAL2EeLeJ1PP33YxkTV8TFevAXga9jQUKDoFd4si53SFqkN6iBaSEnFRX7Xe4ghSM3KdevekFjLGPLetVpsUg")");*/
+
+        // TODO test HD equality.
+
+        // to public
+        test_eval (
+            R"(to_public (HD.secret "xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))"
+            R"( == HD.pubkey (HD_encode_pubkey [to_public true (secret 123), SHA2_256 "chain_code"]))", "true");
+/*
+        test_eval (
+            R"(to_public (HD.secret [secret 123, SHA2_256 "chain_code"]))"
+            R"( == HD.pubkey [to_public true (secret 123), SHA2_256 "chain_code", net.Main, 0, 0, 0])", "true");
+
+        // TODO addresses
+        // secret and pubkey from HD keys.
         test_eval (R"(secret (HD.secret)"
-            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))");
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
+            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+
+        test_eval (R"(secret (HD.secret)"
+            R"([secret 123, SHA2_256 "chain_code"]))",
+            R"(WIF [secret 123, net.Main, true])");
+
+        test_eval (R"(pubkey (to_public (HD.secret)"
+            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))");
 
         test_eval (R"(pubkey (to_public (HD.secret)"
             R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))");*/

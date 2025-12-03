@@ -8,33 +8,35 @@ namespace Diophant {
         const data::bytes &p,
         const data::bytes &chain_code,
         Bitcoin::net network,
-        data::byte depth,
-        data::N parent,
-        data::N sequence) {
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence) {
+        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
         if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
         HD::chain_code cc;
         std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
         return HD::BIP_32::pubkey {
             Bitcoin::pubkey {p}, cc,
-            network, depth, data::uint32 (parent), data::uint32 (sequence)}.write ();
+            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.write ();
     }
 
     data::string encode_HD_secret (
         const data::N &x,
         const data::bytes &chain_code,
         Bitcoin::net network,
-        data::byte depth,
-        data::N parent,
-        data::N sequence) {
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence) {
+        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
         if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
         HD::chain_code cc;
         std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
         return HD::BIP_32::secret {
             secp256k1::secret {data::uint256_little {x}}, cc,
-            network, depth, data::uint32 (parent), data::uint32 (sequence)}.write ();
+            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.write ();
     }
 
-    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::byte, data::N, data::N>
+    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>
     decode_HD_pubkey (const data::string &x) {
         auto k = HD::BIP_32::pubkey::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
@@ -43,7 +45,7 @@ namespace Diophant {
         return {k.Pubkey, b, k.Network, k.Depth, k.Parent, k.Sequence};
     }
 
-    data::tuple<data::N, data::bytes, Bitcoin::net, data::byte, data::N, data::N>
+    data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>
     decode_HD_secret (const data::string &x) {
         auto k = HD::BIP_32::secret::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD secret";
@@ -56,6 +58,69 @@ namespace Diophant {
         auto k = HD::BIP_32::secret::read (x);
         if (!k.valid ()) throw data::exception {} << "invalid HD secret";
         return k.to_public ().write ();
+    }
+
+    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>
+    HD_secret_to_public (
+        const data::N &x,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence) {
+        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
+        if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
+        HD::chain_code cc;
+        std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
+        auto pub = HD::BIP_32::secret {
+            secp256k1::secret {data::uint256_little {x}}, cc,
+            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.to_public ();
+        return {pub.Pubkey, pub.ChainCode, pub.Network, pub.Depth, pub.Parent, pub.Sequence};
+    }
+
+    data::string address_from_HD (const data::string &x) {
+        HD::BIP_32::pubkey xpub;
+        auto xprv = HD::BIP_32::secret::read (x);
+        if (!xprv.valid ()) xpub = HD::BIP_32::pubkey::read (x);
+        else xpub = xprv.to_public ();
+        if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
+        return Bitcoin::address::decoded (xpub).encode ();
+    }
+
+    data::string address_from_HD (
+        const data::N &x,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence) {
+        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
+        if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
+        HD::chain_code cc;
+        std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
+        auto xpub = HD::BIP_32::secret {
+            secp256k1::secret {data::uint256_little {x}}, cc,
+            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.to_public ();
+        if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
+        return Bitcoin::address::decoded (xpub).encode ();
+    }
+
+    data::string address_from_HD (
+        const data::bytes &pubkey,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence) {
+        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
+        if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
+        HD::chain_code cc;
+        std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
+        auto xpub = HD::BIP_32::pubkey {
+            secp256k1::pubkey {pubkey}, cc, network,
+            data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)};
+        if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
+        return Bitcoin::address::decoded (xpub).encode ();
     }
 
     data::string HD_pubkey_derive (const data::string &x, const data::N n) {
@@ -122,15 +187,6 @@ namespace Diophant {
         auto k = HD::BIP_32::pubkey::read (xpub);
         if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
         return k.Pubkey;
-    }
-
-    data::string address_from_HD (const data::string &x) {
-        HD::BIP_32::pubkey xpub;
-        auto xprv = HD::BIP_32::secret::read (x);
-        if (!xprv.valid ()) xpub = HD::BIP_32::pubkey::read (x);
-        else xpub = xprv.to_public ();
-        if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
-        return Bitcoin::address::decoded (xpub).encode ();
     }
 
 }
