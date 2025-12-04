@@ -2058,26 +2058,75 @@ namespace Diophant {
         m = m.define (symbol {"verify"}, bool_type, {xpub_pattern_string (x), {bytes_type, y}, {bytes_type, z}},
             call::make (built_in_func<bool,
                 const data::bytes &, const data::bytes &, const data::bytes &>::make (verify), {X, Y, Z}));
-/*
+
+        // harden
+        m = m.define (symbol {"harden"},
+            natural_type, {{natural_type, x}},
+            call::make (built_in_func<data::N, const data::N &>::make (harden), {X}));
+
+        m = m.define (symbol {"soften"},
+            natural_type, {{natural_type, x}},
+            call::make (built_in_func<data::N, const data::N &>::make (soften), {X}));
+
         // HD derive
         m = m.define (binary_operand::divide, xpub_type,
             xpub_pattern_string (x),
             pattern {natural_type, y},
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
-                {call::make (built_in_func<data::string, const data::string &, const data::N>::make (HD_pubkey_derive), {x, y})}));
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive), {X, Y})}));
 
         m = m.define (binary_operand::divide, xprv_type,
-            xpub_pattern_string (x),
+            xprv_pattern_string (x),
             pattern {natural_type, y},
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
-                {call::make (built_in_func<data::string, const data::string &, const data::N>::make (HD_secret_derive), {x, y})}));
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive), {X, Y})}));
 
         m = m.define (binary_operand::divide, xprv_type,
-            xpub_pattern_string (x),
+            xprv_pattern_string (x),
             unop::make (unary_operand::harden, {pattern {natural_type, y}}),
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
-                {call::make (built_in_func<data::string, const data::string &, const data::N>::make (HD_secret_derive_hardened), {x, y})}));*/
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive),
+                {X, read_expression ("harden y")})}));
 
+        m = m.define (symbol {"derive"}, xpub_type,
+            {xpub_pattern_string (x), pattern {natural_type, y}},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive), {X, Y})}));
+
+        m = m.define (symbol {"derive"}, xprv_type,
+            {xprv_pattern_string (x), pattern {natural_type, y}},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive), {X, Y})}));
+
+        m = m.define (symbol {"derive"}, xprv_type,
+            {xprv_pattern_string (x), unop::make (unary_operand::harden, {pattern {natural_type, y}})},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive),
+                {X, read_expression ("harden y")})}));
+/*
+        expression D = symbol::make ("d");
+        Symbol d = dynamic_cast<Symbol> (*D.get ());
+
+        m = m.define (binary_operand::divide, xpub_type,
+            xpub_params_pattern (x, y, z, a, b, c),
+            pattern {natural_type, d},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive), {X, Y})}));
+
+        m = m.define (binary_operand::divide, xprv_type,
+            xprv_params_pattern (x, y, z, a, b, c),
+            pattern {natural_type, d},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive), {X, Y})}));
+
+        m = m.define (binary_operand::divide, xprv_type,
+            xprv_params_pattern (x, y, z, a, b, c),
+            unop::make (unary_operand::harden, {pattern {natural_type, y}}),
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive),
+                {X, read_expression ("y + 0x10000000")})}));*/
+
+        // sighash
         m = m.define (symbol {"sighash_all"}, byte::make (data::byte (1)));
         m = m.define (symbol {"sighash_none"}, byte::make (data::byte (2)));
         m = m.define (symbol {"sighash_single"}, byte::make (data::byte (3)));

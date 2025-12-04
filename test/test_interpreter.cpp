@@ -637,24 +637,25 @@ namespace Diophant {
         test_eval (
             R"(WIF (encode (HD.secret [secret 123, Hash256 "zoobnoob"])) == WIF [secret 123])", "true");
 
-        //test_eval ();
-/*
-        // secret and pubkey from HD keys.
-        test_eval (R"(secret (HD.secret)"
-            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1"))",
-            R"(WIF "L1LokMeMLVbnapboYCpeobZ67FkFBXKhYLMPs9mj7X4vk58AdCZQ")");
+        // harden and soften
+        test_eval ("scriptnum (harden 0)", "0x0080000000");
+        test_eval ("scriptnum (harden 1)", "0x0080000001");
+        test_eval ("scriptnum (harden (N 0x0080000000))", "0x0080000000");
+        test_eval ("scriptnum (harden (N 0x0080000001))", "0x0080000001");
 
-        test_eval (R"(secret (HD.secret)"
-            R"([secret 123, SHA2_256 "chain_code"]))",
-            R"(WIF [secret 123, net.Main, true])");
+        test_eval ("soften 0", "0");
+        test_eval ("soften 1", "1");
+        test_eval ("soften (N 0x0080000000)", "0");
+        test_eval ("soften (N 0x0080000001)", "1");
 
-        test_eval (R"(pubkey (to_public (HD.secret)"
-            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))");
+        // derivations
+        test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / 0)");
+        test_eval (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / 0)");
+        // I don't know why this one doesn't work.
+        //test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");
 
-        test_eval (R"(pubkey (to_public (HD.secret)"
-            R"("xprv9s21ZrQH143K2e34Lcj9YiDRmzQ9wBaA2A7SkaLqvnvGn7qP92qUrfzjwx2mL1CeyJ7adN6AGq37a2Li6zMbAK1jS4YzWMQuaZAy8L9xAT1")))");*/
-
-        // TODO derivations
+        // TODO: the reason this one doesn't work is that we don't even have a definition for it.
+        //test_error (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / `0)");
 
     }
 

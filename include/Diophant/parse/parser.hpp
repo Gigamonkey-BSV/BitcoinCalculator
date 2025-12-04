@@ -147,7 +147,7 @@ namespace Diophant {
             }
         };
 
-        template <> struct read_expression<tao_pegtl_grammar::hex_string_lit> {
+        template <> struct read_expression<tao_pegtl_grammar::bytes_lit> {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 auto x = in.string_view ();

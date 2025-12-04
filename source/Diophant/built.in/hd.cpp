@@ -4,7 +4,27 @@
 namespace Diophant {
     namespace HD = Gigamonkey::HD;
 
-    data::string encode_HD_pubkey (
+    data::N harden (const data::N &n) {
+        uint32_t d;
+        try {
+            d = uint32_t (n);
+        } catch (...) {
+            throw data::exception {} << "invalid derivation";
+        }
+        return HD::BIP_32::harden (d);
+    }
+
+    data::N soften (const data::N &n) {
+        uint32_t d;
+        try {
+            d = uint32_t (n);
+        } catch (...) {
+            throw data::exception {} << "invalid derivation";
+        }
+        return HD::BIP_32::soften (d);
+    }
+
+    HD::BIP_32::pubkey inline make_HD_pubkey (
         const data::bytes &p,
         const data::bytes &chain_code,
         Bitcoin::net network,
@@ -17,10 +37,10 @@ namespace Diophant {
         std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
         return HD::BIP_32::pubkey {
             Bitcoin::pubkey {p}, cc,
-            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.write ();
+            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)};
     }
 
-    data::string encode_HD_secret (
+    HD::BIP_32::secret inline make_HD_secret (
         const data::N &x,
         const data::bytes &chain_code,
         Bitcoin::net network,
@@ -33,7 +53,27 @@ namespace Diophant {
         std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
         return HD::BIP_32::secret {
             secp256k1::secret {data::uint256_little {x}}, cc,
-            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.write ();
+            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)};
+    }
+
+    data::string encode_HD_pubkey (
+        const data::bytes &p,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence) {
+        return make_HD_pubkey (p, chain_code, network, depth, parent, sequence).write ();
+    }
+
+    data::string encode_HD_secret (
+        const data::N &x,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence) {
+        return make_HD_secret (x, chain_code, network, depth, parent, sequence).write ();
     }
 
     data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>
@@ -68,13 +108,7 @@ namespace Diophant {
         const data::N &depth,
         const data::N &parent,
         const data::N &sequence) {
-        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
-        if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
-        HD::chain_code cc;
-        std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
-        auto pub = HD::BIP_32::secret {
-            secp256k1::secret {data::uint256_little {x}}, cc,
-            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.to_public ();
+        auto pub = make_HD_secret (x, chain_code, network, depth, parent, sequence).to_public ();
         return {pub.Pubkey, pub.ChainCode, pub.Network, pub.Depth, pub.Parent, pub.Sequence};
     }
 
@@ -94,13 +128,7 @@ namespace Diophant {
         const data::N &depth,
         const data::N &parent,
         const data::N &sequence) {
-        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
-        if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
-        HD::chain_code cc;
-        std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
-        auto xpub = HD::BIP_32::secret {
-            secp256k1::secret {data::uint256_little {x}}, cc,
-            network, data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)}.to_public ();
+        auto xpub = make_HD_secret (x, chain_code, network, depth, parent, sequence).to_public ();
         if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
         auto addr = Bitcoin::address::decoded (xpub);
         return {addr.Digest, addr.Network};
@@ -113,52 +141,75 @@ namespace Diophant {
         const data::N &depth,
         const data::N &parent,
         const data::N &sequence) {
-        if (depth > 255) throw data::exception {} << "depth cannot be larger than 255";
-        if (chain_code.size () != 32) throw data::exception {} << "invalid chain code size " << chain_code.size ();
-        HD::chain_code cc;
-        std::copy (chain_code.begin (), chain_code.end (), cc.begin ());
-        auto xpub = HD::BIP_32::pubkey {
-            secp256k1::pubkey {pubkey}, cc, network,
-            data::byte (data::uint32 (depth)), data::uint32 (parent), data::uint32 (sequence)};
-            if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
-            auto addr = Bitcoin::address::decoded (xpub);
-            return {addr.Digest, addr.Network};
+        auto xpub = make_HD_pubkey (pubkey, chain_code, network, depth, parent, sequence);
+        if (!xpub.valid ()) throw data::exception {} << "invalid hd key";
+        auto addr = Bitcoin::address::decoded (xpub);
+        return {addr.Digest, addr.Network};
     }
 
-    data::string HD_pubkey_derive (const data::string &x, const data::N n) {
-        auto k = HD::BIP_32::pubkey::read (x);
-        if (!k.valid ()) throw data::exception {} << "invalid HD pubkey";
-        int32_t d;
+    data::string HD_derive (const data::string &x, const data::N &n) {
+
+        uint32_t d;
         try {
-            d = int32_t (n);
+            d = uint32_t (n);
         } catch (...) {
             throw data::exception {} << "invalid derivation";
         }
-        return k.derive ({static_cast<uint32_t> (d)}).write ();
+
+        HD::BIP_32::secret sk = HD::BIP_32::secret::read (x);
+        if (sk.valid ()) return sk.derive ({d}).write ();
+
+        bool hardened = static_cast<int32_t> (d) < 0;
+
+        HD::BIP_32::pubkey pk = HD::BIP_32::pubkey::read (x);
+        if (!pk.valid ()) throw data::exception {} << "invalid HD pubkey";
+        if (hardened) throw data::exception {} << "cannot harden derive an HD pubkey";
+
+        return pk.derive ({d}).write ();
+
     }
 
-    data::string HD_secret_derive (const data::string &x, const data::N n) {
-        auto k = HD::BIP_32::secret::read (x);
-        if (!k.valid ()) throw data::exception {} << "invalid HD secret";
-        int32_t d;
+    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>
+    HD_derive (
+        const data::bytes &p,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence, const data::N &n) {
+
+        uint32_t d;
         try {
-            d = int32_t (n);
+            d = uint32_t (n);
         } catch (...) {
             throw data::exception {} << "invalid derivation";
         }
-        return k.derive ({static_cast<uint32_t> (d)}).write ();
+
+        bool hardened = static_cast<int32_t> (d) < 0;
+        if (hardened) throw data::exception {} << "cannot harden derive an HD pubkey";
+
+        auto pub = make_HD_pubkey (p, chain_code, network, depth, parent, sequence).derive ({d});
+        return {pub.Pubkey, pub.ChainCode, pub.Network, pub.Depth, pub.Parent, pub.Sequence};
     }
 
-    data::string HD_secret_derive_hardened (const data::string &x, const data::N n) {
-        auto k = HD::BIP_32::secret::read (x);
-        if (!k.valid ()) throw data::exception {} << "invalid HD secret";
-        int32_t d;
+    data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>
+    HD_derive (
+        const data::N &x,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence, const data::N &n) {
+
+        uint32_t d;
         try {
-            d = int32_t (n);
+            d = uint32_t (n);
         } catch (...) {
             throw data::exception {} << "invalid derivation";
         }
-        return k.derive ({HD::BIP_32::harden (static_cast<uint32_t> (d))}).write ();
+
+        auto sec = make_HD_secret (x, chain_code, network, depth, parent, sequence).derive ({d});
+        return {data::N (sec.Secret.Value), sec.ChainCode, sec.Network, sec.Depth, sec.Parent, sec.Sequence};
     }
 
     data::bytes sign_with_HD (const data::string &xprv, const data::bytes &digest) {

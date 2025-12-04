@@ -6,6 +6,9 @@
 
 namespace Diophant {
 
+    data::N harden (const data::N &);
+    data::N soften (const data::N &);
+
     data::string encode_HD_pubkey (
         const data::bytes &,
         const data::bytes &chain_code,
@@ -57,9 +60,25 @@ namespace Diophant {
         const data::N &parent,
         const data::N &sequence);
 
-    data::string HD_pubkey_derive (const data::string &, const data::N &);
-    data::string HD_secret_derive (const data::string &, const data::N &);
-    data::string HD_secret_derive_hardened (const data::string &, const data::N &);
+    data::string HD_derive (const data::string &, const data::N &);
+
+    data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>
+    HD_derive (
+        const data::N &,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence, const data::N &);
+
+    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>
+    HD_derive (
+        const data::bytes &,
+        const data::bytes &chain_code,
+        Bitcoin::net network,
+        const data::N &depth,
+        const data::N &parent,
+        const data::N &sequence, const data::N &);
 
     data::bytes sign_with_HD (const data::string &xprv, const data::bytes &digest);
     bool verify_with_HD (const data::string &xpub, const data::bytes &digest, const data::bytes &sig);

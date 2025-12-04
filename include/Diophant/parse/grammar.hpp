@@ -1,7 +1,8 @@
 #ifndef BITCOIN_CALCULATOR_PARSE_GRAMMAR
 #define BITCOIN_CALCULATOR_PARSE_GRAMMAR
 
-#include <tao/pegtl.hpp>
+#include "base58.hpp"
+#include "base64.hpp"
 
 namespace tao_pegtl_grammar {
     using namespace tao::pegtl;
@@ -42,8 +43,11 @@ namespace tao_pegtl_grammar {
         >>
         , eof> {};
 
-    // a decimal lit is 0 by itself or the digits 1 through 9 followed by digits.
-    struct dec_lit : seq<sor<one<'0'>, seq<range<'1', '9'>, star<digit>>>> {};
+    // a decimal lit is 0 by itself, 0d followed by any number of digits 0 - 9,
+    // or the digits 1 through 9 followed by digits.
+    struct dec_number : sor<
+        seq<one<'0'>, opt<seq<one<'d'>, star<digit>>>>,
+        seq<range<'1', '9'>, star<digit>>> {};
 
     struct hex_digit : seq<xdigit, xdigit> {};
 
@@ -54,34 +58,31 @@ namespace tao_pegtl_grammar {
     struct thirty_two_hex_digits : seq<sixteen_hex_digits, sixteen_hex_digits> {};
     struct sixty_four_hex_digits : seq<thirty_two_hex_digits, thirty_two_hex_digits> {};
 
-    struct hex_lit : seq<string<'0', 'x'>, star<hex_digit>> {};
+    struct base58_number : seq<one<'0'>, sor<one<'o'>, one<'1'>>, base58> {};
 
-    struct dec_or_hex : sor<hex_lit, dec_lit> {};
+    struct hex_number : seq<string<'0', 'x'>, star<hex_digit>> {};
 
-    struct unsigned_flag : one<'u'> {};
-    struct fixed_size_flag : dec_or_hex {};
+    struct number : sor<hex_number, dec_number, base58_number> {};
+
+    struct unsigned_flag : sor<one<'u'>, one<'i'>> {};
+    struct fixed_size_flag : number {};
     struct big_endian_flag : one<'b'> {};
     struct little_endian_flag : one<'l'> {};
-    struct number_suffix : seq<one<'_'>, opt<unsigned_flag>, opt<fixed_size_flag>, opt<sor<big_endian_flag, little_endian_flag>>> {};
+    struct number_suffix : seq<one<'_'>, opt<unsigned_flag>, opt<sor<big_endian_flag, little_endian_flag>>, opt<fixed_size_flag>> {};
 
-    struct number_lit : seq<dec_or_hex, opt<number_suffix>> {};
-
-    struct base58_char : sor<
-        ranges<'1', '9'>,                       // 1-9
-        ranges<'A', 'H'>,                       // A-H
-        ranges<'J', 'N'>,                       // J-N
-        ranges<'P', 'Z'>,                       // P-Z
-        ranges<'a', 'k'>,                       // a-k
-        ranges<'m', 'z'>                        // m-z
-    > {};
-
-    struct base58_lit : seq<string<'0', 'i'>, star<base58_char>> {};
+    struct number_lit : seq<number, opt<number_suffix>> {};
 
     struct pubkey_lit : seq<one<'0'>,
         sor<seq<sor<one<'2'>, one<'3'>>, thirty_two_hex_digits>,
         seq<one<'4'>, sixty_four_hex_digits>>> {};
 
-    struct hex_string_lit : seq<one<'\''>, star<hex_digit>, one<'\''>> {};
+    struct hex_encoding : seq<string<'h','e','x'>, ws, one<':'>, star<seq<ws, hex_digit>>> {};
+    struct base58_encoding : seq<string<'b','a','s','e','5','8'>, ws, one<':'>, star<ws, base58_char>> {};
+    struct base64_encoding : seq<string<'b','a','s','e','6','4'>, ws, one<':'>, base64> {};
+
+    struct bytes_lit : sor<
+        seq<one<'\''>, star<hex_digit>, one<'\''>>,
+        seq<one<'#'>, sor<star<hex_digit>, seq<one<'<'>, sor<hex_encoding, base58_encoding, base64_encoding>, one<'>'>>>>> {};
 
     // strings can have escaped characters with \ .
     struct string_body : star<sor<
@@ -117,7 +118,7 @@ namespace tao_pegtl_grammar {
     struct var : seq<one<'_'>, opt<symbol_lit>> {};
 
     // used inside lambdas
-    struct anon_var : seq<one<'_'>, dec_lit> {};
+    struct anon_var : seq<one<'_'>, dec_number> {};
 
     template <typename atom> struct expression;
 
@@ -256,11 +257,11 @@ namespace tao_pegtl_grammar {
 
     template <typename atom> struct expression : apply_expr<atom> {};
 
-    struct atom : sor<pubkey_lit, number_lit, hex_string_lit, string_lit, symbol,
+    struct atom : sor<pubkey_lit, number_lit, bytes_lit, string_lit, symbol,
         dif<atom>, parenthetical<atom>, list<atom>, let<atom>, lambda<atom>, dstruct<atom>> {};
 
     // a pattern atom
-    struct pattom : sor<number_lit, pubkey_lit, hex_string_lit, string_lit, var, symbol,
+    struct pattom : sor<number_lit, pubkey_lit, bytes_lit, string_lit, var, symbol,
         dif<pattom>, parenthetical<pattom>, list<pattom>, let<pattom>, lambda<pattom>, dstruct<pattom>> {};
 
     struct object : expression<atom> {};
