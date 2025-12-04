@@ -651,11 +651,15 @@ namespace Diophant {
         // derivations
         test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / 0)");
         test_eval (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / 0)");
-        // I don't know why this one doesn't work.
-        //test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");
 
-        // TODO: the reason this one doesn't work is that we don't even have a definition for it.
-        //test_error (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / `0)");
+        test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");
+        test_error (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / `0)");
+/*
+        test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / 0)");
+        test_eval (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / 0)");
+
+        test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / `0)");
+        test_error (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");*/
 
     }
 

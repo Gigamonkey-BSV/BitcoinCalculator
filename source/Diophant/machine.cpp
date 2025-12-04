@@ -531,7 +531,10 @@ namespace Diophant {
         // evaluate all function calls. We evaluate arguments lazily, enough to
         // determine their types if needed. Once there are no more function calls
         // we can evaluate, we evaluate each of the arguments.
+        // TODO this function is turning into kind of a mess. Let's revisit it and
+        // make it a bit nicer. Right now, we do not do lazy evaluation properly.
         expression evaluate_call (const machine &m, const call &c) {
+
             // first we evaluate function.
             bool changed = false;
             expression fun = m.evaluate (c.Fun);
@@ -621,9 +624,25 @@ namespace Diophant {
                     }
                 }
 
+                // if it's a value, then we evaluate all arguments first.
+                // we ought to be able to detect types and detect if
+                // the evaluation is valid, but right now we do not.
                 if (const value *v = dynamic_cast<const value *> (p); v != nullptr) {
+
+                    // evaluate all arguments.
+                    data::stack<expression> new_args {};
+                    for (Expression ex : args) {
+                        expression next = m.evaluate (ex);
+                        new_args >>= next;
+                        if (next != ex) changed = true;
+                    }
+
+                    if (changed) args = reverse (new_args);
+
                     expression next = (*v) (args);
                     if (next != expression {}) return next;
+
+                    return changed ? call::make (fun, args) : expression {};
                 }
 
                 break;
