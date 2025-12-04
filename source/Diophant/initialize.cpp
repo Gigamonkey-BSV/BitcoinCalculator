@@ -2116,7 +2116,7 @@ namespace Diophant {
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
                 {call::make (built_in_func<data::string, const data::string &, const data::N &>::make (HD_derive),
                 {X, read_expression ("harden y")})}));
-/*
+
         expression D = symbol::make ("d");
         Symbol d = dynamic_cast<Symbol> (*D.get ());
 
@@ -2126,8 +2126,8 @@ namespace Diophant {
             pattern {natural_type, d},
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
                 {call::make (built_in_func<
-                    data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
-                    const data::N &, const data::bytes &, Bitcoin::net,
+                    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
+                    const data::bytes &, const data::bytes &, Bitcoin::net,
                     const data::N &, const data::N &,
                     const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));
 
@@ -2141,11 +2141,43 @@ namespace Diophant {
                     const data::N &, const data::bytes &, Bitcoin::net,
                     const data::N &, const data::N &,
                     const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));
-
+/*
         m = m.define (binary_operand::divide, xprv_type,
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
                 {xprv_params_pattern (x, y, z, a, b, c)}),
-            unop::make (unary_operand::harden, {pattern {natural_type, y}}),
+            unop::make (unary_operand::harden, {pattern {natural_type, d}}),
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {call::make (built_in_func<
+                    data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
+                    const data::N &, const data::bytes &, Bitcoin::net,
+                    const data::N &, const data::N &,
+                    const data::N &, const data::N &>::make (HD_derive),
+                {X, Y, Z, A, B, C, read_expression ("harden d")})}));
+
+        m = m.define (symbol {"derive"}, xpub_type,
+            {call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {xpub_params_pattern (x, y, z, a, b, c)}), pattern {natural_type, d}},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {call::make (built_in_func<
+                    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
+                    const data::bytes &, const data::bytes &, Bitcoin::net,
+                    const data::N &, const data::N &,
+                    const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));
+
+        m = m.define (symbol {"derive"}, xprv_type,
+            {call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {xprv_params_pattern (x, y, z, a, b, c)}), pattern {natural_type, d}},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {call::make (built_in_func<
+                    data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
+                    const data::N &, const data::bytes &, Bitcoin::net,
+                    const data::N &, const data::N &,
+                    const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));
+
+        m = m.define (symbol {"derive"}, xprv_type,
+            {call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
+                {xprv_params_pattern (x, y, z, a, b, c)}),
+                unop::make (unary_operand::harden, {pattern {natural_type, d}})},
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
                 {call::make (built_in_func<
                     data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>,

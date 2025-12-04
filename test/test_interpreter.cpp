@@ -654,10 +654,10 @@ namespace Diophant {
 
         test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");
         test_error (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / `0)");
-/*
+
         test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / 0)");
         test_eval (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / 0)");
-
+/*
         test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / `0)");
         test_error (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");*/
 
