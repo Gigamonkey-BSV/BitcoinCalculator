@@ -100,10 +100,6 @@ namespace Diophant {
 
     inline pattern::pattern (expression e): pattern {std::static_pointer_cast<form> (e)} {}
 
-    bool inline operator == (Pattern a, Pattern b) {
-        throw data::exception {} << "we cannot check patterns equal yet; pattern.hpp line 87";
-    }
-
     std::ostream inline &operator << (std::ostream &o, const pattern &p) {
         return o << p.get ();
     }

@@ -16,10 +16,19 @@ namespace Diophant {
 
     std::ostream &operator << (std::ostream &o, intuit i);
 
-    // if the pattern matches, we may return replacement
-    // rules for symbols. We also need a case where we
-    // say that we cannot tell if the pattern matches, so
-    // we use intuits as well.
+    using match_result = data::maybe<replacements>;
+
+    struct machine;
+    struct pattern;
+
+    using Pattern = const pattern &;
+
+    using Machine = const machine &;
+
+    // we need a machine because we need to look up definitions.
+    match_result match (Machine, Pattern, Pattern);
+
+    // we no longer use this.
     template <typename result_type>
     struct intuit_result : data::either<result_type, intuit> {
         intuit_result (intuit i): data::either<result_type, intuit> {i} {}
@@ -45,20 +54,8 @@ namespace Diophant {
         }
     };
 
-    using match_result = intuit_result<replacements>;
-
     template <typename result_type>
     std::ostream &operator << (std::ostream &o, intuit_result<result_type> mr);
-
-    struct machine;
-    struct pattern;
-
-    using Pattern = const pattern &;
-
-    using Machine = const machine &;
-
-    // we need a machine because we need to look up definitions.
-    match_result match (Machine, Pattern, Expression);
 
     std::ostream inline &operator << (std::ostream &o, intuit i) {
         if (i == unknown) return o << "unknown";

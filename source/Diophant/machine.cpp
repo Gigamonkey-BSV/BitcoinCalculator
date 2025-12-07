@@ -3,10 +3,9 @@
 #include <Diophant/values/lambda.hpp>
 #include <Diophant/values/struct.hpp>
 #include <Diophant/values/leaf.hpp>
+#include <data/io/wait_for_enter.hpp>
 
 namespace Diophant {
-
-    LogStream cout {};
 
     machine::result machine::evaluate (program p) const {
         machine::result r {*this, expression {}};
@@ -137,36 +136,25 @@ namespace Diophant {
 
     }
 
-    // note: this algorithm results in attempts to evaluate
-    // sub expressions over again that have not changed.
-    // We might want to mark expressions as already having been
-    // evaluated.
     expression machine::evaluate (Expression e) const {
+        data::log::indent abc {};
         expression last = e;
         while (true) {
             const form *p = last.get ();
             if (p == nullptr) throw data::exception {} << "null expression evaluated";
 
+            // if it's a pattern or type, we're not supposed to evaluate it.
             const node *n = dynamic_cast<const node *> (p);
             if (n == nullptr) throw data::exception {} << "not a node";
 
-            // It is possible that this expression was already evaluated
-            // ahead a few steps. If it was, we just go to the end.
-            if (bool (n->Evaluated)) {
-                if (n->Evaluated == expression {}) return last;
-                last = *n->Evaluated;
-                continue;
-            }
+            DATA_LOG (debug) << "evaluate " << last;
 
             expression next = evaluate_round (*this, *n);
 
             // indicates that no evaluation occurred.
-            if (next == expression {} || next.get () == last.get ()) {
-                n->Evaluated = expression {};
+            if (next == expression {} || next.get () == last.get ())
                 return last;
-            }
 
-            n->Evaluated = next;
             last = next;
         }
     }
@@ -176,28 +164,24 @@ namespace Diophant {
         data::stack<expression> e,
         data::list<machine::autocast> conversions) const {
 
-        if (size (p) != size (e)) return {no};
+        if (size (p) != size (e)) return {};
 
-        match_result result {no};
+        match_result result {};
         while (!empty (p)) {
             match_result matches = Diophant::match (*this, first (p), first (e));
 
-            if (intuit (matches) == no) return no;
-            // an unknown result indicates that computation cannot continue.
-            // We keep track of an unknown result and continue trying to
-            // match because we could get an unambiguous no later on.
-            else if (intuit (matches) == unknown) result = unknown;
+            if (!bool (matches)) return {};
             // if we get yes, then we try to combine the replacements
             // we get from this match with replacements from previous arguments.
-            else if (intuit (matches) == yes) {
-                if (intuit (result) == yes) {
+            else {
+                if (bool (result)) {
                     try {
                         result = *result | *matches;
                     // will be thrown if these maps have any of the same keys.
                     } catch (replacements::key_already_exists) {
-                        return {no};
+                        return {};
                     }
-                } else if (intuit (result) == no) result = matches;
+                } else result = matches;
             }
 
             p = rest (p);
@@ -262,7 +246,7 @@ namespace Diophant {
             data::stack<expression> Remaining;
         };
 
-        using candidate_result = intuit_result<candidate>;
+        using candidate_result = data::maybe<candidate>;
 
         // here we attempt to find a single candidate among the available matches
         // to evaluate. For a typeable expression, every pattern will match either
@@ -276,7 +260,7 @@ namespace Diophant {
 
             // we store a potential match here but continue searching to
             // ensure that we do not match twice.
-            candidate_result matched {no};
+            candidate_result matched {};
 
             // we keep track of a previously matched pattern in order to
             // provide a complete error if more than one pattern is matched.
@@ -290,15 +274,14 @@ namespace Diophant {
 
                 match_result r = m.match (tf.Arguments, match_args);
 
-                if (intuit (r) == yes) {
-                    if (intuit (matched) == yes)
+                if (bool (r)) {
+                    if (bool (matched))
                         throw data::exception {} << "no unique match: for args " << args << ", confused by patterns " <<
                             previously_matched_pattern << " and " << tf.Arguments;
 
                     previously_matched_pattern = tf.Arguments;
                     matched = candidate_result {candidate {*r, tf.Value, drop (args, size (tf.Arguments))}};
-                } else if (intuit (r) == unknown)
-                    return {unknown};
+                }
 
                 tfs = rest (tfs);
             }
@@ -475,15 +458,13 @@ namespace Diophant {
             data::stack<mtf> tfs = *defs;
 
             candidate_result cx = get_candidate (m, tfs, body);
-            if (intuit (cx) == yes) {
+            if (bool (cx)) {
                 if (cx->Result.Def == expression {})
                     throw data::exception {} << "Error: attempt to evaluate undefined pattern";
 
                     return replace (cx->Result.Def, cx->Replacements);
-            }
-
             // we can try again with automatic conversions.
-            if (intuit (cx) == no) {
+            } else {
 
             }
 
@@ -492,12 +473,17 @@ namespace Diophant {
 
         bool evaluate_eq (const machine &m, const data::stack<mtf> *defs, const expression &left, const expression &right) {
 
+            //
             expression result = evaluate_bin (m, defs, {left, right});
+
             if (!result) return left == right;
 
-            if (const boolean *b = dynamic_cast<const boolean *> (m.evaluate (result).get ()); b != nullptr) {
+            auto tuub = m.evaluate (result);
+
+            if (const boolean *b = dynamic_cast<const boolean *> (tuub.get ()); b != nullptr) {
                 return b->Value;
             } else throw data::exception {} << "operator == must return bool";
+
         }
 
         expression evaluate_unop (const machine &m, const unop &u) {
@@ -513,7 +499,7 @@ namespace Diophant {
                 data::stack<mtf> tfs = *v;
                 candidate_result cx = get_candidate (m, tfs, {body});
 
-                if (intuit (cx) == yes) {
+                if (bool (cx)) {
                     changed = true;
                     if (!bool (cx->Result.Def))
                         throw data::exception {} << "Error: attempt to evaluate undefined pattern";
@@ -534,7 +520,7 @@ namespace Diophant {
         // TODO this function is turning into kind of a mess. Let's revisit it and
         // make it a bit nicer. Right now, we do not do lazy evaluation properly.
         expression evaluate_call (const machine &m, const call &c) {
-
+            data::log::indent jjj {};
             // first we evaluate function.
             bool changed = false;
             expression fun = m.evaluate (c.Fun);
@@ -560,10 +546,8 @@ namespace Diophant {
                     fun = fx->Fun;
                     p = fun.get ();
                     changed = true;
-                }
-
                 // if the head is a lambda, we can evaluate it lazily.
-                if (const lambda *n = dynamic_cast<const lambda *> (p); n != nullptr) {
+                } else if (const lambda *n = dynamic_cast<const lambda *> (p); n != nullptr) {
                     if (size (n->Args) > size (args)) break;
 
                     changed = true;
@@ -579,86 +563,57 @@ namespace Diophant {
                     fun = m.evaluate (replace (n->Body, r));
                     if (empty (args)) return fun;
                     continue;
-                }
-
-                if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
-                    // look for definitions corresponding to this symbol.
-                    const machine::definition *v = m.SymbolDefinitions.contains (*x);
-                    if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) break;
-
-                    data::stack<mtf> tfs = std::get<data::stack<mtf>> (*v);
-                    while (true) {
-                        if (empty (tfs)) goto done;
-                        if (size (first (tfs).Arguments) >= min_args) break;
-                        tfs = rest (tfs);
-                    }
-
-                    candidate_result cx = get_candidate (m, tfs, args);
-                    if (intuit (cx) == yes) {
-                        changed = true;
-                        if (!bool (cx->Result.Def))
-                            throw data::exception {} << "Error: attempt to evaluate undefined pattern";
-                        fun = m.evaluate (replace (cx->Result.Def, cx->Replacements));
-                        args = cx->Remaining;
-                        if (args.size () == 0) return fun;
-                        continue;
-                    };
-
-                    // in this case, we need to check if any of the arguments have been
-                    // evaluated so that we can fast forward them.
-                    if (!changed) {
-                        data::stack<expression> new_args {};
-                        for (Expression ex : args) {
-                            expression next = ex;
-                            while (true) {
-                                if (const node *n = static_cast<const node *> (next.get ());
-                                    n != nullptr && bool (n->Evaluated) && *n->Evaluated != expression {}) {
-                                    changed = true;
-                                    next = *n->Evaluated;
-                                } else break;
-                            }
-                            new_args >>= next;
-                        }
-                        if (changed) args = reverse (new_args);
-                        else return expression {};
-                    }
-                }
-
-                // if it's a value, then we evaluate all arguments first.
-                // we ought to be able to detect types and detect if
-                // the evaluation is valid, but right now we do not.
-                if (const value *v = dynamic_cast<const value *> (p); v != nullptr) {
+                } else {
 
                     // evaluate all arguments.
+                    // we ought to be able to detect types and detect if
+                    // the evaluation is valid, but right now we do not.
                     data::stack<expression> new_args {};
                     for (Expression ex : args) {
                         expression next = m.evaluate (ex);
-                        new_args >>= next;
-                        if (next != ex) changed = true;
+                        if (next != ex) {
+                            changed = true;
+                            new_args >>= next;
+                        } else new_args >>= ex;
                     }
 
-                    if (changed) args = reverse (new_args);
+                    args = reverse (new_args);
+                    DATA_LOG (debug) << "changed is " << std::boolalpha << changed;
+                    //data::wait_for_enter ("");
+                    if (const symbol *x = dynamic_cast<const symbol *> (p); x != nullptr) {
+                        // look for definitions corresponding to this symbol.
+                        const machine::definition *v = m.SymbolDefinitions.contains (*x);
+                        if (v == nullptr || !std::holds_alternative<data::stack<mtf>> (*v)) break;
 
-                    expression next = (*v) (args);
-                    if (next != expression {}) return next;
+                        data::stack<mtf> tfs = std::get<data::stack<mtf>> (*v);
+                        while (true) {
+                            if (empty (tfs)) break;
+                            if (size (first (tfs).Arguments) >= min_args) break;
+                            tfs = rest (tfs);
+                        }
 
-                    return changed ? call::make (fun, args) : expression {};
+                        candidate_result cx = get_candidate (m, tfs, args);
+                        if (bool (cx)) {
+                            changed = true;
+                            if (!bool (cx->Result.Def))
+                                throw data::exception {} << "Error: attempt to evaluate undefined pattern";
+                            fun = m.evaluate (replace (cx->Result.Def, cx->Replacements));
+                            args = cx->Remaining;
+                            if (args.size () == 0) return fun;
+
+                            // we can start the process over.
+                            continue;
+                        };
+                    } else if (const value *v = dynamic_cast<const value *> (p); v != nullptr) {
+
+                        expression next = (*v) (args);
+                        if (next != expression {}) return next;
+
+                    }
                 }
 
                 break;
             }
-
-            done:
-
-            // evaluate all arguments.
-            data::stack<expression> new_args {};
-            for (Expression ex : args) {
-                expression next = m.evaluate (ex);
-                new_args >>= next;
-                if (next != ex) changed = true;
-            }
-
-            args = reverse (new_args);
 
             return changed ? call::make (fun, args) : expression {};
         }
@@ -752,6 +707,7 @@ namespace Diophant {
         // and insert the new definition there. If we find something incompatible we
         // throw an error.
         data::stack<mtf> insert_def_into_stack (Machine m, data::exception excp, const data::stack<mtf> old, const mtf new_def) {
+
             data::stack<mtf> defs = old;
 
             // store definitions here which we have checked

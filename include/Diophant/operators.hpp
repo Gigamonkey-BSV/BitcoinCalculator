@@ -18,6 +18,7 @@ namespace Diophant {
     enum class binary_operand : data::byte {
         unary,
         dot,
+        colon,
         call,
         cat,
         power,
@@ -46,20 +47,17 @@ namespace Diophant {
         unidentical,      // =!=
         element,          // ::
         cast,
-        apply,
-        colon,
+        apply,            // $
         double_implication,
         intuitionistic_and,
         intuitionistic_or,
         intuitionistic_implies,
         such_that,
-        define
+        define,
+        lowest
     };
 
     using precedence = binary_operand;
-
-    constexpr const precedence max_precedence =
-        precedence (data::byte (binary_operand::intuitionistic_implies) + 1);
 
     constexpr const char *binary_operator (binary_operand X);
 
@@ -69,6 +67,7 @@ namespace Diophant {
     constexpr const char *binary_operator (binary_operand X) {
         switch (X) {
             case binary_operand::dot : return ".";
+            case binary_operand::colon : return ":";
             case binary_operand::cat : return "<>";
             case binary_operand::power : return "**";
             case binary_operand::times : return "*";
@@ -81,9 +80,9 @@ namespace Diophant {
             case binary_operand::less_equal : return "<=";
             case binary_operand::greater : return ">";
             case binary_operand::less : return "<";
-            case binary_operand::bit_and : return "&;";
-            case binary_operand::bit_xor : return "^;";
-            case binary_operand::bit_or : return "|;";
+            case binary_operand::bit_and : return "&-";
+            case binary_operand::bit_xor : return "^-";
+            case binary_operand::bit_or : return "|-";
             case binary_operand::bool_equal : return "==";
             case binary_operand::bool_unequal : return "!=";
             case binary_operand::bool_and : return "&&";
@@ -92,8 +91,8 @@ namespace Diophant {
             case binary_operand::unequal : return "/=";
             case binary_operand::identical : return "===";
             case binary_operand::unidentical : return "=!=";
-            case binary_operand::apply : return "$";
             case binary_operand::element : return "::";
+            case binary_operand::apply : return "$";
             case binary_operand::cast : return ":>";
             case binary_operand::double_implication : return "<==>";
             case binary_operand::intuitionistic_and : return "^";

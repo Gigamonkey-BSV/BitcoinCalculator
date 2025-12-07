@@ -2140,8 +2140,8 @@ namespace Diophant {
                     data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
                     const data::N &, const data::bytes &, Bitcoin::net,
                     const data::N &, const data::N &,
-                    const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));
-/*
+                    const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));/*
+std::cout << "add problematic definition " << std::endl;
         m = m.define (binary_operand::divide, xprv_type,
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
                 {xprv_params_pattern (x, y, z, a, b, c)}),
@@ -2152,7 +2152,7 @@ namespace Diophant {
                     const data::N &, const data::bytes &, Bitcoin::net,
                     const data::N &, const data::N &,
                     const data::N &, const data::N &>::make (HD_derive),
-                {X, Y, Z, A, B, C, read_expression ("harden d")})}));
+                {X, Y, Z, A, B, C, read_expression ("harden d")})}));*//*
 
         m = m.define (symbol {"derive"}, xpub_type,
             {call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),

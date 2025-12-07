@@ -3,6 +3,7 @@
 
 #include <Gigamonkey.hpp>
 #include <data/maybe.hpp>
+#include <data/io/log.hpp>
 #include <Diophant/parse/error.hpp>
 
 namespace Diophant {
@@ -43,10 +44,6 @@ namespace Diophant {
     struct node : form {
         virtual ~node () {}
 
-        // if this exists, then an evaluation was already done and this was the result.
-        // if the result is null, that means that the expression evaluated to itself.
-        mutable data::maybe<expression> Evaluated;
-
         virtual bool operator == (const node &) const = 0;
     };
 
@@ -60,64 +57,6 @@ namespace Diophant {
     inline expression::operator std::string () const {
         return write (*this);
     }
-
-    // some basic logging.
-    class LogStream {
-    public:
-        LogStream (std::ostream &out = std::cout, int indentWidth = 2)
-        : out (out), indentLevel (0), indentWidth(indentWidth), atLineStart (true) {}
-
-        // Stream-style interface
-        template<typename T>
-        LogStream &operator << (const T& value) {
-            if (atLineStart) {
-                out << std::string (indentLevel * indentWidth, ' ');
-                atLineStart = false;
-            }
-
-            out << value;
-            return *this;
-        }
-
-        // Specialization for endl to reset line start
-        LogStream &operator<<(std::ostream &(*manip) (std::ostream &)) {
-            if (manip == static_cast<std::ostream &(*) (std::ostream &)> (std::endl)) {
-                out << std::endl;
-                atLineStart = true;
-            } else manip (out);
-            return *this;
-        }
-
-        LogStream &operator ++ () {
-            ++indentLevel;
-            return *this;
-        }
-
-        LogStream &operator -- ()  {
-            if (indentLevel > 0) --indentLevel;
-            return *this;
-        }
-
-    private:
-        std::ostream &out;
-        int indentLevel;
-        int indentWidth;
-        bool atLineStart;
-    };
-
-    extern LogStream cout;
-
-    struct indent {
-        LogStream &COut;
-        indent (LogStream &cout): COut {cout} {
-            ++COut;
-        }
-
-        ~indent () {
-            --COut;
-        }
-    };
-
 
 }
 

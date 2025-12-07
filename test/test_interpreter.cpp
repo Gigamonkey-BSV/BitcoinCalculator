@@ -138,32 +138,21 @@ namespace Diophant {
         test ("ifz", symbol::make ("ifz"), symbol::make ("ifz"));
         test ("matchz", symbol::make ("matchz"), symbol::make ("matchz"));
     }
-/*
-    TEST_F (Interpreter, Variables) {
-        // error because x is an undefined variable.
-        test_error ("x; x");
-        // not an error because y is just a symbol.
-        test_eval ("y");
-        // error because y is a symbol.
-        test_eval ("y := 2;");
 
-        test_eval ("lever := on | off; is_on [_on] := true; is_on[_off] := false; lever -> bool :: is_on", "true");
+    TEST_F (Interpreter, Constructs) {
+
+        // lists
+        test (R"([])", list::make ({}), list::make ({}));
+        test (R"([x, 21, "hi"])");
+        test_eval (R"([x, 21, "hi"].1)", "21");
+
+        // structs
+        test_eval (R"({x -> 3, y -> 5}.x)", "3");
+
+        // lambda
+        test_eval ("(@ x y -> y x) a b", "b a");
+        test_eval ("@ x y -> y x $ a $ b", "b a");
     }
-
-    TEST_F (Interpreter, Call) {
-
-        // call that doesn't evaluate to anything
-        test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
-        test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
-
-        test ("f");
-        test ("f;");
-        test ("f _a;");
-        test_error ("f _a");
-        test ("f _a := x");
-        test ("f _a := x;");
-        test ("f _a := x; y");
-    }*/
 
     TEST_F (Interpreter, Types) {
 
@@ -218,6 +207,87 @@ namespace Diophant {
         test_error (R"(N :> "string")");
         test_error (R"(Z :> true)");
         test_error (R"(string | Z :> false)");
+/*
+        // lists
+        test_eval ("list Z :> []");
+        test_eval ("list string :> []");
+        test_eval ("@ x -> list x :> []");
+
+        test_eval ("list Z :> [1, 2, 3]");
+        test_eval ("list Z :> [1]");
+        test_error ("list Z :> [true]");
+        test_eval ("list (list Z) :> [[1], [2]]");
+        test_eval ("list (list Z) :> [[1], []]");
+        test_error ("list (list Z) :> [1, []]");
+
+        test_error ("list Z :> [1, true]");
+
+        // tuples
+        // TODO there are more test cases that have not been filled in here.
+*/
+    }
+
+    TEST_F (Interpreter, Pattern) {
+
+        test ("f _x;");
+
+        // ok, equivalent patterns.
+        test ("f _x;");
+        test ("f _y;");
+
+        // ok because it's more specific than what was already given.
+        test ("f _x:string;");
+
+        test ("f _x _y;");
+        test ("f _x:string _y;");
+
+        // Not ok because not clearly more or less specific than
+        // the previous one.
+        test_error ("f _x _y:string;");
+
+        test ("g _x _y; g _x:string; g _x; g _a _a;");
+        // not ok because not clearly more or less specific than the previous.
+        //test_error ("g _x:string _y;");
+
+        // TODO If we provide a definition then it should be an error to
+        // provide a different definition for an equivalent pattern.
+
+    }
+/*
+    TEST_F (Interpreter, Fixed) {
+        // error because x is an undefined variable.
+        test_error ("x; x");
+        // not an error because y is just a symbol.
+        test_eval ("y");
+        // error because y is a symbol.
+        test_eval ("y := 2;");
+
+        // this is ok because f is just a symbol now.
+        test ("f");
+        test ("f;");
+
+        // We cannot later define f because we have already
+        // used it as a symbol.
+        test_error ("f := 3");
+
+        test_eval ("lever := on | off; is_on [`on] := true; is_on[`off] := false; lever -> bool :: is_on", "true");
+
+    }*/
+
+    TEST_F (Interpreter, Call) {
+
+        // call that doesn't evaluate to anything
+        test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
+        test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
+
+        test ("f _a;");
+
+        // this is an error because the result of the function call is undefined.
+        test_error ("f _a");
+
+        test ("f _a := x");
+        test ("f _a := x;");
+        test ("f _a := x; y");
 
     }
 /*
@@ -230,21 +300,6 @@ namespace Diophant {
         test_eval (R"(double x:N := x * x; double x:string := x <> x; [double 0, double 1, double 2, double "up"])",
             R"([0, 1, 4, "upup"])");
     }*/
-
-    TEST_F (Interpreter, Constructs) {
-
-        // lists
-        test (R"([])", list::make ({}), list::make ({}));
-        test (R"([x, 21, "hi"])");
-        test_eval (R"([x, 21, "hi"].1)", "21");
-
-        // structs
-        test_eval (R"({x -> 3, y -> 5}.x)", "3");
-
-        // lambda
-        test_eval ("(@ x y -> y x) a b", "b a");
-        test_eval ("@ x y -> y x $ a $ b", "b a");
-    }
 
     TEST_F (Interpreter, Bool) {
 

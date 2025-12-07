@@ -54,7 +54,8 @@ namespace tao_pegtl_grammar {
     struct symbol_lit : minus<seq<alnum, star<symbol_char>>, reserved_words> {};
 
     struct symbol : symbol_lit {};
-    struct var : seq<one<'_'>, opt<symbol_lit>> {};
+    struct type;
+    struct var : seq<one<'_'>, opt<symbol_lit>, opt<seq<ws, one<':'>, ws, type>>> {};
 
     // used inside lambdas
     struct anon_var : seq<one<'_'>, dec_number> {};
@@ -192,7 +193,7 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct apply_op : seq<ws, one<'$'>, ws, apply_expr<atom>> {};
     template <typename atom> struct apply_expr : seq<cast_expr<atom>, opt<apply_op<atom>>> {};
 
-    template <typename atom> struct lambda_body : cast_expr<atom> {};
+    template <typename atom> struct lambda_body : element_expr<atom> {};
 
     template <typename atom> struct expression : apply_expr<atom> {};
 

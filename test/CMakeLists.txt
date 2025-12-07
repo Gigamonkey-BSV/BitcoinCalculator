@@ -8,6 +8,7 @@ endif ()
 include (GoogleTest)
 
 add_executable (unit_tests
+  match.cpp
   test_interpreter.cpp
 )
 

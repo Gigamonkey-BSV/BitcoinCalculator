@@ -16,6 +16,7 @@
 namespace tao_pegtl_grammar {
     struct read_definition : seq<ws, definition, ws, eof> {};
     struct read_declaration : seq<ws, declaration, ws, eof> {};
+    struct read_pattern : seq<ws, pattern, ws, eof> {};
     struct read_expression : seq<opt<seq<ws, expression<atom>>>, ws, eof> {};
 }
 
@@ -513,6 +514,10 @@ namespace Diophant {
 
     pattern inline read_declaration (const data::string &input) {
         return *first (read<tao_pegtl_grammar::read_declaration> (input)).Subject;
+    }
+
+    pattern inline read_pattern (const data::string &input) {
+        return pattern {first (read<tao_pegtl_grammar::read_pattern> (input)).Predicate};
     }
 
     program inline read_line (const data::string &input) {

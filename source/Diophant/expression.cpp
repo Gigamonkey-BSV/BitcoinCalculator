@@ -17,6 +17,7 @@ namespace Diophant {
     }
 
     bool operator == (Expression A, Expression B) {
+
         const form *a = A.get ();
         const form *b = B.get ();
 
@@ -93,7 +94,7 @@ namespace Diophant {
     }
 
     std::ostream &operator << (std::ostream &o, const form *n) {
-        return write (o, n, max_precedence);
+        return write (o, n, precedence::lowest);
     }
 
     std::ostream &write_binary (std::ostream &o, const binop &b) {
@@ -103,7 +104,9 @@ namespace Diophant {
         write (o, first (body).get (), b.Operand);
         body = rest (body);
         do {
-            write (o << " " << b.Operand << " ", first (body).get (), b.Operand);
+            if (b.Operand == binary_operand::dot) o << b.Operand;
+            else o << " " << b.Operand << " ";
+            write (o, first (body).get (), b.Operand);
             body = rest (body);
         } while (!empty (body));
         return o;

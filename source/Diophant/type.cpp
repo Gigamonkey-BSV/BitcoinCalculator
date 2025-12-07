@@ -41,13 +41,9 @@ namespace Diophant {
 
         const node *n = dynamic_cast<const node *> (x);
         if (n == nullptr) {
-            match_result mr = match (m, pattern (a), b);
-            switch (intuit (mr)) {
-                case yes: return impartial_ordering::superset | impartial_ordering::equal;
-                case no: return impartial_ordering::disjoint | impartial_ordering::nonempty_complements | impartial_ordering::subset;
-                case unknown: return impartial_ordering::equal | impartial_ordering::subset |
-                    impartial_ordering::superset | impartial_ordering::disjoint | impartial_ordering::nonempty_complements;
-            }
+            if (bool (match (m, pattern (a), b)))
+                return impartial_ordering::superset | impartial_ordering::equal;
+            else return impartial_ordering::disjoint | impartial_ordering::nonempty_complements | impartial_ordering::subset;
         }
 
         return type::compare (m, *n, b);
@@ -87,6 +83,8 @@ namespace Diophant {
     }
 
     intuit type::castable (const machine &m, Expression E) const {
+        data::log::indent abc {};
+        DATA_LOG(debug) << "try to cast to " << E;
         const form *t = this->get ();
         const form *e = E.get ();
 
@@ -94,12 +92,31 @@ namespace Diophant {
         if (e == nullptr) return unknown;
 
         const node *en = dynamic_cast<const node *> (e);
-        if (en == nullptr)
+        // if e is actually a pattern, then the problem comes
+        // down to whether
+        if (en == nullptr) {
+            // we do not have a universal type (since not all terms are typable)
+            // therefore the blank is always more general than any type.
+            if (const blank *b = dynamic_cast<const blank *> (e); b != nullptr)
+                return no;
+
+            if (const typed *t = dynamic_cast<const typed *> (e); t != nullptr) {
+                impartial_ordering comparison = Diophant::compare (m, *this, t->Required);
+                // TODO here we assume that t->Match is blank. This is not necessarily true
+                // but it is not an important application to have it not blank.
+                if (comparison == impartial_ordering::equal || comparison == impartial_ordering::superset) return yes;
+                return no;
+            }
+
+            if (const default_value *dv = dynamic_cast<const default_value *> (e); dv != nullptr)
+                return castable (m, dv->Match);
+
             throw data::exception {} << "Invalid cast.";
+        }
 
         const node *tn = dynamic_cast<const node *> (t);
         // in this case we should try match rather than cast.
-        if (tn == nullptr) return match (m, pattern (*this), E);
+        if (tn == nullptr) return match (m, pattern (*this), E) ? yes : no;
 
         // check for alternatives
         if (const binop *bt = dynamic_cast<const binop *> (tn); bt != nullptr) {

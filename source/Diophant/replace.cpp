@@ -149,51 +149,50 @@ namespace Diophant {
         return replaced;
     }
 
+    const match_result fail {};
+    const match_result succeed {replacements {}};
+
     using mr = match_result;
 
-    mr match_inner (Machine m, Pattern patt, Expression evaluated) {
+    mr match_inner (Machine m, Pattern patt, Pattern evaluated) {
+        data::log::indent q {};
+        DATA_LOG (debug) << "zmatch " << patt << " against " << evaluated;
         const form *z = patt.get ();
         const form *n = evaluated.get ();
 
-        if (z == n || z == nullptr) return mr {yes};
-
-        const node *nn = dynamic_cast<const node *> (n);
-        if (nn == nullptr) throw data::exception {"invalid expression found in match"};
+        if (z == nullptr && n == nullptr) return succeed;
 
         if (const blank *b = dynamic_cast<const blank *> (z); b != nullptr) {
-            return b->Name != "" ? mr {replacements {{b->Name, evaluated}}} : mr {yes};
+            return b->Name != "" ? mr {replacements {{b->Name, evaluated}}} : succeed;
         }
 
         if (const typed *t = dynamic_cast<const typed *> (z); t != nullptr) {
             mr r = match (m, t->Match, evaluated);
-            if (intuit (r) != yes) return r;
+            if (!bool (r)) return fail;
             intuit is_castable = t->Required.castable (m, evaluated);
-            return is_castable == yes ? r : mr {is_castable};
+            DATA_LOG (debug) << "is " << evaluated << " castable to " << t->Required << "? " << is_castable;
+            return is_castable == yes ? r : fail;
         }
 
         if (const default_value *dv = dynamic_cast<const default_value *> (z); dv != nullptr) {
             mr r = match (m, dv->Match, evaluated);
-            if (intuit (r) != yes) return r;
+            if (!bool (r)) return r;
             try {
                 return *r | dv->Default;
             } catch (replacements::key_already_exists) {
-                return no;
+                return fail;
             }
         }
 
         // note here we check the expression first .
-        if (const symbol *x = dynamic_cast<const symbol *> (n); x != nullptr) {
-            const symbol *y = dynamic_cast<const symbol *> (z);
-            // note: previously we had yes : unknown here because it would be
-            // possible for an unevaluated symbol to be equal to a different one.
-            // However, this turned out to be unfeasable. We have to make sure that
-            // the expression is fully evaluated before we check casts.
-            return y != nullptr && *x == *y ? yes : no;
+        if (const symbol *x = dynamic_cast<const symbol *> (z); x != nullptr) {
+            const symbol *y = dynamic_cast<const symbol *> (n);
+            return y != nullptr && *x == *y ? succeed : fail;
         }
 
         if (const unop *u = dynamic_cast<const unop *> (z); u != nullptr) {
             const unop *v = dynamic_cast<const unop *> (n);
-            if (v == nullptr || v->Operand != u->Operand) return {no};
+            if (v == nullptr || v->Operand != u->Operand) return fail;
             return match (m, u->Body, v->Body);
         }
 
@@ -201,69 +200,72 @@ namespace Diophant {
             if (b->Operand == binary_operand::intuitionistic_or) {
                 for (const auto &p : b->Body) {
                     mr r = match (m, p, evaluated);
-                    if (intuit (r) == no) continue;
+                    if (!bool (r)) continue;
                     return r;
                 }
             }
 
             if (const binop *c = dynamic_cast<const binop *> (n); c != nullptr) {
-                if (b->Operand != c->Operand) return {no};
+                if (b->Operand != c->Operand) return fail;
                 return m.match (b->Body, c->Body);
             }
         }
 
         if (const call *fx = dynamic_cast<const call *> (z); fx != nullptr) {
             const call *gx = dynamic_cast<const call *> (n);
-            if (gx == nullptr) return {no};
+            if (gx == nullptr) return fail;
 
             auto rf = match (m, fx->Fun, gx->Fun);
-            if (intuit (rf) != yes) return rf;
+            if (!bool (rf)) return rf;
 
             auto rx = m.match (data::stack<pattern> (fx->Args), gx->Args);
-            if (intuit (rx) != yes) return rx;
+            if (!bool (rx)) return rx;
             try {
                 return *rf | *rx;
                 // will be thrown if these maps have any of the same keys.
             } catch (replacements::key_already_exists) {
-                return {no};
+                return fail;
             }
         }
 
         if (const list *jk = dynamic_cast<const list *> (z); jk != nullptr) {
             const list *mn = dynamic_cast<const list *> (n);
-            if (mn == nullptr || jk->List.size () != mn->List.size ()) return {no};
+            if (mn == nullptr || jk->List.size () != mn->List.size ()) return fail;
+
+            DATA_LOG (debug) << "match list against list";
+
             replacements r {};
             auto jkl = jk->List;
             auto mno = mn->List;
 
             while (!empty (jkl)) {
+                data::log::indent jjjj {};
+                DATA_LOG (debug) << "matching list elements " << first (jkl) << " against " << first (mno);
                 auto rr = match (m, pattern (first (jkl)), first (mno));
-                if (intuit (rr) != yes) return rr;
+                if (!bool (rr)) return rr;
                 jkl = rest (jkl);
                 mno = rest (mno);
                 try {
                     r = r | *rr;
                     // will be thrown if these maps have any of the same keys.
                 } catch (replacements::key_already_exists) {
-                    return {no};
+                    return fail;
                 }
             }
             return r;
         }
 
         if (const value *v = dynamic_cast<const value *> (z); v != nullptr) {
-            const value *q = dynamic_cast<const value *> (n);
-            if (q == nullptr) return {no};
-            return *v == *q ? mr {yes} : mr {no};
+            const value *w = dynamic_cast<const value *> (n);
+            return w != nullptr && *v == *w ? succeed : fail;
         }
 
-        return {no};
+        return fail;
     }
 
     // we need a machine because we need to look up definitions.
-    match_result match (Machine m, Pattern patt, Expression expr) {
-        // this is why we see the evaluate message repeated so many times!
-        return match_inner (m, patt, m.evaluate (expr));
+    match_result match (Machine m, Pattern patt, Pattern expr) {
+        return match_inner (m, patt, expr);
     }
 
 }
