@@ -6,7 +6,6 @@
 namespace Diophant {
 
     bool disjoint (Machine m, Pattern A, Pattern B) {
-
         const form *a = A.get ();
         const form *b = B.get ();
 
@@ -30,12 +29,6 @@ namespace Diophant {
 
             if (disjoint (m, B, u->Match)) return true;
             return yes != u->Required.castable (m, B);
-        }
-
-        if (const value *v = dynamic_cast<const value *> (a); v != nullptr) {
-            const value *w = dynamic_cast<const value *> (b);
-            if (w == nullptr) return true;
-            return *v != *w;
         }
 
         if (const symbol *x = dynamic_cast<const symbol *> (a); x != nullptr) {
@@ -98,6 +91,12 @@ namespace Diophant {
 
             return false;
 
+        }
+
+        if (const value *v = dynamic_cast<const value *> (a); v != nullptr) {
+            const value *w = dynamic_cast<const value *> (b);
+            if (w == nullptr) return true;
+            return *v != *w;
         }
 
         return false;

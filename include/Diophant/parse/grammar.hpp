@@ -31,8 +31,8 @@ namespace tao_pegtl_grammar {
             opt<seq<
                 sor<clause, object>, ws
             >>
-        >>
-        , eof> {};
+        >>,
+        eof> {};
 
     // symbols are alpha characters followed by _ and alphanumeric.
     struct reserved_words : sor<
@@ -106,8 +106,11 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct dot_op : seq<ws, one<'.'>, ws, atom> {};
     template <typename atom> struct dot_expr : seq<atom, star<dot_op<atom>>> {};
 
-    template <typename atom> struct call_op : seq<plus<white>, dot_expr<atom>> {};
-    template <typename atom> struct call_expr : seq<dot_expr<atom>, star<call_op<atom>>> {};
+    template <typename atom> struct right_unary_expr : seq<dot_expr<atom>, star<right_unary_operand>> {};
+    template <typename atom> struct left_unary_arg : seq<star<left_unary_operand>, right_unary_expr<atom>> {};
+
+    template <typename atom> struct call_op : seq<rs, left_unary_arg<atom>> {};
+    template <typename atom> struct call_expr : seq<right_unary_expr<atom>, star<call_op<atom>>> {};
 
     template <typename atom> struct left_unary_expr;
     template <typename atom> struct left_unary_operation : seq<left_unary_operand, ws, left_unary_expr<atom>> {};

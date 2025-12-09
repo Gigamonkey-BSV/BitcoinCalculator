@@ -13,6 +13,7 @@ namespace tao_pegtl_grammar {
 
     struct white : sor<one<' '>, one<'\t'>, one<'\n'>, comment> {};
     struct ws : star<white> {};
+    struct rs : plus<white> {};
 
 }
 

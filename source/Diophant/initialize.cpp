@@ -2140,8 +2140,8 @@ namespace Diophant {
                     data::tuple<data::N, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
                     const data::N &, const data::bytes &, Bitcoin::net,
                     const data::N &, const data::N &,
-                    const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));/*
-std::cout << "add problematic definition " << std::endl;
+                    const data::N &, const data::N &>::make (HD_derive), {X, Y, Z, A, B, C, D})}));
+
         m = m.define (binary_operand::divide, xprv_type,
             call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"secret"}}),
                 {xprv_params_pattern (x, y, z, a, b, c)}),
@@ -2152,7 +2152,19 @@ std::cout << "add problematic definition " << std::endl;
                     const data::N &, const data::bytes &, Bitcoin::net,
                     const data::N &, const data::N &,
                     const data::N &, const data::N &>::make (HD_derive),
-                {X, Y, Z, A, B, C, read_expression ("harden d")})}));*//*
+                {X, Y, Z, A, B, C, read_expression ("harden d")})}));
+
+        m = m.define (binary_operand::divide, xpub_type,
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {xpub_params_pattern (x, y, z, a, b, c)}),
+            unop::make (unary_operand::harden, {pattern {natural_type, d}}),
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {call::make (built_in_func<
+                    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
+                    const data::bytes &, const data::bytes &, Bitcoin::net,
+                    const data::N &, const data::N &,
+                    const data::N &, const data::N &>::make (HD_derive),
+                {X, Y, Z, A, B, C, read_expression ("harden d")})}));
 
         m = m.define (symbol {"derive"}, xpub_type,
             {call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
@@ -2184,7 +2196,19 @@ std::cout << "add problematic definition " << std::endl;
                     const data::N &, const data::bytes &, Bitcoin::net,
                     const data::N &, const data::N &,
                     const data::N &, const data::N &>::make (HD_derive),
-                {X, Y, Z, A, B, C, read_expression ("harden d")})}));*/
+                {X, Y, Z, A, B, C, read_expression ("harden d")})}));
+
+        m = m.define (symbol {"derive"}, xpub_type,
+            {call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {xpub_params_pattern (x, y, z, a, b, c)}),
+                unop::make (unary_operand::harden, {pattern {natural_type, d}})},
+            call::make (binop::make (binary_operand::dot, {symbol {"HD"}, symbol {"pubkey"}}),
+                {call::make (built_in_func<
+                    data::tuple<data::bytes, data::bytes, Bitcoin::net, data::N, data::N, data::N>,
+                    const data::bytes &, const data::bytes &, Bitcoin::net,
+                    const data::N &, const data::N &,
+                    const data::N &, const data::N &>::make (HD_derive),
+                {X, Y, Z, A, B, C, read_expression ("harden d")})}));
 
         // sighash
         m = m.define (symbol {"sighash_all"}, byte::make (data::byte (1)));
