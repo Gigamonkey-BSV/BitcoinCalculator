@@ -2,6 +2,7 @@
 #include <Diophant/replace.hpp>
 #include <Diophant/machine.hpp>
 #include <Diophant/parse/parser.hpp>
+#include <data/io/log.hpp>
 
 using namespace data;
 
@@ -13,6 +14,7 @@ maybe<std::string> read_user_input () {
 }
 
 int main (int args, char **arg) {
+    log::init ()->min_level (log::normal);
 
     // TODO detect whether we are in interactive mode.
     // right now this is only interactive mode.

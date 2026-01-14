@@ -121,6 +121,8 @@ ELSE ()
 ENDIF ()
 
 include (FetchContent)
+cmake_policy (SET CMP0135 NEW)
+
 FetchContent_Declare (json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
 FetchContent_MakeAvailable (json)
 
