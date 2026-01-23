@@ -193,8 +193,8 @@ namespace tao_pegtl_grammar {
     template <typename atom> struct cast_expr : sor<seq<at<cast>, type, cast_op<atom>>, element_expr<atom>> {};
 
     template <typename atom> struct apply_expr;
-    template <typename atom> struct apply_op : seq<ws, one<'$'>, ws, apply_expr<atom>> {};
-    template <typename atom> struct apply_expr : seq<cast_expr<atom>, opt<apply_op<atom>>> {};
+    template <typename atom> struct apply_op : seq<ws, one<'$'>, ws, cast_expr<atom>> {};
+    template <typename atom> struct apply_expr : seq<cast_expr<atom>, star<apply_op<atom>>> {};
 
     template <typename atom> struct lambda_body : element_expr<atom> {};
 

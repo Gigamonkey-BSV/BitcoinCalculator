@@ -45,17 +45,17 @@ namespace Diophant {
             return o << static_cast<const std::string &> (*x);
 
         if (const call *c = dynamic_cast<const call *> (n); c != nullptr) {
-            if (Prec < precedence::call) return write_call (o << "(", *c) << ")";
+            if (Prec > precedence::call) return write_call (o << "(", *c) << ")";
             return write_call (o, *c);
         }
 
         if (const unop *u = dynamic_cast<const unop *> (n); u != nullptr) {
-            if (Prec < precedence::unary) return write_unary (o << "(", *u) << ")";
+            if (Prec > precedence::unary) return write_unary (o << "(", *u) << ")";
             return write_unary (o, *u);
         }
 
         if (const binop *b = dynamic_cast<const binop *> (n); b != nullptr) {
-            if (Prec < b->Operand) return write_binary (o << "(", *b) << ")";
+            if (Prec > b->Operand) return write_binary (o << "(", *b) << ")";
             return write_binary (o, *b);
         }
 
@@ -113,17 +113,17 @@ namespace Diophant {
     }
 
     std::ostream &write_unary (std::ostream &o, const unop &u) {
-        return write (o << u.Operand, u.Body.get (), precedence::unary);
+        return write (o << u.Operand, u.Body.get (), precedence::lowest);
     }
 
     std::ostream &write_call (std::ostream &o, const call &c) {
-        write (o << "(", c.Fun.get (), precedence::call);
+        write (o, c.Fun.get (), precedence::call);
         auto args = c.Args;
         while (!empty (args)) {
             write (o << " ", first (args).get (), precedence::call);
             args = rest (args);
         }
-        return o << ")";
+        return o;
     }
 
 }

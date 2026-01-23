@@ -16,45 +16,48 @@ namespace Diophant {
     };
 
     enum class binary_operand : data::byte {
-        unary,
-        dot,
-        colon,
-        call,
-        cat,
-        power,
-        times,
-        divide,
-        mod,
-        divmod,
-        plus,
-        minus,
-        greater,
-        less,
-        greater_equal,
-        less_equal,
-        bool_equal,
-        bool_unequal,
-        bit_and,
-        bit_xor,
-        bit_or,
-        bit_nand,
-        bit_nor,
-        bool_and,         // &&
-        bool_or,          // ||
-        equal,
-        unequal,
-        identical,        // ===
-        unidentical,      // =!=
-        element,          // ::
-        cast,
-        apply,            // $
-        double_implication,
-        intuitionistic_and,
-        intuitionistic_or,
-        intuitionistic_implies,
-        such_that,
+        lowest,
+
         define,
-        lowest
+        such_that,
+        intuitionistic_implies,
+        intuitionistic_or,
+        intuitionistic_and,
+        double_implication,
+        apply,            // $
+        cast,
+        element,          // ::
+        unidentical,      // =!=
+        identical,        // ===
+        unequal,
+        equal,
+        bool_or,          // ||
+        bool_and,         // &&
+        bit_nor,
+        bit_nand,
+        bit_or,
+        bit_xor,
+        bit_and,
+        bool_unequal,
+        bool_equal,
+        less_equal,
+        greater_equal,
+        less,
+        greater,
+        minus,
+        plus,
+        divmod,
+        mod,
+        divide,
+        times,
+        power,
+        cat,
+        call,
+        colon,
+        dot,
+        unary,
+
+        highest
     };
 
     using precedence = binary_operand;

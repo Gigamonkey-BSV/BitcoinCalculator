@@ -28,6 +28,7 @@ namespace Diophant {
     void parser::binary (binary_operand op) {
         expression x = first (Exp);
         expression z = first (rest (Exp));
+
         if (is_associative (op)) {
             if (const auto *bb = dynamic_cast<const binop *> (x.get ()); bb != nullptr && bb->Operand == op) {
                 Exp = prepend (rest (rest (Exp)), binop::make (op, prepend (bb->Body, z)));
