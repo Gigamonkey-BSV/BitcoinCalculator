@@ -67,7 +67,7 @@ namespace Diophant {
 
         if (const unop *u = dynamic_cast<const unop *> (p); u != nullptr) {
             expression replaced = replace_inner (u->Body, rr);
-            return replaced == expression {} ? expression {} : unop::make (u->Operand, replaced);
+            return replaced == expression {} ? expression {} : unop::make (u->Operand, replaced, u->Direction);
         }
 
         if (const call *c = dynamic_cast<const call *> (p); c != nullptr) {
@@ -156,7 +156,6 @@ namespace Diophant {
 
     mr match_inner (Machine m, Pattern patt, Pattern evaluated) {
         data::log::indent q {};
-        DATA_LOG (debug) << "zmatch " << patt << " against " << evaluated;
         const form *z = patt.get ();
         const form *n = evaluated.get ();
 

@@ -45,7 +45,7 @@ namespace tao_pegtl_grammar {
     struct base64_encoding : seq<string<'b','a','s','e','6','4'>, ws, one<':'>, base64> {};
 
     struct bytes_lit : sor<
-        seq<one<'\''>, star<hex_digit>, one<'\''>>,
+        seq<one<'`'>, star<hex_digit>, one<'`'>>,
         seq<one<'#'>, sor<star<hex_digit>, seq<one<'<'>, sor<hex_encoding, base58_encoding, base64_encoding>, one<'>'>>>>> {};
 
     // strings can have escaped characters with \ .

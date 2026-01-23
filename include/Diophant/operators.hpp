@@ -12,7 +12,7 @@ namespace Diophant {
         star = '*',
         ampersand = '&',
         bool_not = '!',
-        harden = '`'
+        harden = '\''
     };
 
     enum class binary_operand : data::byte {

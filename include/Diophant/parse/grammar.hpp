@@ -12,13 +12,13 @@ namespace tao_pegtl_grammar {
     struct statement : sor<definition, declaration> {};
 
     struct subject;
-    struct declaration : seq<subject, ws, one<';'>> {};
+    struct declaration : seq<subject, ws, one<','>> {};
 
     // like a predicate except it has the subject and 'is'.
     struct postdicate : seq<subject, ws, string<':', '='>> {};
 
     struct clause;
-    struct definition : seq<clause, ws, one<';'>> {};
+    struct definition : seq<clause, ws, one<','>> {};
 
     struct object;
     struct clause : seq<at<postdicate>, postdicate, ws, object> {};
@@ -100,8 +100,8 @@ namespace tao_pegtl_grammar {
     struct close_struct : one<'}'> {};
     template <typename atom> struct dstruct : seq<open_struct, empty_sequence<rule<atom>>, close_struct> {};
 
-    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>, one<'`'>> {};
-    struct right_unary_operand : sor<one<'!'>> {};
+    struct left_unary_operand : sor<one<'-'>, one<'~'>, one<'!'>, one<'+'>, one<'*'>> {};
+    struct right_unary_operand : sor<one<'!'>, one<'\''>> {};
 
     template <typename atom> struct dot_op : seq<ws, one<'.'>, ws, atom> {};
     template <typename atom> struct dot_expr : seq<atom, star<dot_op<atom>>> {};

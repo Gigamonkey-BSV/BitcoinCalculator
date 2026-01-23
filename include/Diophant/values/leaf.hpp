@@ -482,7 +482,7 @@ namespace Diophant {
 
         template <> struct write_leaf<data::bytes> {
             std::ostream &operator () (std::ostream &o, const data::bytes &t) {
-                return data::encoding::hex::write (o << '\'', t) << '\'';
+                return data::encoding::hex::write (o << '`', t) << '`';
             }
         };
 

@@ -24,13 +24,19 @@ namespace Diophant {
         unary_operand Operand;
         expression Body;
 
-        unop (unary_operand op, expression body);
+        enum direction {
+            left, right
+        };
 
-        static expression make (unary_operand op, expression body);
+        direction Direction;
+
+        unop (unary_operand op, expression body, direction dir);
+
+        static expression make (unary_operand op, expression body, direction dirs);
 
         bool operator == (const node &n) const final override {
             const unop *v = dynamic_cast<const unop *> (&n);
-            return v == nullptr ? false: this->Operand == v->Operand && this->Body == v->Body;
+            return v == nullptr ? false: this->Operand == v->Operand && this->Direction == v->Direction && this->Body == v->Body;
         }
     };
 
@@ -81,8 +87,8 @@ namespace Diophant {
         return expression {std::static_pointer_cast<form> (std::make_shared<call> (fun, args))};
     }
 
-    expression inline unop::make (unary_operand op, expression body) {
-        return expression {std::static_pointer_cast<form> (std::make_shared<unop> (op, body))};
+    expression inline unop::make (unary_operand op, expression body, direction dir) {
+        return expression {std::static_pointer_cast<form> (std::make_shared<unop> (op, body, dir))};
     }
 
     expression inline binop::make (binary_operand op, expression left, expression right) {
@@ -103,7 +109,7 @@ namespace Diophant {
 
     inline call::call (expression fun, data::stack<expression> args): Fun {fun}, Args {args} {}
 
-    inline unop::unop (unary_operand op, expression body): Operand {op}, Body {body} {}
+    inline unop::unop (unary_operand op, expression body, direction dir): Operand {op}, Body {body}, Direction {dir} {}
 
     inline binop::binop (binary_operand op, expression left, expression right): Operand {op}, Body {left, right} {}
     inline binop::binop (binary_operand op, data::stack<expression> body): Operand {op}, Body {body} {}

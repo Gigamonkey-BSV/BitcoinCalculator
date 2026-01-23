@@ -510,7 +510,7 @@ namespace Diophant {
             }
 
             done:
-            return changed ? unop::make (u.Operand, body) : expression {};
+            return changed ? unop::make (u.Operand, body, u.Direction) : expression {};
         }
 
         // the strategy here is to evaluate the head of the expression first, then

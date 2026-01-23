@@ -44,7 +44,8 @@ namespace Diophant {
         void let_open ();
         void let_close ();
 
-        void unary (unary_operand op);
+        void unary (unary_operand op, unop::direction);
+
         void binary (binary_operand op);
 
         void declare ();
@@ -267,7 +268,15 @@ namespace Diophant {
             template <typename Input>
             static void apply (const Input &in, parser &eval) {
                 // NOTE this won't work if we ever have any unary operators that are bigger than one char.
-                eval.unary (unary_operand {*in.begin ()});
+                eval.unary (unary_operand {*in.begin ()}, unop::left);
+            }
+        };
+
+        template <> struct read_expression<tao_pegtl_grammar::right_unary_operand> {
+            template <typename Input>
+            static void apply (const Input &in, parser &eval) {
+                // NOTE this won't work if we ever have any unary operators that are bigger than one char.
+                eval.unary (unary_operand {*in.begin ()}, unop::right);
             }
         };
 
@@ -533,8 +542,8 @@ namespace Diophant {
         Exp >>= x;
     }
 
-    void inline parser::unary (unary_operand op) {
-        Exp = prepend (rest (Exp), unop::make (op, first (Exp)));
+    void inline parser::unary (unary_operand op, unop::direction dir) {
+        Exp = prepend (rest (Exp), unop::make (op, first (Exp), dir));
     }
 
     void inline parser::open_list () {

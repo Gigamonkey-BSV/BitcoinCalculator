@@ -26,8 +26,8 @@ namespace Diophant {
             {bytes::make (Bitcoin::integer::read (x))});
     }
 
-    expression unary (char x, expression e) {
-        return unop::make (unary_operand {x}, e);
+    expression unary (char x, expression e, unop::direction d) {
+        return unop::make (unary_operand {x}, e, d);
     }
 
     template <typename ... ops>
@@ -151,7 +151,7 @@ namespace Diophant {
 
         // lambda
         test_eval ("(@ x y -> y x) a b", "b a");
-        test_eval ("@ x y -> y x $ a $ b", "b a");
+        test_eval (R"(@ x y -> y x $ a $ b)", "b a");
     }
 
     TEST_F (Interpreter, Types) {
@@ -229,23 +229,23 @@ namespace Diophant {
 
     TEST_F (Interpreter, Pattern) {
 
-        test ("f _x;");
+        test ("f _x,");
 
         // ok, equivalent patterns.
-        test ("f _x;");
-        test ("f _y;");
+        test ("f _x,");
+        test ("f _y,");
 
         // ok because it's more specific than what was already given.
-        test ("f _x:string;");
+        test ("f _x:string,");
 
-        test ("f _x _y;");
-        test ("f _x:string _y;");
+        test ("f _x _y,");
+        test ("f _x:string _y,");
 
         // Not ok because not clearly more or less specific than
         // the previous one.
-        test_error ("f _x _y:string;");
+        test_error ("f _x _y:string,");
 
-        test ("g _x _y; g _x:string; g _x; g _a _a;");
+        test ("g _x _y, g _x:string, g _x, g _a _a,");
         // not ok because not clearly more or less specific than the previous.
         //test_error ("g _x:string _y;");
 
@@ -280,14 +280,14 @@ namespace Diophant {
         test_eval ("a b c d", call::make (symbol::make ("a"), {symbol::make ("b"), symbol::make ("c"), symbol::make ("d")}));
         test_eval ("f (a b)", call::make (symbol::make ("f"), {call::make (symbol::make ("a"), {symbol::make ("b")})}));
 
-        test ("f _a;");
+        test ("f _a,");
 
         // this is an error because the result of the function call is undefined.
         test_error ("f _a");
 
         test ("f _a := x");
-        test ("f _a := x;");
-        test ("f _a := x; y");
+        test ("f _a := x,");
+        test ("f _a := x, y");
 
     }
 /*
@@ -307,8 +307,8 @@ namespace Diophant {
         test ("true", symbol::make ("true"), True ());
         test ("false", symbol::make ("false"), False ());
 
-        test ("!true", unary ('!', symbol::make ("true")), False ());
-        test ("!false", unary ('!', symbol::make ("false")), True ());
+        test ("!true", unary ('!', symbol::make ("true"), unop::left), False ());
+        test ("!false", unary ('!', symbol::make ("false"), unop::left), True ());
 
         test ("true && false", And (symbol::make ("true"), symbol::make ("false")), False ());
         test ("false && true", And (symbol::make ("false"), symbol::make ("true")), False ());
@@ -361,8 +361,8 @@ namespace Diophant {
         test ("0x01", make_scriptnum ("0x01"));
 
         // negative zero
-        test ("-0x00", unary ('-', make_scriptnum ("0x00")), make_scriptnum ("0x"));
-        test ("-0x", unary ('-', make_scriptnum ("0x")), make_scriptnum ("0x"));
+        test ("-0x00", unary ('-', make_scriptnum ("0x00"), unop::left), make_scriptnum ("0x"));
+        test ("-0x", unary ('-', make_scriptnum ("0x"), unop::left), make_scriptnum ("0x"));
 
         // equal versus identical
         test_eval ("0x80 == 0x00", "true");
@@ -389,9 +389,10 @@ namespace Diophant {
         test_error ("N 0x81");
 
         // bitnot
-        test_eval ("~''", "''");
-        test_eval ("~'00'", "'ff'");
-        test_eval ("~'80'", "'7f'");
+        test_eval ("~``", "``");
+        test_eval ("`00`");
+        test_eval ("~`00`", "`ff`");
+        test_eval ("~`80`", "`7f`");
 
         test_eval ("~0x", "0x");
         test_eval ("~0x00", "0xff");
@@ -420,15 +421,15 @@ namespace Diophant {
 
         // cat
         test_eval (R"("abcd" <> "efgh")", string::make ("abcdefgh"));
-        test_eval (R"('00ff' <> 'abab')", bytes::make (*data::encoding::hex::read ("00ffabab")));
+        test_eval (R"(`00ff` <> `abab`)", bytes::make (*data::encoding::hex::read ("00ffabab")));
 
         test_eval (R"(cat "abcd" "efgh")", string::make ("abcdefgh"));
-        test_eval (R"(cat '00ff' 'abab')", bytes::make (*data::encoding::hex::read ("00ffabab")));
+        test_eval (R"(cat `00ff` `abab`)", bytes::make (*data::encoding::hex::read ("00ffabab")));
 
         test_eval (R"(size "")", "0");
         test_eval (R"(size "abcd")", "4");
-        test_eval (R"(size '')", "0");
-        test_eval (R"(size 'abcd')", "2");
+        test_eval (R"(size ``)", "0");
+        test_eval (R"(size `abcd`)", "2");
 
         // left, right
         test_eval (R"(left "" 0)", R"("")");
@@ -436,38 +437,38 @@ namespace Diophant {
         test_eval (R"(left "ab" 0)", R"("")");
         test_eval (R"(left "ab" 1)", R"("a")");
 
-        test_eval (R"(left '' 0x)", R"('')");
-        test_error (R"(left '' 0x01)");
-        test_eval (R"(left '1234' 0)", R"('')");
-        test_eval (R"(left '1234' 1)", R"('12')");
+        test_eval (R"(left `` 0x)", R"(``)");
+        test_error (R"(left `` 0x01)");
+        test_eval (R"(left `1234` 0)", R"(``)");
+        test_eval (R"(left `1234` 1)", R"(`12`)");
 
         test_eval (R"(right "" 0)", R"("")");
         test_error (R"(right "" 1)");
         test_eval (R"(right "ab" 0)", R"("")");
         test_eval (R"(right "ab" 1)", R"("b")");
 
-        test_eval (R"(right '' 0x)", R"('')");
-        test_error (R"(right '' 0x01)");
-        test_eval (R"(right '1234' 0)", R"('')");
-        test_eval (R"(right '1234' 1)", R"('34')");
+        test_eval (R"(right `` 0x)", R"(``)");
+        test_error (R"(right `` 0x01)");
+        test_eval (R"(right `1234` 0)", R"(``)");
+        test_eval (R"(right `1234` 1)", R"(`34`)");
 
         // split
         test_eval (R"(split "" 0)", R"(["", ""])");
-        test_eval (R"(split '' 0)", R"(['', ''])");
+        test_eval (R"(split `` 0)", R"([``, ``])");
         test_error (R"(split "" 1)");
         test_eval (R"(split "ab" 0)", R"(["", "ab"])");
-        test_eval (R"(split '1234' 0)", R"(['', '1234'])");
+        test_eval (R"(split `1234` 0)", R"([``, `1234`])");
         test_eval (R"(split "ab" 1)", R"(["a", "b"])");
-        test_eval (R"(split '1234' 1)", R"(['12', '34'])");
+        test_eval (R"(split `1234` 1)", R"([`12`, `34`])");
 
     }
 
     TEST_F (Interpreter, Hash) {
 
         // hash functions
-        test_eval ("SHA1_160 ''", "'da39a3ee5e6b4b0d3255bfef95601890afd80709'");
-        test_eval ("SHA2_256 ''", "'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'");
-        test_eval ("RIPEMD_160 ''", "'9c1185a5c5e9fc54612808977ee8f548b2258d31'");
+        test_eval ("SHA1_160 ``", "`da39a3ee5e6b4b0d3255bfef95601890afd80709`");
+        test_eval ("SHA2_256 ``", "`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`");
+        test_eval ("RIPEMD_160 ``", "`9c1185a5c5e9fc54612808977ee8f548b2258d31`");
     }
 
     TEST_F (Interpreter, Keys) {
@@ -506,15 +507,15 @@ namespace Diophant {
 
         // castable to bytes
         test_eval ("bytes 03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523",
-            "'03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523'");
-        test_eval ("bytes (secret 345678)", "'4e46050000000000000000000000000000000000000000000000000000000000'");
-        test_eval ("bytes (coord 456789)", "'55f8060000000000000000000000000000000000000000000000000000000000'");
+            "`03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523`");
+        test_eval ("bytes (secret 345678)", "`4e46050000000000000000000000000000000000000000000000000000000000`");
+        test_eval ("bytes (coord 456789)", "`55f8060000000000000000000000000000000000000000000000000000000000`");
 
         // verify signatures
         test_eval (
             R"(verify (to_public false (secret 123)) (SHA2_256 "Hola, babe!") )"
-            R"('3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
-            R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36')",
+            R"(`3045022100f0787177bfbd3766eb24bd92872eee4206b1c52a8c9de9e74e7ddad0ce6c1)"
+            R"(57e0220080600a667bb7d1e601cc1f4efa244c0269a3bca18b8eac9c30b4ee3f1beab36`)",
             True ());
 
         // TODO test sign
@@ -530,8 +531,8 @@ namespace Diophant {
         test_eval (R"(base58.decode "NH")", "1234");
 
         // base 58 check.
-        test_eval ("base58.check.encode [0_u8, 'abcdef000123']", R"("1AeqHaZrBsWzoXo")");
-        test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, 'abcdef000123']");
+        test_eval ("base58.check.encode [0_u8, `abcdef000123`]", R"("1AeqHaZrBsWzoXo")");
+        test_eval (R"(base58.check.decode "1AeqHaZrBsWzoXo")", "[0_u8, `abcdef000123`]");
 
         // addresses
         test_eval ("address.encode [Hash160 (to_public true (secret 12345))]",
@@ -646,7 +647,7 @@ namespace Diophant {
         // addresses
         test_eval (
             R"(address (HD.secret [secret 123, SHA2_256 "nyuub"]))",
-            R"(address ['1891424275f9a324554fe98a71a7deb80349efe6', net.Main])");
+            R"(address [`1891424275f9a324554fe98a71a7deb80349efe6`, net.Main])");
 
         test_eval (
             R"(address (encode (HD.secret [secret 123, Hash256 "zoobnoob"])))",
@@ -654,7 +655,7 @@ namespace Diophant {
 
         test_eval (
             R"(address (to_public (HD.secret [secret 123, SHA2_256 "nyuub"])))",
-            R"(address ['1891424275f9a324554fe98a71a7deb80349efe6', net.Main])");
+            R"(address [`1891424275f9a324554fe98a71a7deb80349efe6`, net.Main])");
 
         test_eval (
             R"(address (encode (to_public (HD.secret [secret 123, Hash256 "zoobnoob"]))))",
@@ -663,19 +664,19 @@ namespace Diophant {
         // pubkey
         test_eval (
             R"(pubkey (HD.secret [secret 123, SHA2_256 "nyuub"]))",
-            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+            R"(pubkey `03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523`)");
 
         test_eval (
             R"(pubkey (encode (HD.secret [secret 123, Hash256 "zoobnoob"])))",
-            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+            R"(pubkey `03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523`)");
 
         test_eval (
             R"(pubkey (to_public (HD.secret [secret 123, SHA2_256 "nyuubcube"])))",
-            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+            R"(pubkey `03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523`)");
 
         test_eval (
             R"(pubkey (encode (to_public (HD.secret [secret 123, Hash256 "wfdldldf"]))))",
-            R"(pubkey '03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523')");
+            R"(pubkey `03cc45122542e88a92ea2e4266424a22e83292ff6a2bc17cdd7110f6d10fe32523`)");
 
         test_eval (
             R"(secret (HD.secret [secret 123, SHA2_256 "nyuub"]))",
@@ -707,14 +708,23 @@ namespace Diophant {
         test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / 0)");
         test_eval (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / 0)");
 
-        test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");
-        test_error (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / `0)");
+        test_eval (R"(encode (HD.secret [secret 123, Hash256 "hey babe"]) / 0')");
+        test_error (R"(encode (to_public (HD.secret [secret 123, Hash256 "hey babe"])) / 0')");
 
-        test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / 0)");
-        test_eval (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / 0)");
+        test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / 0)",
+            R"(HD.secret [secret 97998661454258455779509146631093818994757707364380156019762301706363279355559, )"
+            R"(`0b7b088aa57c675a903a5ecefb7eba9af3f0da2f32800377a9c3fbb05a70982f`, net.Main, 1, 412172866, 0])");
 
-        test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / `0)");
-        test_error (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / `0)");
+        test_eval (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / 0)",
+            R"((HD.pubkey [pubkey `02bdc8c1f426b3232bf38c25337e5ea6a2dd218453b89e5d4afc80bc17715b6b66`, )"
+            R"(`0b7b088aa57c675a903a5ecefb7eba9af3f0da2f32800377a9c3fbb05a70982f`, net.Main, 1, 412172866, 0]))");
+
+        test_eval (R"(HD.secret [secret 123, Hash256 "hey babe"] / 0')",
+            R"(HD.secret [secret 106858865487441704697549356289023044842243219168562888968788228387219476427940, )"
+            R"(`6bd24be3fec94f7b27c494a291564a078ad72d0f41cc4c21bf1f6892f943bf2e`, net.Main, 1, 412172866, 2147483648])");
+
+        test_error (R"(to_public (HD.secret [secret 123, Hash256 "hey babe"]) / 0')");
+
 
     }
 
@@ -735,13 +745,13 @@ namespace Diophant {
         test_error (R"("xyz\")");
 
         // unary operators
-        test ("!8", unary ('!', make_natural (8)));
+        test ("!8", unary ('!', make_natural (8), unop::left));
         test_error ("8+");
         test_error ("8-");
 
         // negative zero
-        test ("-0", unary ('-', make_natural (0)), make_integer (0));
-        test ("- 0", unary ('-', make_natural (0)), make_integer (0));
+        test ("-0", unary ('-', make_natural (0), unop::left), make_integer (0));
+        test ("- 0", unary ('-', make_natural (0), unop::left), make_integer (0));
 
         // arithmetic
         test_eval ("0x + 0x", "0x");
@@ -769,10 +779,10 @@ namespace Diophant {
         test ("255_u8 + 1_u8", "0_u8");
 
         // hex strings
-        test ("'abcdef000001'", bytes::make (*data::encoding::hex::read ("abcdef000001")));
-        test ("'abcdef00001'", false);
+        test ("`abcdef000001`", bytes::make (*data::encoding::hex::read ("abcdef000001")));
+        test ("`abcdef00001`", false);
 
-        test_eval ("'abcdef000001'.1", make_byte (0xcd));
+        test_eval ("`abcdef000001`.1", make_byte (0xcd));
 
 /*
         // @ f -> let g -> @ x -> f (x x) in g g $ @ f n -> if n == 0 then 1 else n * f (n - 1) $ 5
