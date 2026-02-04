@@ -13,5 +13,5 @@ add_executable (unit_tests
 )
 
 target_link_libraries (unit_tests
-  PRIVATE diophant gigamonkey Data::data gtest_main gmock)
+  PRIVATE diophant gtest_main gmock)
 gtest_discover_tests (unit_tests)

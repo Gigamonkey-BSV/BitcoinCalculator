@@ -13,8 +13,8 @@ maybe<std::string> read_user_input () {
     return {input};
 }
 
-int main (int args, char **arg) {
-    log::init ()->min_level (log::normal);
+int main (int, char **) {
+    log::init ({});
 
     // TODO detect whether we are in interactive mode.
     // right now this is only interactive mode.

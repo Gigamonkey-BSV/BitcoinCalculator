@@ -126,9 +126,6 @@ cmake_policy (SET CMP0135 NEW)
 FetchContent_Declare (json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
 FetchContent_MakeAvailable (json)
 
-FetchContent_Declare (argh URL https://github.com/adishavit/argh/archive/refs/tags/v1.3.2.zip)
-FetchContent_MakeAvailable (argh)
-
 FetchContent_Declare (ctre URL https://github.com/hanickadot/compile-time-regular-expressions/archive/refs/tags/v3.10.0.zip)
 FetchContent_MakeAvailable (ctre)
 
@@ -168,10 +165,11 @@ target_link_libraries (
 
   PUBLIC
 
-  Gigamonkey::gigamonkey
-  Data::data
   nlohmann_json
-  argh
+  Data::string
+  Data::crypto
+  Data::io
+  Gigamonkey::gigamonkey
 )
 
 target_include_directories (diophant
@@ -185,7 +183,7 @@ set_target_properties (diophant PROPERTIES CXX_EXTENSIONS OFF)
 
 add_executable (BitcoinCalc calculator.cpp)
 
-target_link_libraries (BitcoinCalc PUBLIC diophant gigamonkey)
+target_link_libraries (BitcoinCalc PUBLIC Gigamonkey::gigamonkey diophant)
 target_include_directories (BitcoinCalc PUBLIC include)
 
 target_compile_features (BitcoinCalc PUBLIC cxx_std_23)
@@ -198,7 +196,7 @@ install (
 )
 
 install (
-  TARGETS diophant nlohmann_json argh
+  TARGETS diophant nlohmann_json
   EXPORT diophantTargets
   ARCHIVE
 )
