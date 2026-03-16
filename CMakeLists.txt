@@ -86,6 +86,9 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_link_options (${_san_flags})
 endif ()
 
+# ---------------------------------------------------------
+#  Find Dependencies
+# ---------------------------------------------------------
 find_package (Boost 1.86 COMPONENTS thread chrono log_setup log REQUIRED)
 # if we do not have boost
 #   * linux:
@@ -165,17 +168,18 @@ target_link_libraries (
 
   PUBLIC
 
-  nlohmann_json
-  Data::string
-  Data::crypto
+  Gigamonkey::tx
+  Gigamonkey::keys
   Data::io
-  Gigamonkey::gigamonkey
+  Data::crypto
+  Data::string
+  nlohmann_json
 )
 
 target_include_directories (diophant
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
 
 target_compile_features (diophant PUBLIC cxx_std_23)

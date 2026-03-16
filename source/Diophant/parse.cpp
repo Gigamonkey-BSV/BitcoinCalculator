@@ -58,7 +58,7 @@ namespace Diophant {
 
     void parser::close_struct () {
         Exp = prepend (first (Back), dstruct::make (reverse (data::lift ([] (const symbol &x, const expression &p) {
-            return data::entry<symbol, expression> {x, p};
+            return data::entry<const symbol, expression> {x, p};
         }, first (Symbols), Exp))));
         Symbols = rest (Symbols);
         Back = rest (Back);

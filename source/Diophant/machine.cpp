@@ -305,10 +305,10 @@ namespace Diophant {
 
         expression evaluate_struct (const machine &m, const dstruct &dst) {
             bool changed = false;
-            data::stack<data::entry<symbol, expression>> new_dst;
+            data::dispatch<symbol, expression> new_dst;
 
-            for (data::entry<symbol, expression> old : dst.Values) {
-                data::entry<symbol, expression> new_e {old.Key, m.evaluate (old.Value)};
+            for (data::entry<const symbol, expression> old : dst.Values) {
+                data::entry<const symbol, expression> new_e {old.Key, m.evaluate (old.Value)};
                 if (new_e.Value != old.Value) changed = true;
                 new_dst >>= new_e;
             }
