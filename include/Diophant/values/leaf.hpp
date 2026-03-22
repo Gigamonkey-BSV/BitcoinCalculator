@@ -585,9 +585,9 @@ namespace Diophant {
         template <typename ...T> struct make_leaf<std::tuple<T...>> {
             expression operator () (const std::tuple<T...> &tt) const {
                 data::stack<expression> expr;
-                data::for_each (tt, [&expr] (const auto &x) {
+                data::for_each ([&expr] (const auto &x) {
                     expr >>= make_leaf<data::unconst<data::unref<decltype (x)>>> {} (x);
-                });
+                }, tt);
                 return list::make (reverse (expr));
             }
         };
