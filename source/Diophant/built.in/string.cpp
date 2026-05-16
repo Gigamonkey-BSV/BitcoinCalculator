@@ -324,4 +324,20 @@ namespace Diophant {
         return Bitcoin::right_shift (x, size_t (y % x.size ()));
     }
 
+    data::bytes bit_invert (const data::bytes &) {
+        throw data::unimplemented {"bit_invert"};
+    }
+
+    data::bytes bit_xor (const data::bytes &, const data::bytes &) {
+        throw data::unimplemented {"bit_xor"};
+    }
+
+    data::bytes bit_or (const data::bytes &, const data::bytes &) {
+        throw data::unimplemented {"bit_or"};
+    }
+
+    data::bytes bit_and (const data::bytes &, const data::bytes &) {
+        throw data::unimplemented {"bit_and"};
+    }
+
 }

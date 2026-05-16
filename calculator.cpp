@@ -14,7 +14,7 @@ maybe<std::string> read_user_input () {
 }
 
 int main (int, char **) {
-    log::init ({});
+    log::init ({.threshold = log::severity_level::debug});
 
     // TODO detect whether we are in interactive mode.
     // right now this is only interactive mode.

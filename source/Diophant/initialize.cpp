@@ -8,6 +8,7 @@
 #include <Diophant/built.in/base58.hpp>
 #include <Diophant/built.in/hd.hpp>
 #include <Diophant/parse/parser.hpp>
+#include <gigamonkey/script/program.hpp>
 
 namespace Diophant {
 
@@ -2253,7 +2254,7 @@ namespace Diophant {
     }
 
     data::bytes push (const data::bytes &x) {
-        return Bitcoin::compile (Bitcoin::push_data (x));
+        return Bitcoin::compile ({Bitcoin::push_data (x)});
     }
 
     data::bytes push (const data::string &x) {

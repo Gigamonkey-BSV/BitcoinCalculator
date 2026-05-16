@@ -126,11 +126,10 @@ namespace Diophant {
                     if (casted == no) continue;
                     return casted;
                 }
-            } else if (bt->Operand == binary_operand::intuitionistic_implies) {
-                throw data::method::unimplemented {"cast to => "};
-            } else if (bt->Operand == binary_operand::intuitionistic_and) {
-                throw data::method::unimplemented {"cast to & "};
-            }
+            } else if (bt->Operand == binary_operand::intuitionistic_implies)
+                throw data::unimplemented {"cast to => "};
+            else if (bt->Operand == binary_operand::intuitionistic_and)
+                throw data::unimplemented {"cast to & "};
         }
 
         if (const value *v = dynamic_cast<const value *> (e); v != nullptr)
