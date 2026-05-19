@@ -1,5 +1,5 @@
 #include <Diophant/built.in/numbers.hpp>
-#include <data/power.hpp>
+#include <data/math/power.hpp>
 
 namespace Diophant {
 
